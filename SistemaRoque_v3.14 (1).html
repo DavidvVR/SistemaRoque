@@ -176,8 +176,8 @@
       </div>
       <div id="tab-tarifas" class="sub-content">
       <h3 class="section-title">Tarifas</h3>
-  <a href="#" id="add-route-link" class="add-route-link">+ Agregar Ruta/Tarifa</a>
-      <button class="add-route">+ Agregar Ruta/Tarifa</button>
+  <a href="#" id="add-route-link" class="add-route-link">+ Nueva Tarifa/Ruta</a>
+      <button class="add-route">+ Nueva Tarifa/Ruta</button>
       <div class="doc-table-wrapper" style="max-height:250px; overflow-y:auto;">
         <table class="doc-table">
           <thead>
@@ -330,6 +330,7 @@
 
 <script>
   const addRouteLink = document.getElementById('add-route-link');
+  const addRouteBtn = document.querySelector('.add-route');
   const modal = document.getElementById('route-modal');
   const closeButton = document.getElementById('close-modal');
   const cancelBtn = document.getElementById('cancel-btn');
@@ -344,9 +345,12 @@
     form.reset();
   }
 
-  addRouteLink.addEventListener('click', function(event) {
-    event.preventDefault();
-    openModal();
+  [addRouteLink, addRouteBtn].forEach(function(trigger) {
+    if (!trigger) return;
+    trigger.addEventListener('click', function(event) {
+      event.preventDefault();
+      openModal();
+    });
   });
   closeButton.addEventListener('click', closeModal);
   cancelBtn.addEventListener('click', closeModal);
@@ -354,34 +358,26 @@
     if (event.target === modal) closeModal();
   });
 
-  
-  
-    form.addEventListener('submit', function(event) {
-      event.preventDefault();
-      // Capturar valores
-      const estadoOrigen = document.getElementById('estado-origen').value;
-      const estadoDestino = document.getElementById('estado-destino').value;
-      const tipoUnidad = document.getElementById('tipo-unidad').value;
-      // Parsear valores numéricos
-      const tarifaVal = parseFloat(document.getElementById('tarifa').value);
-      const kmRecorrer = parseInt(document.getElementById('km-recorrer').value, 10);
-      // Origen - Destino
-      const origenDestino = `${estadoOrigen} - ${estadoDestino}`;
-      // Crear y poblar fila
-      const row = document.createElement('tr');
-      [origenDestino, tipoUnidad, tarifaVal, kmRecorrer].forEach(text => {
-        const cell = document.createElement('td');
-        cell.textContent = text;
-        row.appendChild(cell);
-      });
-      // Insertar en tabla
-      table.querySelector('tbody').appendChild(row);
-      closeModal();
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+    // Capturar valores
+    const estadoOrigen = document.getElementById('estado-origen').value;
+    const estadoDestino = document.getElementById('estado-destino').value;
+    const tipoUnidad = document.getElementById('tipo-unidad').value;
+    // Parsear valores numéricos
+    const tarifaVal = parseFloat(document.getElementById('tarifa').value);
+    const kmRecorrer = parseInt(document.getElementById('km-recorrer').value, 10);
+    // Origen - Destino
+    const origenDestino = `${estadoOrigen} - ${estadoDestino}`;
+    // Crear y poblar fila
+    const row = document.createElement('tr');
+    [origenDestino, tipoUnidad, tarifaVal, kmRecorrer].forEach(function(text) {
+      const cell = document.createElement('td');
+      cell.textContent = text;
+      row.appendChild(cell);
     });
-
-    // Insertar en tbody
-    const tbody = table.querySelector('tbody');
-    tbody.appendChild(row);
+    // Insertar en tabla
+    table.querySelector('tbody').appendChild(row);
     closeModal();
   });
 
