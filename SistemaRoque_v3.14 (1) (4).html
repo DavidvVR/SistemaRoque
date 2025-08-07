@@ -175,26 +175,35 @@
         </div>
       </div>
       <div id="tab-tarifas" class="sub-content">
-      <h3 class="section-title">Tarifas</h3>
-  <a href="#" id="add-route-link" class="add-route-link">+ Agregar Ruta/Tarifa</a>
-      <button class="add-route">+ Agregar Ruta/Tarifa</button>
-      <div class="doc-table-wrapper" style="max-height:250px; overflow-y:auto;">
-        <table class="doc-table">
-          <thead>
+     <button id="addTarifaBtn" class="btn add-tarifa-btn">+Agregar Tarifa/ruta</button>
+        <div class="doc-table-wrapper">
+          <table class="doc-table">
+            <thead>
             <tr>
-              <th>Origen - Destino</th>
-              <th>Tipo de Unidad</th>
+              <th>Origen-Destino</th>
               <th>Tarifa</th>
               <th>Días de Crédito</th>
-                  <th>Km a recorrer</th>
+              <th>Km a recorrer</th>
           
     </tr>
-          </thead>
-          <tbody>
-      <!-- Filas limpias, solo títulos -->
-    </tbody>
-        </table>
-      </div>
+         </thead>
+            <tbody>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="status-yes">Activa</td>
+                <td>
+                  <span class="icon-btn" onclick="editarTarifa(this)">✏️</span>
+                  <span class="icon-btn" onclick="eliminarTarifa(this)">🗑️</span>
+                </td>
+              </tr>
+           
+            </tbody>
+          </table>
+        </div>
+
 <div id="tab-comentario" class="sub-content">
         <h3 class="section-title">Comentarios</h3><div class="form-group"><label>Comentario</label><textarea></textarea></div>
       </div>
