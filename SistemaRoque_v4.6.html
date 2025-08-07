@@ -194,6 +194,28 @@
     </tbody>
         </table>
       </div>
+        <!-- Modal de tarifas -->
+  <div id="tarifaModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+      <h3 id="modalTitle">Agregar Nueva Tarifa/Ruta</h3>
+      <form id="tarifaForm">
+        <div class="form-group">
+          <label for="tarifa">Tarifa ($):</label>
+          <input type="number" id="tarifa" name="tarifa" min="0" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="tiempo">Km a recorrer:</label>
+          <input type="text" id="km" name="km" required>
+        </div>
+        <div class="button-row">
+          <button type="button" class="btn" onclick="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 <div id="tab-comentario" class="sub-content">
         <h3 class="section-title">Comentarios</h3><div class="form-group"><label>Comentario</label><textarea></textarea></div>
       </div>
