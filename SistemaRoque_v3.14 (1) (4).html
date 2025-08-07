@@ -174,213 +174,78 @@
           </table>
         </div>
       </div>
-      <div id="tab-tarifas" class="sub-content">
-      <h3 class="section-title">Tarifas</h3>
-  <a href="#" id="add-route-link" class="add-route-link">+ Agregar Ruta/Tarifa</a>
-      <button class="add-route">+ Agregar Ruta/Tarifa</button>
-      <div class="doc-table-wrapper" style="max-height:250px; overflow-y:auto;">
-        <table class="doc-table">
-          <thead>
-            <tr>
-              <th>Origen - Destino</th>
-              <th>Tipo de Unidad</th>
-              <th>Tarifa</th>
-              <th>Días de Crédito</th>
-                  <th>Km a recorrer</th>
-          
-    </tr>
-          </thead>
-          <tbody>
-      <!-- Filas limpias, solo títulos -->
-    </tbody>
-        </table>
-      </div>
-<div id="tab-comentario" class="sub-content">
-        <h3 class="section-title">Comentarios</h3><div class="form-group"><label>Comentario</label><textarea></textarea></div>
-      </div>
-      <div class="button-row"><button id="exitClient">Salir</button></div>
+<div id="tab-tarifas" class="sub-content">
+  <button id="addTarifaBtn" class="btn add-tarifa-btn">+Agregar Tarifa/ruta</button>
+  <div class="doc-table-wrapper">
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>Ruta</th>
+          <th>Tarifa</th>
+          <th>Tiempo estimado</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Ejemplo de filas -->
+        <tr>
+          <td>Ciudad A - Ciudad B</td>
+          <td>$150.00</td>
+          <td>2 horas</td>
+          <td class="status-yes">Activa</td>
+          <td>
+            <span class="icon-btn" onclick="editarTarifa(this)">✏️</span>
+            <span class="icon-btn" onclick="eliminarTarifa(this)">🗑️</span>
+          </td>
+        </tr>
+        <tr>
+          <td>Ciudad C - Ciudad D</td>
+          <td>$220.00</td>
+          <td>3 horas</td>
+          <td class="status-no">Inactiva</td>
+          <td>
+            <span class="icon-btn" onclick="editarTarifa(this)">✏️</span>
+            <span class="icon-btn" onclick="eliminarTarifa(this)">🗑️</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Modal de tarifas -->
+  <div id="tarifaModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+      <h3 id="modalTitle">Agregar Nueva Tarifa/Ruta</h3>
+      <form id="tarifaForm">
+        <div class="form-group">
+          <label for="ruta">Ruta:</label>
+          <input type="text" id="ruta" name="ruta" required>
+        </div>
+        <div class="form-group">
+          <label for="tarifa">Tarifa ($):</label>
+          <input type="number" id="tarifa" name="tarifa" min="0" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="tiempo">Tiempo estimado:</label>
+          <input type="text" id="tiempo" name="tiempo" required>
+        </div>
+        <div class="form-group">
+          <label for="estado">Estado:</label>
+          <select id="estado" name="estado" required>
+            <option value="activa">Activa</option>
+            <option value="inactiva">Inactiva</option>
+          </select>
+        </div>
+        <div class="button-row">
+          <button type="button" class="btn" onclick="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
     </div>
   </div>
-<script>
-  const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
-  function showSection(id) {
-    document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-  }
-  window.addEventListener('DOMContentLoaded', () => {
-    // Login
-    const last = localStorage.getItem('sr_last_user');
-    if (last) document.getElementById('usuario').value = last;
-    document.getElementById('btnGuardar').onclick = () => {
-      localStorage.setItem('sr_last_user', document.getElementById('usuario').value);
-      alert('Usuario guardado');
-    };
-    document.getElementById('btnEntrar').onclick = () => {
-      const u = document.getElementById('usuario').value;
-      const p = document.getElementById('password').value;
-      if (usuarios.find(x => x.usuario === u && x.password === p)) showSection('dashboard');
-      else alert('Usuario o contraseña incorrectos');
-    };
-    // Navigation
-    document.getElementById('modClientes').onclick = () => showSection('clientsModule');
-    document.querySelectorAll('.sub-tab').forEach(tab => {
-      tab.onclick = () => {
-        document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.content).classList.add('active');
-      };
-    });
-    document.getElementById('exitClient').onclick = () => showSection('dashboard');
-    // Doc table handlers
-    document.querySelectorAll('.folder').forEach(btn => {
-      btn.onclick = () => {
-        const row = btn.dataset.row;
-        const inp = document.getElementById('file' + row);
-        inp.click();
-        inp.onchange = () => {
-          const st = document.getElementById('status' + row);
-          st.textContent = '✅ Sí';
-          st.classList.remove('status-no');
-          st.classList.add('status-yes');
-        };
-      };
-    });
-    document.querySelectorAll('.view').forEach(btn => {
-      btn.onclick = () => {
-        const row = btn.dataset.row;
-        const inp = document.getElementById('file' + row);
-        if (inp.files.length) {
-          const url = URL.createObjectURL(inp.files[0]);
-          window.open(url);
-        } else {
-          alert('No hay archivo cargado aún');
-        }
-      };
-    });
-  });
-</script>
-
-
-
-<!-- Modal de formulario para Nueva Tarifa/Ruta Mejorado -->
-<div id="route-modal" class="modal hidden">
-  <div class="modal-content" style="background: var(--panel-bg); border: 2px solid var(--input-border);">
-    <span id="close-modal" class="close-button">&times;</span>
-    <h4 style="margin-bottom: 1rem; color: var(--text);">Nueva Tarifa/Ruta</h4>
-    <form id="route-form">
-      <div class="form-group">
-        <label>Estado de Origen</label>
-        <input type="text" id="estado-origen" class="input-field" required>
-      </div>
-      <div class="form-group">
-        <label>Municipio de Origen</label>
-        <input type="text" id="municipio-origen" class="input-field" required>
-      </div>
-      <div class="form-group">
-        <label>Estado de Destino</label>
-        <input type="text" id="estado-destino" class="input-field" required>
-      </div>
-      <div class="form-group">
-        <label>Municipio de Destino</label>
-        <input type="text" id="municipio-destino" class="input-field" required>
-      </div>
-      <div class="form-group">
-        <label>Tipo de unidad</label>
-        <select id="tipo-unidad" class="input-field" required>
-          <option value="">--Seleccionar--</option>
-          <option>Unidad seca de 53"</option>
-          <option>Refrigerada de 53"</option>
-          <option>Thorton</option>
-          <option>3.5</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Km a recorrer</label>
-        <input type="number" id="km-recorrer" class="input-field" required>
-      </div>
-      <div class="form-group">
-        <label>Tarifa</label>
-        <input type="number" id="tarifa" class="input-field" step="0.01" required>
-      </div>
-      <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
-        <button type="button" id="cancel-btn" class="btn-secondary">Cancelar</button>
-        <button type="submit" id="save-btn" class="btn-primary">Guardar</button>
-      </div>
-    </form>
-  </div>
 </div>
-
-<!-- Estilos adicionales para modal mejorado -->
-<style>
-  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; }
-  .hidden { display: none; }
-  .modal-content { padding: 2rem; border-radius: 8px; max-width: 420px; width: 90%; position: relative; }
-  .close-button { position: absolute; top: 0.5rem; right: 0.75rem; cursor: pointer; font-size: 1.5rem; color: var(--text); }
-  .form-group { margin-bottom: 1rem; }
-  .input-field { width: 100%; padding: 0.6rem; border: 1px solid var(--input-border); border-radius: 4px; }
-  .btn-primary { background: var(--input-border); color: #fff; border: none; padding: 0.6rem 1.2rem; border-radius: 4px; cursor: pointer; }
-  .btn-secondary { background: var(--section-bg); color: var(--text); border: 1px solid var(--input-border); padding: 0.6rem 1.2rem; border-radius: 4px; cursor: pointer; }
-  .btn-primary:hover { opacity: 0.9; }
-  .btn-secondary:hover { opacity: 0.9; }
-
-  .delete-btn { background: transparent; border: none; color: red; cursor: pointer; }
-  .delete-btn:hover { text-decoration: underline; }
-</style>
-
-<script>
-  const addRouteLink = document.getElementById('add-route-link');
-  const modal = document.getElementById('route-modal');
-  const addRouteBtn = document.querySelector('.add-route');
-  const closeButton = document.getElementById('close-modal');
-  const cancelBtn = document.getElementById('cancel-btn');
-  const form = document.getElementById('route-form');
-  const table = document.querySelector('#tab-tarifas table'); // Asume que hay una <table> en #tab-tarifas
-
-  function openModal() {
-    modal.style.display = 'flex';
-  }
-  function closeModal() {
-    modal.style.display = 'none';
-    form.reset();
-  }
-
-   [addRouteLink, addRouteBtn].forEach(function(trigger) {
-    if (!trigger) return;
-    trigger.addEventListener('click', function(event) {
-      event.preventDefault();
-      openModal();
-    });
-  });
-  closeButton.addEventListener('click', closeModal);
-  cancelBtn.addEventListener('click', closeModal);
-  window.addEventListener('click', function(event) {
-    if (event.target === modal) closeModal();
-  });
-
- form.addEventListener('submit', function(event) {
-    event.preventDefault();
-    // Capturar valores
-    const estadoOrigen = document.getElementById('estado-origen').value;
-    const estadoDestino = document.getElementById('estado-destino').value;
-    const tipoUnidad = document.getElementById('tipo-unidad').value;
-    // Parsear valores numéricos
-    const tarifaVal = parseFloat(document.getElementById('tarifa').value);
-    const kmRecorrer = parseInt(document.getElementById('km-recorrer').value, 10);
-    // Origen - Destino
-    const origenDestino = `${estadoOrigen} - ${estadoDestino}`;
-    // Crear y poblar fila
-    const row = document.createElement('tr');
-    [origenDestino, tipoUnidad, tarifaVal, kmRecorrer].forEach(function(text) {
-      const cell = document.createElement('td');
-      cell.textContent = text;
-      row.appendChild(cell);
- // Insertar en tabla
-    table.querySelector('tbody').appendChild(row);
-    closeModal();
-  });
-
-</script>
 
 
 </body>
