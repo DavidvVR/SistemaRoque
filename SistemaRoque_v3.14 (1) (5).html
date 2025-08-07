@@ -285,23 +285,27 @@
         <label>Municipio de Destino</label>
         <input type="text" id="municipio-destino" class="input-field" required>
       </div>
-      <div class="form-group">
-        <label>Tipo de unidad</label>
-        <select id="tipo-unidad" class="input-field" required>
-          <option value="">--Seleccionar--</option>
-          <option>Unidad seca de 53"</option>
-          <option>Refrigerada de 53"</option>
-          <option>Thorton</option>
-          <option>3.5</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Km a recorrer</label>
-        <input type="number" id="km-recorrer" class="input-field" required>
-      </div>
-      <div class="form-group">
-        <label>Tarifa</label>
-        <input type="number" id="tarifa" class="input-field" step="0.01" required>
+        <div class="form-group">
+          <label>Tipo de unidad</label>
+          <select id="tipo-unidad" class="input-field" required>
+            <option value="">--Seleccionar--</option>
+            <option>Unidad seca de 53"</option>
+            <option>Refrigerada de 53"</option>
+            <option>Thorton</option>
+            <option>3.5</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Días de Crédito</label>
+          <input type="number" id="dias-credito" class="input-field" required>
+        </div>
+        <div class="form-group">
+          <label>Km a recorrer</label>
+          <input type="number" id="km-recorrer" class="input-field" required>
+        </div>
+        <div class="form-group">
+          <label>Tarifa</label>
+          <input type="number" id="tarifa" class="input-field" step="0.01" required>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
         <button type="button" id="cancel-btn" class="btn-secondary">Cancelar</button>
@@ -358,27 +362,31 @@
     if (event.target === modal) closeModal();
   });
 
- form.addEventListener('submit', function(event) {
-    event.preventDefault();
-    // Capturar valores
-    const estadoOrigen = document.getElementById('estado-origen').value;
-    const estadoDestino = document.getElementById('estado-destino').value;
-    const tipoUnidad = document.getElementById('tipo-unidad').value;
-    // Parsear valores numéricos
-    const tarifaVal = parseFloat(document.getElementById('tarifa').value);
-    const kmRecorrer = parseInt(document.getElementById('km-recorrer').value, 10);
-    // Origen - Destino
-    const origenDestino = `${estadoOrigen} - ${estadoDestino}`;
-    // Crear y poblar fila
-    const row = document.createElement('tr');
-    [origenDestino, tipoUnidad, tarifaVal, kmRecorrer].forEach(function(text) {
-      const cell = document.createElement('td');
-      cell.textContent = text;
-      row.appendChild(cell);
- // Insertar en tabla
-    table.querySelector('tbody').appendChild(row);
-    closeModal();
-  });
+   form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      // Capturar valores
+      const estadoOrigen = document.getElementById('estado-origen').value;
+      const municipioOrigen = document.getElementById('municipio-origen').value;
+      const estadoDestino = document.getElementById('estado-destino').value;
+      const municipioDestino = document.getElementById('municipio-destino').value;
+      const tipoUnidad = document.getElementById('tipo-unidad').value;
+      const diasCredito = parseInt(document.getElementById('dias-credito').value, 10);
+      // Parsear valores numéricos
+      const tarifaVal = parseFloat(document.getElementById('tarifa').value);
+      const kmRecorrer = parseInt(document.getElementById('km-recorrer').value, 10);
+      // Origen - Destino
+      const origenDestino = `${municipioOrigen}, ${estadoOrigen} - ${municipioDestino}, ${estadoDestino}`;
+      // Crear y poblar fila
+      const row = document.createElement('tr');
+      [origenDestino, tipoUnidad, tarifaVal, diasCredito, kmRecorrer].forEach(function(text) {
+        const cell = document.createElement('td');
+        cell.textContent = text;
+        row.appendChild(cell);
+      });
+      // Insertar en tabla
+      table.querySelector('tbody').appendChild(row);
+      closeModal();
+    });
 
 </script>
 
