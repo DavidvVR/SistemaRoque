@@ -200,13 +200,30 @@
       <span class="close" onclick="cerrarModal()">&times;</span>
       <h3 id="modalTitle">Agregar Nueva Tarifa/Ruta</h3>
       <form id="tarifaForm">
+     <!-- Modal para agregar/editar tarifa -->
+  <div id="tarifaModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3 id="modalTitle">Agregar Nueva Tarifa/Ruta</h3>
+      <form id="tarifaForm">
+        <div class="form-group">
+          <label for="ruta">Ruta:</label>
+          <input type="text" id="ruta" name="ruta" required>
+        </div>
         <div class="form-group">
           <label for="tarifa">Tarifa ($):</label>
           <input type="number" id="tarifa" name="tarifa" min="0" step="0.01" required>
         </div>
         <div class="form-group">
-          <label for="tiempo">Km a recorrer:</label>
-          <input type="text" id="km" name="km" required>
+          <label for="tiempo">Tiempo estimado:</label>
+          <input type="text" id="tiempo" name="tiempo" required>
+        </div>
+        <div class="form-group">
+          <label for="estado">Estado:</label>
+          <select id="estado" name="estado" required>
+            <option value="activa">Activa</option>
+            <option value="inactiva">Inactiva</option>
+          </select>
         </div>
         <div class="button-row">
           <button type="button" class="btn" onclick="cerrarModal()">Cancelar</button>
@@ -215,6 +232,83 @@
       </form>
     </div>
   </div>
+
+  <script>
+    // Funciones para manejar el modal de tarifas
+    function abrirModal(accion = 'agregar', tarifa = null) {
+      const modal = document.getElementById('tarifaModal');
+      const modalTitle = document.getElementById('modalTitle');
+      
+      if (accion === 'agregar') {
+        modalTitle.textContent = 'Agregar Nueva Tarifa/Ruta';
+        document.getElementById('tarifaForm').reset();
+      } else if (accion === 'editar' && tarifa) {
+        modalTitle.textContent = 'Editar Tarifa/Ruta';
+        // Aquí se llenarían los campos con los datos existentes
+        document.getElementById('ruta').value = tarifa.ruta;
+        document.getElementById('tarifa').value = tarifa.tarifa;
+        document.getElementById('tiempo').value = tarifa.tiempo;
+        document.getElementById('estado').value = tarifa.estado;
+      }
+      
+      modal.style.display = 'block';
+    }
+    
+    function cerrarModal() {
+      document.getElementById('tarifaModal').style.display = 'none';
+    }
+    
+    // Evento para el botón de agregar tarifa
+    document.getElementById('addTarifaBtn').addEventListener('click', function() {
+      abrirModal('agregar');
+    });
+    
+    // Evento para cerrar el modal al hacer clic en la "x"
+    document.querySelector('.close').addEventListener('click', cerrarModal);
+    
+    // Evento para cerrar el modal al hacer clic fuera del contenido
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById('tarifaModal');
+      if (event.target === modal) {
+        cerrarModal();
+      }
+    });
+    
+    // Evento para el formulario de tarifas
+    document.getElementById('tarifaForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Aquí se procesaría el envío del formulario
+      const ruta = document.getElementById('ruta').value;
+      const tarifa = document.getElementById('tarifa').value;
+      
+      alert(`Tarifa para "${ruta}" guardada correctamente: $${tarifa}`);
+      cerrarModal();
+    });
+    
+    // Funciones para acciones de la tabla
+    function editarTarifa(elemento) {
+      const fila = elemento.closest('tr');
+      const celdas = fila.querySelectorAll('td');
+      
+      const tarifa = {
+        ruta: celdas[0].textContent,
+        tarifa: celdas[1].textContent.replace('$', ''),
+        tiempo: celdas[2].textContent,
+        estado: celdas[3].classList.contains('status-yes') ? 'activa' : 'inactiva'
+      };
+      
+      abrirModal('editar', tarifa);
+    }
+    
+    function eliminarTarifa(elemento) {
+      if (confirm('¿Está seguro de eliminar esta tarifa?')) {
+        const fila = elemento.closest('tr');
+        fila.remove();
+        alert('Tarifa eliminada correctamente');
+      }
+    }
+  </script>
 </div>
 <div id="tab-comentario" class="sub-content">
         <h3 class="section-title">Comentarios</h3><div class="form-group"><label>Comentario</label><textarea></textarea></div>
