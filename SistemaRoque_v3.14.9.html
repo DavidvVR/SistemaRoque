@@ -87,7 +87,7 @@
     input[type="file"] { display: none; }
     /* Estilos para el modal */
 .modal {
-  display: none;
+  
   position: fixed;
   z-index: 1000;
   left: 0;
@@ -397,6 +397,7 @@
   // Mostrar modal
   function mostrarModal() {
     modal.classList.remove('hidden');
+    modal.style.display = 'block';
   }
 
   // Ocultar modal
