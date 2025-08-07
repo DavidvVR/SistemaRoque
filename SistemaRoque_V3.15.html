@@ -266,10 +266,10 @@
         <label for="estadoOrigen">Estado de Origen*</label>
         <input type="text" id="estadoOrigen" required>
       </div>
-      <div class="form-group">
-        <label for="municipioOrigen">Municipio de Origen*</label>
-        <input type="text" id="municipioOrigen" required>
-      </div>
+  <div class="form-group">
+          <label for="municipioOrigen">Municipio de Origen</label>
+          <input type="text" id="municipioOrigen">
+        </div>
     </div>
     
     <div class="form-row">
@@ -277,10 +277,10 @@
         <label for="estadoDestino">Estado de Destino*</label>
         <input type="text" id="estadoDestino" required>
       </div>
-      <div class="form-group">
-        <label for="municipioDestino">Municipio de Destino*</label>
-        <input type="text" id="municipioDestino" required>
-      </div>
+     <div class="form-group">
+          <label for="municipioDestino">Municipio de Destino</label>
+          <input type="text" id="municipioDestino">
+        </div>
     </div>
     
     <div class="form-row">
@@ -404,6 +404,12 @@
   function ocultarModal() {
     modal.classList.add('hidden');
   }
+ function activarTabTarifas() {
+    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+    document.querySelector('.sub-tab[data-content="tab-tarifas"]').classList.add('active');
+    document.getElementById('tab-tarifas').classList.add('active');
+  }
 
   // Guardar datos
   function guardarTarifa() {
@@ -419,8 +425,8 @@
     };
 
     // Validar campos obligatorios
-    if (!datos.estadoOrigen || !datos.municipioOrigen || 
-        !datos.estadoDestino || !datos.municipioDestino || 
+      if (!datos.estadoOrigen ||
+        !datos.estadoDestino ||
         !datos.tipoUnidad || !datos.tarifa) {
       alert('Por favor complete todos los campos obligatorios (*)');
       return;
@@ -448,7 +454,10 @@
   // Event Listeners
   agregarBtn.addEventListener('click', mostrarModal);
   closeBtn.addEventListener('click', ocultarModal);
-  cancelBtn.addEventListener('click', ocultarModal);
+ cancelBtn.addEventListener('click', () => {
+    ocultarModal();
+    activarTabTarifas();
+  });
   guardarBtn.addEventListener('click', guardarTarifa);
 
   // Cerrar modal al hacer clic fuera del contenido
