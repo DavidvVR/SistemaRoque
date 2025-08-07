@@ -85,6 +85,68 @@
     .status-no { color: red; font-weight:bold; }
     .status-yes { color: green; font-weight:bold; }
     input[type="file"] { display: none; }
+    /* Estilos para el modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: var(--panel-bg);
+  margin: 5% auto;
+  padding: 20px;
+  border: 2px solid var(--frame-border);
+  border-radius: 8px;
+  width: 80%;
+  max-width: 500px;
+  position: relative;
+}
+
+.close {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.form-group-full {
+  grid-column: span 2;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
   </style>
 </head>
 <body>
@@ -194,6 +256,70 @@
     </tbody>
         </table>
       </div>
+        <div id="tarifaModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3>Agregar Nueva Ruta/Tarifa</h3>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label for="estadoOrigen">Estado de Origen*</label>
+        <input type="text" id="estadoOrigen" required>
+      </div>
+      <div class="form-group">
+        <label for="municipioOrigen">Municipio de Origen*</label>
+        <input type="text" id="municipioOrigen" required>
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label for="estadoDestino">Estado de Destino*</label>
+        <input type="text" id="estadoDestino" required>
+      </div>
+      <div class="form-group">
+        <label for="municipioDestino">Municipio de Destino*</label>
+        <input type="text" id="municipioDestino" required>
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group form-group-full">
+        <label for="tipoUnidad">Tipo de unidad*</label>
+        <select id="tipoUnidad" required>
+          <option value="">Seleccione...</option>
+          <option value="Unidad seca de 53">Unidad seca de 53"</option>
+          <option value="Refrigerada de 53">Refrigerada de 53"</option>
+          <option value="Thorton">Thorton</option>
+          <option value="3.5">3.5</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label for="diasCredito">Días de Crédito</label>
+        <input type="number" id="diasCredito" min="0">
+      </div>
+      <div class="form-group">
+        <label for="kmRecorrer">Km a recorrer</label>
+        <input type="number" id="kmRecorrer" min="0">
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label for="tarifa">Tarifa*</label>
+        <input type="number" id="tarifa" min="0" step="0.01" required>
+      </div>
+    </div>
+    
+    <div class="modal-buttons">
+      <button type="button" class="btn-cancelar">Cancelar</button>
+      <button type="button" class="btn-guardar">Guardar</button>
+    </div>
+  </div>
+</div>
 <div id="tab-comentario" class="sub-content">
         <h3 class="section-title">Comentarios</h3><div class="form-group"><label>Comentario</label><textarea></textarea></div>
       </div>
@@ -260,7 +386,75 @@
   });
 </script>
 
+<script>
+  // Referencias a elementos
+  const agregarBtn = document.querySelector('.icon-btn[onclick*="agregarRuta"]');
+  const modal = document.getElementById('tarifaModal');
+  const closeBtn = document.querySelector('.close');
+  const cancelBtn = document.querySelector('.btn-cancelar');
+  const guardarBtn = document.querySelector('.btn-guardar');
 
+  // Mostrar modal
+  function mostrarModal() {
+    modal.classList.remove('hidden');
+  }
+
+  // Ocultar modal
+  function ocultarModal() {
+    modal.classList.add('hidden');
+  }
+
+  // Guardar datos
+  function guardarTarifa() {
+    const datos = {
+      estadoOrigen: document.getElementById('estadoOrigen').value,
+      municipioOrigen: document.getElementById('municipioOrigen').value,
+      estadoDestino: document.getElementById('estadoDestino').value,
+      municipioDestino: document.getElementById('municipioDestino').value,
+      tipoUnidad: document.getElementById('tipoUnidad').value,
+      diasCredito: document.getElementById('diasCredito').value,
+      kmRecorrer: document.getElementById('kmRecorrer').value,
+      tarifa: document.getElementById('tarifa').value
+    };
+
+    // Validar campos obligatorios
+    if (!datos.estadoOrigen || !datos.municipioOrigen || 
+        !datos.estadoDestino || !datos.municipioDestino || 
+        !datos.tipoUnidad || !datos.tarifa) {
+      alert('Por favor complete todos los campos obligatorios (*)');
+      return;
+    }
+
+    // Aquí iría la lógica para agregar a la tabla
+    console.log('Datos guardados:', datos);
+    alert('Tarifa agregada correctamente');
+    ocultarModal();
+    limpiarFormulario();
+  }
+
+  // Limpiar formulario
+  function limpiarFormulario() {
+    document.getElementById('estadoOrigen').value = '';
+    document.getElementById('municipioOrigen').value = '';
+    document.getElementById('estadoDestino').value = '';
+    document.getElementById('municipioDestino').value = '';
+    document.getElementById('tipoUnidad').selectedIndex = 0;
+    document.getElementById('diasCredito').value = '';
+    document.getElementById('kmRecorrer').value = '';
+    document.getElementById('tarifa').value = '';
+  }
+
+  // Event Listeners
+  agregarBtn.addEventListener('click', mostrarModal);
+  closeBtn.addEventListener('click', ocultarModal);
+  cancelBtn.addEventListener('click', ocultarModal);
+  guardarBtn.addEventListener('click', guardarTarifa);
+
+  // Cerrar modal al hacer clic fuera del contenido
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) ocultarModal();
+  });
+</script>
 
 
 </body>
