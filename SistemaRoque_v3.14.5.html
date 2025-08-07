@@ -455,6 +455,29 @@
     if (e.target === modal) ocultarModal();
   });
 </script>
+    <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const addRouteBtn = document.getElementById('addRouteBtn');
+    const routeModal = document.getElementById('routeModal');
+    const closeBtn = document.querySelector('.close');
+
+    // Abrir modal al hacer clic en el botón
+    addRouteBtn.addEventListener('click', () => {
+      routeModal.style.display = 'block';
+    });
+
+    // Cerrar modal al hacer clic en la "X"
+    closeBtn.addEventListener('click', () => {
+      routeModal.style.display = 'none';
+    });
+
+    // Cerrar modal al hacer clic fuera del contenido
+    window.addEventListener('click', (e) => {
+      if (e.target === routeModal) {
+        routeModal.style.display = 'none';
+      }
+    });
+  });
 
 
 </body>
