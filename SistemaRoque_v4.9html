@@ -200,14 +200,40 @@
       <span class="close" onclick="cerrarModal()">&times;</span>
       <h3 id="modalTitle">Agregar Nueva Tarifa/Ruta</h3>
       <form id="tarifaForm">
-        <div class="form-group">
-          <label for="tarifa">Tarifa ($):</label>
-          <input type="number" id="tarifa" name="tarifa" min="0" step="0.01" required>
+       <div class="form-group">
+          <label>Estado de Origen</label>
+          <input type="text" id="estado-origen" class="input-field" required>
         </div>
         <div class="form-group">
-          <label for="tiempo">Km a recorrer:</label>
-          <input type="text" id="km" name="km" required>
+          <label>Municipio de Origen</label>
+          <input type="text" id="municipio-origen" class="input-field" required>
         </div>
+        <div class="form-group">
+          <label>Estado de Destino</label>
+          <input type="text" id="estado-destino" class="input-field" required>
+        </div>
+        <div class="form-group">
+          <label>Municipio de Destino</label>
+          <input type="text" id="municipio-destino" class="input-field" required>
+        </div>
+        <div class="form-group">
+          <label>Tipo de unidad</label>
+          <select id="tipo-unidad" class="input-field" required>
+            <option value="">--Seleccionar--</option>
+            <option>Unidad seca de 53"</option>
+            <option>Refrigerada de 53"</option>
+            <option>Thorton</option>
+            <option>3.5</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Km a recorrer</label>
+          <input type="number" id="km-recorrer" class="input-field" required>
+        </div>
+        <div class="form-group">
+          <label>Tarifa</label>
+          <input type="number" id="tarifa" class="input-field" step="0.01" required>
+        </div>  
         <div class="button-row">
           <button type="button" class="btn" onclick="cerrarModal()">Cancelar</button>
           <button type="submit" class="btn btn-primary">Guardar</button>
