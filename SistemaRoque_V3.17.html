@@ -453,8 +453,11 @@
 
   // Event Listeners
   agregarBtn.addEventListener('click', mostrarModal);
-  closeBtn.addEventListener('click', ocultarModal);
- cancelBtn.addEventListener('click', () => {
+  closeBtn.addEventListener('click', () => {
+    ocultarModal();
+    activarTabTarifas();
+  });
+  cancelBtn.addEventListener('click', () => {
     ocultarModal();
     activarTabTarifas();
   });
