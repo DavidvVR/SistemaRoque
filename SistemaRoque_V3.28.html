@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SistemaRoque V3.28</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --panel-bg: #fff;
+      --frame-border: #000;
+      --text: #222;
+      --font: "Segoe UI", Tahoma, sans-serif;
+      --input-border: #00b8f4;
+      --section-bg: #e8e8e8;
+      --tab-bg: #ddd;
+      --tab-active: #fff;
+      --tab-border: #000;
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { background: var(--bg); font-family: var(--font); color: var(--text); }
+    .hidden { display: none; }
+    .frame {
+      position: relative;
+      margin: 50px auto; padding: 40px 20px 20px; max-width: 920px;
+      background: var(--panel-bg);
+      border: 4px solid var(--frame-border);
+      border-radius: 12px;
+    }
+    /* Login */
+    #loginFrame { text-align:center; }
+    #loginFrame input {
+      width: calc(100% - 16px); padding: 8px; margin: 6px 0;
+      border: 2px solid #ccc; border-radius: 6px;
+      font-size: .9rem;
+    }
+    #loginFrame button {
+      padding: 8px 16px; margin: 8px 4px;
+      border:2px solid var(--frame-border); background:#e5e5e5; cursor:pointer; font-weight:700; border-radius:8px;
+    }
+    /* Dashboard */
+    #dashboard h2 { text-align:center; margin-bottom:16px; }
+    .dashboard { display:grid; grid-template-columns:repeat(5,1fr); gap:20px; justify-items:center; }
+    .module { width:100px; height:100px; background:var(--panel-bg);
+      border:2px solid var(--frame-border); border-radius:8px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      cursor:pointer; transition:transform .1s;
+    }
+    .module:hover { transform:translateY(-3px); }
+    .module-icon { font-size:2rem; }
+    .module-label { margin-top:8px; font-weight:bold; font-size:.9rem; text-align:center; }
+    /* clientsModule */
+    .clients-menu {
+      margin: 0 auto; width: 100%; max-width:860px; background:var(--section-bg);
+      border-radius:12px; padding:20px;
+    }
+    /* Sub-tabs */
+    .sub-tabs { display:flex; border-bottom:2px solid var(--tab-border); margin-bottom:16px; }
+    .sub-tab {
+      padding:8px 16px; cursor:pointer;
+      background: var(--tab-bg); border:2px solid var(--tab-border); border-bottom:none;
+      margin-right:4px; border-radius:8px 8px 0 0;
+    }
+    .sub-tab.active { background: var(--tab-active); }
+    .sub-content { display:none; }
+    .sub-content.active { display:block; }
+    .form-group { display:grid; grid-template-columns:220px 1fr; align-items:center; gap:12px; margin:8px 0; }
+    h3.section-title { margin-top:16px; font-size:1.1rem; border-bottom:1px solid #000; padding-bottom:4px; }
+    .button-row { display:flex; justify-content:center; gap:12px; margin-top:16px; }
+    /* Documentation table */
+    .doc-table-wrapper { border:2px dashed var(--input-border); padding:12px; }
+    table.doc-table { width:100%; border-collapse: collapse; }
+    table.doc-table th, table.doc-table td { border:1px solid var(--input-border); padding:8px; text-align:center; }
+    table.doc-table th { background:#eee; }
+    .icon-btn { cursor:pointer; margin: 0 4px; font-size:1.2rem; }
+    .status-no { color: red; font-weight:bold; }
+    .status-yes { color: green; font-weight:bold; }
+    input[type="file"] { display: none; }
+    /* Modal */
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-content {
+      background-color: var(--panel-bg);
+      padding: 20px;
+      border: 2px solid var(--frame-border);
+      border-radius: 8px;
+      width: max-content;
+      max-width: 96vw;
+      max-height: 90vh;
+      overflow: auto;
+      position: relative;
+    }
+    .close {
+      position: absolute;
+      right: 10px;
+      top: 5px;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .form-group-full {
+      grid-column: span 2;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 8px;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="loginFrame" class="frame">
+    <input type="text" id="usuario" placeholder="David Vargas R.">
+    <input type="password" id="password" placeholder="1234">
+    <div>
+      <button id="btnGuardar">Guardar</button>
+      <button id="btnEntrar">Entrar</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="frame hidden">
+    <h2>Menú Principal</h2>
+    <div class="dashboard">
+      <div class="module" id="modClientes"><div class="module-icon">📋</div><div class="module-label">Clientes</div></div>
+      <div class="module" id="modPerm"><div class="module-icon">🚚</div><div class="module-label">Permisionarios</div></div>
+      <div class="module" id="modAsign"><div class="module-icon">📅</div><div class="module-label">Asignación</div></div>
+      <div class="module" id="modMonit"><div class="module-icon">📡</div><div class="module-label">Monitoreo</div></div>
+      <div class="module" id="modCoord"><div class="module-icon">🔧</div><div class="module-label">Coordinación</div></div>
+      <div class="module" id="modCCP"><div class="module-icon">💰</div><div class="module-label">Ctas Cob/PP</div></div>
+      <div class="module" id="modLiq"><div class="module-icon">📊</div><div class="module-label">Liquidación</div></div>
+      <div class="module" id="modMant"><div class="module-icon">🛠️</div><div class="module-label">Mantenimiento</div></div>
+      <div class="module" id="modAdmin"><div class="module-icon">🗄️</div><div class="module-label">Administración</div></div>
+      <div class="module" id="modDocs"><div class="module-icon">📄</div><div class="module-label">Documentación</div></div>
+    </div>
+  </div>
+
+  <!-- clientsModule -->
+  <div id="clientsModule" class="frame hidden">
+    <div class="clients-menu">
+      <div class="sub-tabs">
+        <div class="sub-tab active" data-content="tab-datos">Datos Generales</div>
+        <div class="sub-tab" data-content="tab-docs">Documentación</div>
+        <div class="sub-tab" data-content="tab-tarifas">Tarifas</div>
+        <div class="sub-tab" data-content="tab-comentario">Comentarios</div>
+      </div>
+
+      <div id="tab-datos" class="sub-content active">
+        <h3 class="section-title">Datos Generales</h3>
+        <div class="form-group"><label>Nombre / Razón Social</label><input type="text"></div>
+        <div class="form-group"><label>Estatus</label><select><option>Activo</option><option>Inactivo</option></select></div>
+        <div class="form-group"><label>RFC</label><input type="text"></div>
+        <div class="form-group"><label>Dirección</label><textarea style="width:100%;height:70px;border:2px solid #ccc;border-radius:6px;"></textarea></div>
+        <h3 class="section-title">Contactos</h3>
+        <div class="form-group"><label>Operaciones</label><input type="text"><input type="email"><input type="tel"></div>
+        <div class="form-group"><label>Administración</label><input type="text"><input type="email"><input type="tel"></div>
+        <div class="form-group"><label>Comercial</label><input type="text"><input type="email"><input type="tel"></div>
+      </div>
+
+      <div id="tab-docs" class="sub-content">
+        <h3 class="section-title">Documentación</h3>
+        <div class="doc-table-wrapper">
+          <table class="doc-table">
+            <thead>
+              <tr><th>Comprobante</th><th>Estatus</th><th>Documento</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="icon-btn folder" data-row="1">📁</span><span class="icon-btn view" data-row="1">🔍</span><input type="file" id="file1"/></td>
+                <td id="status1" class="status-no">❌ No</td><td>Acta Constitutiva</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="2">📁</span><span class="icon-btn view" data-row="2">🔍</span><input type="file" id="file2"/></td>
+                <td id="status2" class="status-no">❌ No</td><td>Poder Rep. Legal</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="3">📁</span><span class="icon-btn view" data-row="3">🔍</span><input type="file" id="file3"/></td>
+                <td id="status3" class="status-no">❌ No</td><td>Comprobante de Domicilio</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="4">📁</span><span class="icon-btn view" data-row="4">🔍</span><input type="file" id="file4"/></td>
+                <td id="status4" class="status-no">❌ No</td><td>Constancia de Situación Fiscal</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="5">📁</span><span class="icon-btn view" data-row="5">🔍</span><input type="file" id="file5"/></td>
+                <td id="status5" class="status-no">❌ No</td><td>INE Rep. Legal</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="6">📁</span><span class="icon-btn view" data-row="6">🔍</span><input type="file" id="file6"/></td>
+                <td id="status6" class="status-no">❌ No</td><td>Contrato</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-tarifas" class="sub-content">
+        <h3 class="section-title">Tarifas</h3>
+        <button class="add-route">+ Agregar Ruta/Tarifa</button>
+        <div class="doc-table-wrapper" style="max-height:250px; overflow-y:auto;">
+          <table class="doc-table" id="tablaTarifas">
+            <thead>
+              <tr>
+                <th>Origen - Destino</th>
+                <th>Tipo de Unidad</th>
+                <th>Tarifa</th>
+                <th>Días de Crédito</th>
+                <th>Km a recorrer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Filas generadas dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Modal -->
+        <div id="tarifaModal" class="modal hidden">
+          <div class="modal-content">
+            <span class="close" title="Cerrar">&times;</span>
+            <h3>Agregar Nueva Ruta/Tarifa</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="estadoOrigen">Estado de Origen*</label>
+                <select id="estadoOrigen" name="estadoOrigen" required>
+                  <option value="">Seleccione un estado...</option>
+                  <option value="Aguascalientes">Aguascalientes</option>
+                  <option value="Baja California">Baja California</option>
+                  <option value="Baja California Sur">Baja California Sur</option>
+                  <option value="Campeche">Campeche</option>
+                  <option value="Coahuila">Coahuila</option>
+                  <option value="Colima">Colima</option>
+                  <option value="Chiapas">Chiapas</option>
+                  <option value="Chihuahua">Chihuahua</option>
+                  <option value="Ciudad de México">Ciudad de México</option>
+                  <option value="Durango">Durango</option>
+                  <option value="Guanajuato">Guanajuato</option>
+                  <option value="Guerrero">Guerrero</option>
+                  <option value="Hidalgo">Hidalgo</option>
+                  <option value="Jalisco">Jalisco</option>
+                  <option value="Estado de México">Estado de México</option>
+                  <option value="Michoacán">Michoacán</option>
+                  <option value="Morelos">Morelos</option>
+                  <option value="Nayarit">Nayarit</option>
+                  <option value="Nuevo León">Nuevo León</option>
+                  <option value="Oaxaca">Oaxaca</option>
+                  <option value="Puebla">Puebla</option>
+                  <option value="Querétaro">Querétaro</option>
+                  <option value="Quintana Roo">Quintana Roo</option>
+                  <option value="San Luis Potosí">San Luis Potosí</option>
+                  <option value="Sinaloa">Sinaloa</option>
+                  <option value="Sonora">Sonora</option>
+                  <option value="Tabasco">Tabasco</option>
+                  <option value="Tamaulipas">Tamaulipas</option>
+                  <option value="Tlaxcala">Tlaxcala</option>
+                  <option value="Veracruz">Veracruz</option>
+                  <option value="Yucatán">Yucatán</option>
+                  <option value="Zacatecas">Zacatecas</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="municipioOrigen">Municipio de Origen</label>
+                <input type="text" id="municipioOrigen" placeholder="Opcional">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="estadoDestino">Estado de Destino*</label>
+                <select id="estadoDestino" name="estadoDestino" required>
+                  <option value="">Seleccione un estado...</option>
+                  <option value="Aguascalientes">Aguascalientes</option>
+                  <option value="Baja California">Baja California</option>
+                  <option value="Baja California Sur">Baja California Sur</option>
+                  <option value="Campeche">Campeche</option>
+                  <option value="Coahuila">Coahuila</option>
+                  <option value="Colima">Colima</option>
+                  <option value="Chiapas">Chiapas</option>
+                  <option value="Chihuahua">Chihuahua</option>
+                  <option value="Ciudad de México">Ciudad de México</option>
+                  <option value="Durango">Durango</option>
+                  <option value="Guanajuato">Guanajuato</option>
+                  <option value="Guerrero">Guerrero</option>
+                  <option value="Hidalgo">Hidalgo</option>
+                  <option value="Jalisco">Jalisco</option>
+                  <option value="Estado de México">Estado de México</option>
+                  <option value="Michoacán">Michoacán</option>
+                  <option value="Morelos">Morelos</option>
+                  <option value="Nayarit">Nayarit</option>
+                  <option value="Nuevo León">Nuevo León</option>
+                  <option value="Oaxaca">Oaxaca</option>
+                  <option value="Puebla">Puebla</option>
+                  <option value="Querétaro">Querétaro</option>
+                  <option value="Quintana Roo">Quintana Roo</option>
+                  <option value="San Luis Potosí">San Luis Potosí</option>
+                  <option value="Sinaloa">Sinaloa</option>
+                  <option value="Sonora">Sonora</option>
+                  <option value="Tabasco">Tabasco</option>
+                  <option value="Tamaulipas">Tamaulipas</option>
+                  <option value="Tlaxcala">Tlaxcala</option>
+                  <option value="Veracruz">Veracruz</option>
+                  <option value="Yucatán">Yucatán</option>
+                  <option value="Zacatecas">Zacatecas</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="municipioDestino">Municipio de Destino</label>
+                <input type="text" id="municipioDestino" placeholder="Opcional">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group form-group-full">
+                <label for="tipoUnidad">Tipo de unidad*</label>
+                <select id="tipoUnidad" required>
+                  <option value="">Seleccione...</option>
+                  <option value="Unidad seca de 53">Unidad seca de 53"</option>
+                  <option value="Refrigerada de 53">Refrigerada de 53"</option>
+                  <option value="Thorton">Thorton</option>
+                  <option value="3.5">3.5</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="diasCredito">Días de Crédito</label>
+                <input type="number" id="diasCredito" min="0" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label for="kmRecorrer">Km a recorrer</label>
+                <input type="number" id="kmRecorrer" min="0" placeholder="0">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="tarifa">Tarifa*</label>
+                <input type="number" id="tarifa" min="0" step="0.01" required placeholder="0.00">
+              </div>
+            </div>
+
+            <div class="modal-buttons">
+              <button type="button" class="btn-cancelar">Cancelar</button>
+              <button type="button" class="btn-guardar">Guardar</button>
+            </div>
+          </div>
+        </div>
+        <!-- /Modal -->
+      </div>
+
+      <div id="tab-comentario" class="sub-content">
+        <h3 class="section-title">Comentarios</h3>
+        <div class="form-group"><label>Comentario</label><textarea style="width:100%;height:120px;border:2px solid #ccc;border-radius:6px;"></textarea></div>
+      </div>
+
+      <div class="button-row"><button id="exitClient">Salir</button></div>
+    </div>
+  </div>
+
+  <script>
+    const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
+    function showSection(id) {
+      document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      /* Login */
+      const last = localStorage.getItem('sr_last_user');
+      if (last) document.getElementById('usuario').value = last;
+      document.getElementById('btnGuardar').onclick = () => {
+        localStorage.setItem('sr_last_user', document.getElementById('usuario').value);
+        alert('Usuario guardado');
+      };
+      document.getElementById('btnEntrar').onclick = () => {
+        const u = document.getElementById('usuario').value;
+        const p = document.getElementById('password').value;
+        if (usuarios.find(x => x.usuario === u && x.password === p)) showSection('dashboard');
+        else alert('Usuario o contraseña incorrectos');
+      };
+
+      /* Navegación */
+      document.getElementById('modClientes').onclick = () => showSection('clientsModule');
+      document.querySelectorAll('.sub-tab').forEach(tab => {
+        tab.onclick = () => {
+          document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById(tab.dataset.content).classList.add('active');
+        };
+      });
+      document.getElementById('exitClient').onclick = () => showSection('dashboard');
+
+      /* Documentación */
+      document.querySelectorAll('.folder').forEach(btn => {
+        btn.onclick = () => {
+          const row = btn.dataset.row;
+          const inp = document.getElementById('file' + row);
+          inp.click();
+          inp.onchange = () => {
+            const st = document.getElementById('status' + row);
+            st.textContent = '✅ Sí';
+            st.classList.remove('status-no');
+            st.classList.add('status-yes');
+          };
+        };
+      });
+      document.querySelectorAll('.view').forEach(btn => {
+        btn.onclick = () => {
+          const row = btn.dataset.row;
+          const inp = document.getElementById('file' + row);
+          if (inp.files.length) {
+            const url = URL.createObjectURL(inp.files[0]);
+            window.open(url);
+          } else {
+            alert('No hay archivo cargado aún');
+          }
+        };
+      });
+
+      /* --- Tarifas / Modal --- */
+      const modal = document.getElementById('tarifaModal');
+      const tablaTarifas = document.querySelector('#tablaTarifas tbody');
+
+      function mostrarModal() {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+      }
+      function ocultarModal() {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
+      function activarTabTarifas() {
+        document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+        document.querySelector('.sub-tab[data-content="tab-tarifas"]').classList.add('active');
+        document.getElementById('tab-tarifas').classList.add('active');
+      }
+      function limpiarFormulario() {
+        document.getElementById('estadoOrigen').value = '';
+        document.getElementById('municipioOrigen').value = '';
+        document.getElementById('estadoDestino').value = '';
+        document.getElementById('municipioDestino').value = '';
+        document.getElementById('tipoUnidad').selectedIndex = 0;
+        document.getElementById('diasCredito').value = '';
+        document.getElementById('kmRecorrer').value = '';
+        document.getElementById('tarifa').value = '';
+      }
+      function guardarTarifa() {
+        const datos = {
+          estadoOrigen: document.getElementById('estadoOrigen').value.trim(),
+          municipioOrigen: document.getElementById('municipioOrigen').value.trim(),
+          estadoDestino: document.getElementById('estadoDestino').value.trim(),
+          municipioDestino: document.getElementById('municipioDestino').value.trim(),
+          tipoUnidad: document.getElementById('tipoUnidad').value,
+          diasCredito: document.getElementById('diasCredito').value,
+          kmRecorrer: document.getElementById('kmRecorrer').value,
+          tarifa: document.getElementById('tarifa').value
+        };
+
+        if (!datos.estadoOrigen || !datos.estadoDestino || !datos.tipoUnidad || !datos.tarifa) {
+          alert('Por favor complete todos los campos obligatorios (*)');
+          return;
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${datos.estadoOrigen} - ${datos.estadoDestino}</td>
+          <td>${datos.tipoUnidad}</td>
+          <td>${Number(datos.tarifa).toLocaleString('es-MX', {style:'currency', currency:'MXN'})}</td>
+          <td>${datos.diasCredito || 0}</td>
+          <td>${datos.kmRecorrer || 0}</td>
+        `;
+        tablaTarifas.appendChild(tr);
+
+        ocultarModal();
+        limpiarFormulario();
+        activarTabTarifas();
+      }
+
+      const agregarBtn = document.querySelector('.add-route');
+      if (agregarBtn) agregarBtn.addEventListener('click', mostrarModal);
+
+      document.querySelector('#tarifaModal .close').addEventListener('click', () => { ocultarModal(); activarTabTarifas(); });
+      document.querySelector('#tarifaModal .btn-cancelar').addEventListener('click', () => { ocultarModal(); activarTabTarifas(); });
+      document.querySelector('#tarifaModal .btn-guardar').addEventListener('click', guardarTarifa);
+
+      window.addEventListener('click', (e) => { if (e.target === modal) ocultarModal(); });
+    });
+  </script>
+</body>
+</html>
