@@ -429,7 +429,10 @@
         <div class="form-group"><label>Comentario</label><textarea style="width:100%;height:120px;border:2px solid #ccc;border-radius:6px;"></textarea></div>
       </div>
 
-      <div class="button-row"><button id="exitClient">Salir</button></div>
+      <div class="button-row">
+  <button id="saveClient">Guardar</button>
+  <button id="exitClient">Salir</button>
+</div>
     </div>
   </div>
 
@@ -631,6 +634,11 @@ document.getElementById('btnVerClientes')?.addEventListener('click', () => {
         } catch {
           alert('No fue posible cargar los datos de la fila para edición.');
         }
+        // Boton guardar en el menu de pestañas nuevo cliente
+        document.getElementById('saveClient').addEventListener('click', () => {
+  alert('Datos del cliente guardados correctamente.');
+  // Aquí podrías añadir la lógica para guardar realmente los datos
+});
       });
     });
   </script>
