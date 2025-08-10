@@ -134,6 +134,23 @@
       gap: 10px;
       margin-top: 20px;
     }
+     /* --- Selector inicial de Clientes --- */
+.clients-home{
+  margin:0 auto 12px; width:100%; max-width:860px;
+  background:#e9e9ec; border-radius:12px; padding:28px 24px;
+  outline:3px solid #7c3aed; /* morado */
+}
+.home-grid{display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:center; justify-items:center;}
+.choice-card{
+  width:100%; min-height:220px; background:#efefef; border:2px solid #000; border-radius:12px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+  cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; user-select:none;
+}
+.choice-card:hover{ transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.15);}
+.choice-card svg{ width:96px; height:96px;}
+.choice-label{ font-weight:700; letter-spacing:.03em;}
+@media (max-width:780px){ .home-grid{grid-template-columns:1fr;} }
+    
   </style>
 </head>
 <body>
@@ -166,7 +183,33 @@
 
   <!-- clientsModule -->
   <div id="clientsModule" class="frame hidden">
-    <div class="clients-menu">
+    <!-- Selector inicial -->
+<div id="clientsHome" class="clients-home">
+  <div class="home-grid">
+    <!-- Nuevo Cliente -->
+    <div id="btnNuevoCliente" class="choice-card" role="button" tabindex="0" aria-label="Nuevo cliente">
+      <!-- icono apretón de manos -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 12l3 3a2 2 0 1 1-3 3l-2-2-1 1a2 2 0 1 1-3-3l1-1-1-1a2 2 0 0 1 3-3l1 1 1-1a2 2 0 1 1 3 3l-2 2z"/>
+        <path d="M18 8l3-3M6 8 3 5"/>
+      </svg>
+      <div class="choice-label">NUEVO CLIENTE</div>
+    </div>
+
+    <!-- Clientes -->
+    <div id="btnVerClientes" class="choice-card" role="button" tabindex="0" aria-label="Clientes">
+      <!-- icono grupo de personas -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="3"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a3 3 0 0 1 0 5.75"/>
+      </svg>
+      <div class="choice-label">CLIENTES</div>
+    </div>
+  </div>
+</div>
+
+    <div id="clientsMenu"class="clients-menu hidden">
       <div class="sub-tabs">
         <div class="sub-tab active" data-content="tab-datos">Datos Generales</div>
         <div class="sub-tab" data-content="tab-docs">Documentación</div>
@@ -413,7 +456,22 @@
       };
 
       /* Navegación */
-      document.getElementById('modClientes').onclick = () => showSection('clientsModule');
+      document.getElementById('modClientes').onclick = () => {
+  showSection('clientsModule');
+  document.getElementById('clientsHome').classList.remove('hidden');
+  document.getElementById('clientsMenu').classList.add('hidden');
+};
+document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
+  document.getElementById('clientsHome').classList.add('hidden');
+  document.getElementById('clientsMenu').classList.remove('hidden');
+  // activa "Datos"
+  document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
+});
+
+// (Opcional) acción temporal para "Clientes"
+document.getElementById('btnVerClientes')?.addEventListener('click', () => {
+  alert('Vista de clientes (pendiente de integrar).');
+});
       document.querySelectorAll('.sub-tab').forEach(tab => {
         tab.onclick = () => {
           document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
