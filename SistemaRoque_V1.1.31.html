@@ -83,10 +83,11 @@
   gap: 18px;
   cursor: pointer;
   transition: transform .12s ease, box-shadow .12s ease;
-}
-.choice-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.15); }
-.choice-card svg { width: 96px; height: 96px; }
-.choice-label { font-weight: 700; letter-spacing: .03em; }
+  }
+  .choice-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.15); }
+  .choice-card svg { width: 96px; height: 96px; }
+  .choice-label { font-weight: 700; letter-spacing: .03em; 
+  }
     /* Sub-tabs */
     .sub-tabs { display:flex; border-bottom:2px solid var(--tab-border); margin-bottom:16px; }
     .sub-tab {
@@ -196,6 +197,63 @@
       <div class="module" id="modDocs"><div class="module-icon">📄</div><div class="module-label">Documentación</div></div>
     </div>
   </div>
+
+  <div id="clientsModule" class="frame hidden">
+
+  <!-- Selector inicial -->
+  <div id="clientsHome" class="clients-home">
+    <div class="home-grid">
+      <!-- Nuevo Cliente -->
+      <div id="btnNuevoCliente" class="choice-card" role="button" tabindex="0" aria-label="Nuevo cliente">
+        <!-- icono apretón de manos -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 12l3 3a2 2 0 1 1-3 3l-2-2-1 1a2 2 0 1 1-3-3l1-1-1-1a2 2 0 0 1 3-3l1 1 1-1a2 2 0 1 1 3 3l-2 2z"/>
+          <path d="M18 8l3-3M6 8 3 5"/>
+        </svg>
+        <div class="choice-label">NUEVO CLIENTE</div>
+      </div>
+
+      <!-- Clientes -->
+      <div id="btnVerClientes" class="choice-card" role="button" tabindex="0" aria-label="Clientes">
+        <!-- icono grupo de personas -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="3"/>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a3 3 0 0 1 0 5.75"/>
+        </svg>
+        <div class="choice-label">CLIENTES</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tu contenedor existente de pestañas (empieza oculto) -->
+  <div id="clientsMenu" class="clients-menu hidden">
+    <!-- (deja aquí exactamente tus sub-tabs y contenidos: Datos, Documentación, Tarifas, Comentarios, etc.) -->
+  </div>
+
+  <!-- Lista sencilla de clientes (opcional) -->
+  <div id="clientsList" class="frame hidden" style="border:none;padding:0;background:transparent;">
+    <div class="clients-menu">
+      <h3 class="section-title">Clientes Registrados</h3>
+      <div class="doc-table-wrapper" style="max-height:260px;overflow:auto;">
+        <table class="doc-table" id="tablaClientes">
+          <thead>
+            <tr><th>Nombre/Razón Social</th><th>RFC</th><th>Estatus</th><th>Acciones</th></tr>
+          </thead>
+          <tbody>
+            <!-- Ejemplos -->
+            <tr><td>Ejemplo S.A. de C.V.</td><td>EJE010203ABC</td><td>Activo</td><td><button class="ver-detalle">Ver</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="button-row">
+        <button id="volverHomeClientes">Volver</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 
   <!-- clientsModule -->
   <div id="clientsModule" class="frame hidden">
@@ -444,6 +502,45 @@
         if (usuarios.find(x => x.usuario === u && x.password === p)) showSection('dashboard');
         else alert('Usuario o contraseña incorrectos');
       };
+
+      /* --- Selector inicial de Clientes --- */
+const clientsHome  = document.getElementById('clientsHome');
+const clientsMenu  = document.getElementById('clientsMenu');   // el de las sub-pestañas
+const clientsList  = document.getElementById('clientsList');
+
+function mostrar(selector) {
+  // oculta todo dentro de clientsModule y muestra solo lo pedido
+  [clientsHome, clientsMenu, clientsList].forEach(el => el && el.classList.add('hidden'));
+  if (selector) selector.classList.remove('hidden');
+}
+// Al entrar al módulo Clientes, muestra primero el selector
+document.getElementById('modClientes').addEventListener('click', () => {
+  showSection('clientsModule');
+  mostrar(clientsHome);
+});
+
+// Botones del selector
+document.getElementById('btnNuevoCliente').addEventListener('click', () => {
+  // abre el formulario (sub-pestañas) con "Datos Generales" activa
+  mostrar(clientsMenu);
+  const tab = document.querySelector('.sub-tab[data-content="tab-datos"]');
+  if (tab) tab.click();
+});
+document.getElementById('btnVerClientes').addEventListener('click', () => {
+  mostrar(clientsList);
+});
+
+// Volver desde la lista
+const volverHomeBtn = document.getElementById('volverHomeClientes');
+if (volverHomeBtn) volverHomeBtn.addEventListener('click', () => mostrar(clientsHome));
+
+// Acceso rápido desde la tabla de clientes a la ficha (abre sub-pestañas)
+document.getElementById('tablaClientes')?.addEventListener('click', (e) => {
+  if (!e.target.closest('.ver-detalle')) return;
+  mostrar(clientsMenu);
+  document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
+});
+
 
       /* Navegación */
       document.getElementById('modClientes').onclick = () => showSection('clientsModule');
