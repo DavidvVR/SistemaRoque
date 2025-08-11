@@ -555,6 +555,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+     
       /* Login */
       // --- NAVEGACIÓN (Dashboard → Módulo Clientes)
 document.getElementById('modClientes').onclick = () => {
@@ -700,25 +701,63 @@ document.querySelectorAll('.sub-tab').forEach(tab => {
   tab.addEventListener('click', updateSaveButtonVisibility);
 });
 
-// Lógica del modal de cliente
+// --- Guardar cliente y mostrar confirmación ---
 const clienteModal = document.getElementById('clienteModal');
 const clienteModalClose = clienteModal.querySelector('.close');
+const clienteModalBtnCerrar = clienteModal.querySelector('.btn-cerrar');
+
+// Función para generar siguiente ID consecutivo
+function generarSiguienteId(arr) {
+  const prefijo = 'LTR-CL-';
+  const maxNum = arr.reduce((max, c) => {
+    const m = (c.id || '').match(/^LTR-CL-(\d+)$/);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return n > max ? n : max;
+  }, 0);
+  return `${prefijo}${String(maxNum + 1).padStart(2, '0')}`;
+}
 
 saveBtn.addEventListener('click', () => {
-   const datosInputs = document.querySelectorAll('#tab-datos input[type="text"]');
-  const nombre = datosInputs[0]?.value.trim() || '';
-  const rfc = datosInputs[1]?.value.trim() || '';
-  const estatus = document.querySelector('#tab-datos select')?.value || 'Activo';
+  const nombre = (document.getElementById('inpNombre')?.value || '').trim();
+  const rfc = (document.getElementById('inpRFC')?.value || '').trim();
+  const estatus = document.getElementById('selEstatus')?.value || 'Activo';
+  const domicilio = (document.getElementById('txtDireccion')?.value || '').trim();
+
+  // Validación básica
+  if (!nombre || !rfc) {
+    alert('Por favor llena al menos Nombre/Razón Social y RFC.');
+    return;
+  }
+
   const arr = getClientes();
-   const nextIdNumber = arr.reduce((max, c) => {
-    const match = c.id?.match(/LTR-CL-(\d+)/);
-    return match ? Math.max(max, parseInt(match[1], 10)) : max;
-  }, 0) + 1;
-  const id = `LTR-CL-${String(nextIdNumber).padStart(2, '0')}`;
-  arr.push({ id, nombre, rfc, estatus });
+  const id = generarSiguienteId(arr);
+
+  arr.push({ id, nombre, rfc, estatus, domicilio });
   setClientes(arr);
+
+  // 🔄 Actualizar tabla en vista "Clientes registrados"
+  renderTablaClientes();
+
+  // Llenar modal de confirmación
+  document.getElementById('idClienteTexto').textContent = id;
+  document.getElementById('nombreCliente').textContent = nombre;
+  document.getElementById('rfcCliente').textContent = rfc;
+  document.getElementById('domicilioCliente').textContent = domicilio;
+
+  // Mostrar modal
   clienteModal.classList.remove('hidden');
   clienteModal.style.display = 'flex';
+});
+
+// Cerrar modal de confirmación
+function cerrarClienteModal() {
+  clienteModal.classList.add('hidden');
+  clienteModal.style.display = 'none';
+}
+clienteModalClose.addEventListener('click', cerrarClienteModal);
+clienteModalBtnCerrar.addEventListener('click', cerrarClienteModal);
+window.addEventListener('click', (e) => {
+  if (e.target === clienteModal) cerrarClienteModal();
 });
 
 clienteModalClose.addEventListener('click', () => {
