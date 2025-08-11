@@ -480,6 +480,7 @@
     <table class="doc-table" id="tablaClientes">
       <thead>
         <tr>
+          th>ID Cliente</th>
           <th>Nombre/Razón Social</th>
           <th>RFC</th>
           <th>Estatus</th>
@@ -533,16 +534,17 @@ function renderTablaClientes(filtro=''){
   const data = getClientes();
   const q = (filtro||'').toLowerCase();
   const fil = data.filter(c =>
-    (!q) || (c.nombre?.toLowerCase().includes(q) || c.rfc?.toLowerCase().includes(q))
+    (!q) || (c.nombre?.toLowerCase().includes(q) || c.rfc?.toLowerCase().includes(q) || c.id?.toLowerCase().includes(q))
   );
   tbody.innerHTML = fil.map(c => `
     <tr>
+      td>${c.id || ''}</td>
       <td>${c.nombre || ''}</td>
       <td>${c.rfc || ''}</td>
       <td>${c.estatus || 'Activo'}</td>
       <td><button class="btn btnVer">Ver</button></td>
     </tr>
-  `).join('') || `<tr><td colspan="4">Sin registros</td></tr>`;
+  `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
 }
 // Limpiar formularios del apartado "Nuevo Cliente"
 function limpiarFormularioCliente(){
@@ -635,12 +637,17 @@ const clienteModal = document.getElementById('clienteModal');
 const clienteModalClose = clienteModal.querySelector('.close');
 
 saveBtn.addEventListener('click', () => {
-    const datosInputs = document.querySelectorAll('#tab-datos input[type="text"]');
+   const datosInputs = document.querySelectorAll('#tab-datos input[type="text"]');
   const nombre = datosInputs[0]?.value.trim() || '';
   const rfc = datosInputs[1]?.value.trim() || '';
   const estatus = document.querySelector('#tab-datos select')?.value || 'Activo';
   const arr = getClientes();
-  arr.push({ nombre, rfc, estatus });
+   const nextIdNumber = arr.reduce((max, c) => {
+    const match = c.id?.match(/LTR-CL-(\d+)/);
+    return match ? Math.max(max, parseInt(match[1], 10)) : max;
+  }, 0) + 1;
+  const id = `LTR-CL-${String(nextIdNumber).padStart(2, '0')}`;
+  arr.push({ id, nombre, rfc, estatus });
   setClientes(arr);
   clienteModal.classList.remove('hidden');
   clienteModal.style.display = 'flex';
