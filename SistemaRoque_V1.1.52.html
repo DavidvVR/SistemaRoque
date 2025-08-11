@@ -73,6 +73,7 @@
     table.doc-table th, table.doc-table td { border:1px solid var(--input-border); padding:8px; text-align:center; }
     table.doc-table th { background:#eee; }
     .icon-btn { cursor:pointer; margin: 0 4px; font-size:1.2rem; }
+    .btnDelete { color: #d00; }
     .status-no { color: red; font-weight:bold; }
     .status-yes { color: green; font-weight:bold; }
     input[type="file"] { display: none; }
@@ -170,6 +171,17 @@
   <div class="modal-content" style="text-align:center; padding: 40px;">
     <span class="close" title="Cerrar">&times;</span>
     <h2>¡Felicidades, agregaste un nuevo cliente!</h2>
+  </div>
+  </div>
+<!-- Modal de confirmación de eliminación -->
+<div id="confirmDeleteModal" class="modal hidden">
+  <div class="modal-content" style="text-align:center; padding: 40px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <p>¿Desea eliminar este cliente?</p>
+    <div class="modal-buttons" style="justify-content:center;">
+      <button id="deleteConfirmYes" class="btn primary">Sí</button>
+      <button id="deleteConfirmNo" class="btn">No</button>
+    </div>
   </div>
 </div>
   <body>
@@ -538,14 +550,54 @@ function renderTablaClientes(filtro=''){
   );
   tbody.innerHTML = fil.map(c => `
     <tr>
-      td>${c.id || ''}</td>
+  td>${c.id || ''}</td>
       <td>${c.nombre || ''}</td>
       <td>${c.rfc || ''}</td>
       <td>${c.estatus || 'Activo'}</td>
-      <td><button class="btn btnVer">Ver</button></td>
+     <td>
+        <button class="btn btnVer">Ver</button>
+        <span class="icon-btn btnDelete" title="Eliminar" data-id="${c.id}">🗑️</span>
+      </td>
     </tr>
   `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
+   tbody.querySelectorAll('.btnDelete').forEach(btn => {
+    btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
+  });
 }
+
+const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+const btnDeleteYes = document.getElementById('deleteConfirmYes');
+const btnDeleteNo = document.getElementById('deleteConfirmNo');
+let deleteTargetId = null;
+
+function openDeleteModal(id){
+  deleteTargetId = id;
+  confirmDeleteModal.classList.remove('hidden');
+  confirmDeleteModal.style.display = 'flex';
+  
+}
+      function closeDeleteModal(){
+  confirmDeleteModal.classList.add('hidden');
+  confirmDeleteModal.style.display = 'none';
+  deleteTargetId = null;
+}
+
+btnDeleteYes?.addEventListener('click', () => {
+  if(deleteTargetId){
+    const arr = getClientes().filter(c => c.id !== deleteTargetId);
+    setClientes(arr);
+    renderTablaClientes(document.getElementById('searchCli')?.value || '');
+  }
+  closeDeleteModal();
+});
+
+[btnDeleteNo, confirmDeleteModal.querySelector('.close')].forEach(btn =>
+  btn?.addEventListener('click', closeDeleteModal)
+);
+
+window.addEventListener('click', e => {
+  if(e.target === confirmDeleteModal) closeDeleteModal();
+});
 // Limpiar formularios del apartado "Nuevo Cliente"
 function limpiarFormularioCliente(){
   if(!clientsMenu) return;
