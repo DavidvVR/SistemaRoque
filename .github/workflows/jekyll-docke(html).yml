@@ -1,0 +1,41 @@
+name: Deploy static site to Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # (Opcional) Node para linters/builds
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps
+        if: hashFiles('package-lock.json') != ''
+        run: npm ci
+
+      - name: Build
+        run: npm run build --if-present
+
+      # Publica todo el repo o una carpeta /dist si generas build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+
+        
