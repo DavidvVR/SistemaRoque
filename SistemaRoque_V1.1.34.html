@@ -150,7 +150,18 @@
 .choice-card svg{ width:96px; height:96px;}
 .choice-label{ font-weight:700; letter-spacing:.03em;}
 @media (max-width:780px){ .home-grid{grid-template-columns:1fr;} }
-    
+
+  /* --- Lista de clientes (nueva ventana) --- */
+.clients-list .list-toolbar{
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:12px;
+}
+.clients-list .list-actions{ display:flex; gap:8px; }
+.clients-list .search{ display:flex; gap:8px; align-items:center; }
+.clients-list .search input{
+  padding:8px; border:2px solid var(--input-border); border-radius:8px; min-width:220px;
+}
+.btn { padding:8px 16px; border:2px solid var(--frame-border); background:#e5e5e5; border-radius:8px; cursor:pointer; }
+.btn.primary { background:#efe9ff; border-color:#7c3aed; }  
   </style>
 </head>
 <body>
@@ -434,6 +445,35 @@
   <button id="exitClient">Salir</button>
 </div>
     </div>
+    <!-- NUEVA VENTANA: Lista de Clientes -->
+<div id="clientsList" class="clients-menu clients-list hidden" aria-label="Lista de clientes">
+  <div class="list-toolbar">
+    <div><h3>Clientes registrados</h3></div>
+    <div class="search">
+      <label for="searchCli">Buscar:</label>
+      <input id="searchCli" type="text" placeholder="Nombre, RFC…">
+    </div>
+    <div class="list-actions">
+      <button id="btnNuevoDesdeLista" class="btn primary">+ Nuevo Cliente</button>
+      <button id="btnVolverHome" class="btn">Volver</button>
+    </div>
+  </div>
+
+  <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
+    <table class="doc-table" id="tablaClientes">
+      <thead>
+        <tr>
+          <th>Nombre/Razón Social</th>
+          <th>RFC</th>
+          <th>Estatus</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody><!-- filas dinámicas --></tbody>
+    </table>
+  </div>
+</div>
+
   </div>
 
   <script>
@@ -467,13 +507,64 @@
 document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
   document.getElementById('clientsHome').classList.add('hidden');
   document.getElementById('clientsMenu').classList.remove('hidden');
-  // activa "Datos"
+  
+// "BD" local simple de clientes
+const srStoreKey = 'sr_clientes';
+function getClientes(){ try { return JSON.parse(localStorage.getItem(srStoreKey)) || []; } catch { return []; } }
+function setClientes(arr){ localStorage.setItem(srStoreKey, JSON.stringify(arr)); }
+
+// Cambiar vistas dentro del módulo de clientes
+function showInClientsModule(el){
+  const home  = document.getElementById('clientsHome');
+  const menu  = document.getElementById('clientsMenu');
+  const list  = document.getElementById('clientsList');
+  [home,menu,list].forEach(x => x && x.classList.add('hidden'));
+  el && el.classList.remove('hidden');
+}
+
+// Pintar tabla de clientes
+function renderTablaClientes(filtro=''){
+  const tbody = document.querySelector('#tablaClientes tbody');
+  if(!tbody) return;
+  const data = getClientes();
+  const q = (filtro||'').toLowerCase();
+  const fil = data.filter(c =>
+    (!q) || (c.nombre?.toLowerCase().includes(q) || c.rfc?.toLowerCase().includes(q))
+  );
+  tbody.innerHTML = fil.map(c => `
+    <tr>
+      <td>${c.nombre || ''}</td>
+      <td>${c.rfc || ''}</td>
+      <td>${c.estatus || 'Activo'}</td>
+      <td>
+        <button class="btn btnVer">Ver</button>
+      </td>
+    </tr>
+  `).join('') || `<tr><td colspan="4">Sin registros</td></tr>`;
+}
+// activa "Datos"
   document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
 });
 
 // (Opcional) acción temporal para "Clientes"
 document.getElementById('btnVerClientes')?.addEventListener('click', () => {
-  alert('Vista de clientes (pendiente de integrar).');
+  showInClientsModule(document.getElementById('clientsList'));
+  renderTablaClientes();
+
+  // Botones de la ventana "Clientes"
+document.getElementById('btnVolverHome')?.addEventListener('click', () => {
+  showInClientsModule(document.getElementById('clientsHome'));
+});
+
+document.getElementById('btnNuevoDesdeLista')?.addEventListener('click', () => {
+  showInClientsModule(document.getElementById('clientsMenu'));
+  document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
+});
+
+// Búsqueda en la lista
+document.getElementById('searchCli')?.addEventListener('input', (e) => {
+  renderTablaClientes(e.target.value);
+});
 });
       document.querySelectorAll('.sub-tab').forEach(tab => {
         tab.onclick = () => {
