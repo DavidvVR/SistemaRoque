@@ -166,6 +166,7 @@
     
   </style>
 </head>
+
   <!-- Modal de confirmación de cliente -->
 <div id="clienteModal" class="modal hidden">
   <div class="modal-content" style="text-align:center; padding: 40px;">
@@ -173,7 +174,7 @@
     <h2>¡Felicidades, agregaste un nuevo cliente!</h2>
   </div>
   </div>
-<!-- Modal de confirmación de eliminación -->
+  <!-- Modal de confirmación de eliminación -->
 <div id="confirmDeleteModal" class="modal hidden">
   <div class="modal-content" style="text-align:center; padding: 40px;">
     <span class="close" title="Cerrar">&times;</span>
@@ -492,7 +493,7 @@
     <table class="doc-table" id="tablaClientes">
       <thead>
         <tr>
-          th>ID Cliente</th>
+          <th>ID Cliente</th>
           <th>Nombre/Razón Social</th>
           <th>RFC</th>
           <th>Estatus</th>
@@ -550,12 +551,15 @@ function renderTablaClientes(filtro=''){
   );
   tbody.innerHTML = fil.map(c => `
     <tr>
-  td>${c.id || ''}</td>
+      <td>${c.id || ''}</td>
       <td>${c.nombre || ''}</td>
       <td>${c.rfc || ''}</td>
       <td>${c.estatus || 'Activo'}</td>
      <td>
+       <td>
         <button class="btn btnVer">Ver</button>
+        <span class="icon-btn btnDelete" title="Eliminar" data-id="${c.id}">🗑️</span>
+      </td>
         <span class="icon-btn btnDelete" title="Eliminar" data-id="${c.id}">🗑️</span>
       </td>
     </tr>
@@ -576,7 +580,8 @@ function openDeleteModal(id){
   confirmDeleteModal.style.display = 'flex';
   
 }
-      function closeDeleteModal(){
+      
+    function closeDeleteModal(){
   confirmDeleteModal.classList.add('hidden');
   confirmDeleteModal.style.display = 'none';
   deleteTargetId = null;
@@ -584,7 +589,7 @@ function openDeleteModal(id){
 
 btnDeleteYes?.addEventListener('click', () => {
   if(deleteTargetId){
-    const arr = getClientes().filter(c => c.id !== deleteTargetId);
+    const arr = getClientes().filter(c => String(c.id) !== String(deleteTargetId));
     setClientes(arr);
     renderTablaClientes(document.getElementById('searchCli')?.value || '');
   }
