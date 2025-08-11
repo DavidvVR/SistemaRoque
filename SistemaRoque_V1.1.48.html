@@ -162,6 +162,17 @@
 }
 .btn { padding:8px 16px; border:2px solid var(--frame-border); background:#e5e5e5; border-radius:8px; cursor:pointer; }
 .btn.primary { background:#efe9ff; border-color:#7c3aed; }  
+
+    <!-- Modal de confirmación de cliente -->
+<div id="clienteModal" class="modal hidden">
+  <div class="modal-content" style="text-align:center; padding: 40px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <h2>¡Felicidades, agregaste un nuevo cliente!</h2>
+  </div>
+</div>
+
+
+    
   </style>
 </head>
 <body>
@@ -578,6 +589,42 @@ document.getElementById('searchCli')?.addEventListener('input', (e) => {
         };
       });
       document.getElementById('exitClient').onclick = () => showSection('dashboard');
+// Mostrar/ocultar botón Guardar según la pestaña activa
+const saveBtn = document.getElementById('saveClient');
+function updateSaveButtonVisibility() {
+  const activeTab = document.querySelector('.sub-tab.active');
+  if (activeTab && activeTab.dataset.content === 'tab-comentario') {
+    saveBtn.style.display = 'inline-block';
+  } else {
+    saveBtn.style.display = 'none';
+  }
+}
+updateSaveButtonVisibility();
+
+document.querySelectorAll('.sub-tab').forEach(tab => {
+  tab.addEventListener('click', updateSaveButtonVisibility);
+});
+
+// Lógica del modal de cliente
+const clienteModal = document.getElementById('clienteModal');
+const clienteModalClose = clienteModal.querySelector('.close');
+
+saveBtn.addEventListener('click', () => {
+  clienteModal.classList.remove('hidden');
+  clienteModal.style.display = 'flex';
+});
+
+clienteModalClose.addEventListener('click', () => {
+  clienteModal.classList.add('hidden');
+  clienteModal.style.display = 'none';
+});
+
+window.addEventListener('click', (e) => {
+  if (e.target === clienteModal) {
+    clienteModal.classList.add('hidden');
+    clienteModal.style.display = 'none';
+  }
+});
 
       /* Documentación */
       document.querySelectorAll('.folder').forEach(btn => {
