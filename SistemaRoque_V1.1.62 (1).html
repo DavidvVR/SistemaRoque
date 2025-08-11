@@ -162,7 +162,10 @@
   padding:8px; border:2px solid var(--input-border); border-radius:8px; min-width:220px;
 }
 .btn { padding:8px 16px; border:2px solid var(--frame-border); background:#e5e5e5; border-radius:8px; cursor:pointer; }
-.btn.primary { background:#efe9ff; border-color:#7c3aed; }  
+btn.primary { background:#efe9ff; border-color:#7c3aed; }
+
+.client-id-link { color:#000; text-decoration:underline; cursor:pointer; }
+
 
  /* --- te ayuda a que no se baje nada de esa celda --- */
     .doc-table td.actions { white-space: nowrap; }
@@ -227,7 +230,13 @@
     </div>
   </div>
 </div>
-
+<!-- Modal para ver detalles del cliente -->
+<div id="detalleClienteModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close" title="Cerrar">&times;</span>
+    <div id="detalleClienteContenido"></div>
+  </div>
+</div>
 
     
     
@@ -509,7 +518,7 @@
 
       <div id="tab-comentario" class="sub-content">
         <h3 class="section-title">Comentarios</h3>
-        <div class="form-group"><label>Comentario</label><textarea style="width:100%;height:120px;border:2px solid #ccc;border-radius:6px;"></textarea></div>
+            <div class="form-group"><label>Comentario</label><textarea id="txtComentario" style="width:100%;height:120px;border:2px solid #ccc;border-radius:6px;"></textarea></div>
       </div>
 
       <div class="button-row">
@@ -594,12 +603,11 @@ function renderTablaClientes(filtro=''){
 
   tbody.innerHTML = fil.map(c => `
     <tr>
-      <td>${c.id || ''}</td>
+      <td><span class="client-id-link" data-id="${c.id}">${c.id || ''}</span></td>
       <td>${c.nombre || ''}</td>
       <td>${c.rfc || ''}</td>
       <td>${c.estatus || 'Activo'}</td>
       <td class="actions">
-        <button class="btn btnVer" data-id="${c.id}">Ver</button>
         <span class="icon-btn btnDelete" title="Eliminar" data-id="${c.id}">🗑️</span>
       </td>
     </tr>
@@ -609,11 +617,8 @@ function renderTablaClientes(filtro=''){
   tbody.querySelectorAll('.btnDelete').forEach(btn => {
     btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
   });
-  tbody.querySelectorAll('.btnVer').forEach(btn => {
-    btn.addEventListener('click', () => {
-      // aquí lo que quieras hacer al ver el cliente
-      alert('Ver cliente: ' + btn.dataset.id);
-    });
+   tbody.querySelectorAll('.client-id-link').forEach(link => {
+    link.addEventListener('click', () => mostrarDetalleCliente(link.dataset.id));
   });
 }
 
@@ -724,7 +729,24 @@ saveBtn.addEventListener('click', () => {
   const rfc = (document.getElementById('inpRFC')?.value || '').trim();
   const estatus = document.getElementById('selEstatus')?.value || 'Activo';
   const domicilio = (document.getElementById('txtDireccion')?.value || '').trim();
+const comentario = (document.getElementById('txtComentario')?.value || '').trim();
 
+  const docNames = [
+    'Acta Constitutiva',
+    'Poder Rep. Legal',
+    'Comprobante de Domicilio',
+    'Constancia de Situación Fiscal',
+    'INE Rep. Legal',
+    'Contrato'
+  ];
+  const docs = docNames.map((nombre, idx) => {
+    const st = document.getElementById(`status${idx+1}`);
+    return { nombre, estatus: st?.classList.contains('status-yes') };
+  });
+
+  const tarifas = Array.from(document.querySelectorAll('#tablaTarifas tbody tr')).map(tr => {
+    try { return JSON.parse(tr.dataset.info || '{}'); } catch { return {}; }
+  });
   // Validación básica
   if (!nombre || !rfc) {
     alert('Por favor llena al menos Nombre/Razón Social y RFC.');
@@ -734,7 +756,7 @@ saveBtn.addEventListener('click', () => {
   const arr = getClientes();
   const id = generarSiguienteId(arr);
 
-  arr.push({ id, nombre, rfc, estatus, domicilio });
+  arr.push({ id, nombre, rfc, estatus, domicilio, comentario, docs, tarifas });
   setClientes(arr);
 
   // 🔄 Actualizar tabla en vista "Clientes registrados"
@@ -937,6 +959,45 @@ window.addEventListener('click', (e) => {
 document.querySelector('#clienteModal .btn-cerrar').addEventListener('click', () => {
   document.getElementById('clienteModal').classList.add('hidden');
   document.getElementById('clienteModal').style.display = 'none';
+});
+
+      
+function mostrarDetalleCliente(id){
+  const cliente = getClientes().find(c => c.id === id);
+  if(!cliente) return;
+  const cont = document.getElementById('detalleClienteContenido');
+  const docList = (cliente.docs || []).map(d => `<li>${d.nombre}: ${d.estatus ? 'Sí' : 'No'}</li>`).join('');
+  const tarifasTabla = (cliente.tarifas && cliente.tarifas.length)
+    ? `<table class="doc-table"><thead><tr><th>Origen - Destino</th><th>Tipo de Unidad</th><th>Tarifa</th><th>Días de Crédito</th><th>Km</th></tr></thead><tbody>${cliente.tarifas.map(t => `<tr><td>${t.estadoOrigen} - ${t.estadoDestino}</td><td>${t.tipoUnidad}</td><td>${Number(t.tarifa).toLocaleString('es-MX',{style:'currency',currency:'MXN'})}</td><td>${t.diasCredito}</td><td>${t.kmRecorrer}</td></tr>`).join('')}</tbody></table>`
+    : '<p>Sin tarifas registradas</p>';
+  cont.innerHTML = `
+    <h3 class="section-title">Datos Generales</h3>
+    <p><strong>Nombre/Razón Social:</strong> ${cliente.nombre || ''}</p>
+    <p><strong>RFC:</strong> ${cliente.rfc || ''}</p>
+    <p><strong>Estatus:</strong> ${cliente.estatus || ''}</p>
+    <p><strong>Domicilio:</strong> ${cliente.domicilio || ''}</p>
+    <h3 class="section-title">Tarifas</h3>
+    ${tarifasTabla}
+    <h3 class="section-title">Documentación</h3>
+    <ul>${docList}</ul>
+    <h3 class="section-title">Comentarios</h3>
+    <p>${cliente.comentario || ''}</p>
+  `;
+  const modal = document.getElementById('detalleClienteModal');
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+}
+
+const detalleModal = document.getElementById('detalleClienteModal');
+detalleModal.querySelector('.close').addEventListener('click', () => {
+  detalleModal.classList.add('hidden');
+  detalleModal.style.display = 'none';
+});
+window.addEventListener('click', (e) => {
+  if (e.target === detalleModal) {
+    detalleModal.classList.add('hidden');
+    detalleModal.style.display = 'none';
+  }
 });
     });
   </script>
