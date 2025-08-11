@@ -162,10 +162,6 @@
 }
 .btn { padding:8px 16px; border:2px solid var(--frame-border); background:#e5e5e5; border-radius:8px; cursor:pointer; }
 .btn.primary { background:#efe9ff; border-color:#7c3aed; }  
-
-  
-
-
     
   </style>
 </head>
@@ -177,6 +173,15 @@
   </div>
 </div>
   <body>
+
+    
+    
+
+    <!--Aqui acaba el .css y empieza el html la segunda parte para que sea mas facil ubicarlo>
+
+
+    
+    
   <!-- LOGIN -->
   <div id="loginFrame" class="frame">
     <input type="text" id="usuario" placeholder="David Vargas R.">
@@ -539,6 +544,24 @@ function renderTablaClientes(filtro=''){
     </tr>
   `).join('') || `<tr><td colspan="4">Sin registros</td></tr>`;
 }
+// Limpiar formularios del apartado "Nuevo Cliente"
+function limpiarFormularioCliente(){
+  if(!clientsMenu) return;
+  clientsMenu.querySelectorAll('input, textarea').forEach(el => {
+    el.value = '';
+    if(el.type === 'file'){ el.value = ''; }
+  });
+  clientsMenu.querySelectorAll('select').forEach(sel => sel.selectedIndex = 0);
+  // Reinicia los estados de documentación
+  clientsMenu.querySelectorAll('.status').forEach(st => {
+    st.textContent = '❌ No';
+    st.classList.remove('status-yes');
+    st.classList.add('status-no');
+  });
+  // Limpia la tabla de tarifas
+  const tarifasBody = document.querySelector('#tablaTarifas tbody');
+  if(tarifasBody) tarifasBody.innerHTML = '';
+}
 
 // --- Botón “Nuevo Cliente” (tarjeta izquierda)
 document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
@@ -551,6 +574,7 @@ document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
 document.getElementById('btnVerClientes')?.addEventListener('click', () => {
   showInClientsModule(clientsList);
   renderTablaClientes(); // pinta/actualiza la tabla
+  limpiarFormularioCliente(); // limpia formulario de nuevo cliente
 });
          
 // --- Botones dentro de la ventana “Clientes”
@@ -611,6 +635,13 @@ const clienteModal = document.getElementById('clienteModal');
 const clienteModalClose = clienteModal.querySelector('.close');
 
 saveBtn.addEventListener('click', () => {
+    const datosInputs = document.querySelectorAll('#tab-datos input[type="text"]');
+  const nombre = datosInputs[0]?.value.trim() || '';
+  const rfc = datosInputs[1]?.value.trim() || '';
+  const estatus = document.querySelector('#tab-datos select')?.value || 'Activo';
+  const arr = getClientes();
+  arr.push({ nombre, rfc, estatus });
+  setClientes(arr);
   clienteModal.classList.remove('hidden');
   clienteModal.style.display = 'flex';
 });
@@ -762,26 +793,21 @@ window.addEventListener('click', (e) => {
 
       window.addEventListener('click', (e) => { if (e.target === modal) ocultarModal(); });
 
-      // Delegación: clic en ícono ✏️ para editar
-      tablaTarifas.addEventListener('click', (e) => {
-        const btn = e.target.closest('.edit-tarifa');
-        if (!btn) return;
-        const row = btn.closest('tr');
-        try {
-          const datos = JSON.parse(row.dataset.info || '{}');
-          cargarFormulario(datos);
-          editingRow = row;
-          tituloModal.textContent = 'Editar Ruta/Tarifa';
-          mostrarModal();
-        } catch {
-          alert('No fue posible cargar los datos de la fila para edición.');
-        }
-        // Boton guardar en el menu de pestañas nuevo cliente
-        document.getElementById('saveClient').addEventListener('click', () => {
-  alert('Datos del cliente guardados correctamente.');
-  // Aquí podrías añadir la lógica para guardar realmente los datos
-});
-      });
+          // Delegación: clic en ícono ✏️ para editar
+        tablaTarifas.addEventListener('click', (e) => {
+          const btn = e.target.closest('.edit-tarifa');
+          if (!btn) return;
+          const row = btn.closest('tr');
+          try {
+            const datos = JSON.parse(row.dataset.info || '{}');
+            cargarFormulario(datos);
+            editingRow = row;
+            tituloModal.textContent = 'Editar Ruta/Tarifa';
+            mostrarModal();
+          } catch {
+            alert('No fue posible cargar los datos de la fila para edición.');
+          }
+        });
     });
   </script>
 </body>
