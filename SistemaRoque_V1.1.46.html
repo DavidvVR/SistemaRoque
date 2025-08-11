@@ -540,9 +540,7 @@ document.getElementById('btnVerClientes')?.addEventListener('click', () => {
   showInClientsModule(clientsList);
   renderTablaClientes(); // pinta/actualiza la tabla
 });
-      </script>      
-<script>
-                          
+         
 // --- Botones dentro de la ventana “Clientes”
 document.getElementById('btnVolverHome')?.addEventListener('click', () => {
   showInClientsModule(clientsHome);
@@ -571,23 +569,6 @@ document.getElementById('searchCli')?.addEventListener('input', (e) => {
         else alert('Usuario o contraseña incorrectos');
       };
 
-  
-
-  // Botones de la ventana "Clientes"
-document.getElementById('btnVolverHome')?.addEventListener('click', () => {
-  showInClientsModule(document.getElementById('clientsHome'));
-});
-
-document.getElementById('btnNuevoDesdeLista')?.addEventListener('click', () => {
-  showInClientsModule(document.getElementById('clientsMenu'));
-  document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
-});
-
-// Búsqueda en la lista
-document.getElementById('searchCli')?.addEventListener('input', (e) => {
-  renderTablaClientes(e.target.value);
-});
-});
       document.querySelectorAll('.sub-tab').forEach(tab => {
         tab.onclick = () => {
           document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
