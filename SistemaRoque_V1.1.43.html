@@ -485,44 +485,31 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       /* Login */
-      const last = localStorage.getItem('sr_last_user');
-      if (last) document.getElementById('usuario').value = last;
-      document.getElementById('btnGuardar').onclick = () => {
-        localStorage.setItem('sr_last_user', document.getElementById('usuario').value);
-        alert('Usuario guardado');
-      };
-      document.getElementById('btnEntrar').onclick = () => {
-        const u = document.getElementById('usuario').value;
-        const p = document.getElementById('password').value;
-        if (usuarios.find(x => x.usuario === u && x.password === p)) showSection('dashboard');
-        else alert('Usuario o contraseña incorrectos');
-      };
-
-      /* Navegación */
-      document.getElementById('modClientes').onclick = () => {
+      // --- NAVEGACIÓN (Dashboard → Módulo Clientes)
+document.getElementById('modClientes').onclick = () => {
   showSection('clientsModule');
-  document.getElementById('clientsHome').classList.remove('hidden');
-  document.getElementById('clientsMenu').classList.add('hidden');
+  // Al entrar al módulo, mostramos la pantalla de inicio (dos tarjetas)
+  document.getElementById('clientsHome')?.classList.remove('hidden');
+  document.getElementById('clientsMenu')?.classList.add('hidden');
+  document.getElementById('clientsList')?.classList.add('hidden');
 };
-document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
-  document.getElementById('clientsHome').classList.add('hidden');
-  document.getElementById('clientsMenu').classList.remove('hidden');
-  
-// "BD" local simple de clientes
+
+// --- Helpers de vistas dentro del módulo de clientes (HOISTED/FUERA de cualquier click)
+const clientsHome = document.getElementById('clientsHome');
+const clientsMenu = document.getElementById('clientsMenu');
+const clientsList = document.getElementById('clientsList');
+
+function showInClientsModule(el){
+  [clientsHome, clientsMenu, clientsList].forEach(x => x && x.classList.add('hidden'));
+  el && el.classList.remove('hidden');
+}
+
+// “BD” local simple de clientes (HOISTED)
 const srStoreKey = 'sr_clientes';
 function getClientes(){ try { return JSON.parse(localStorage.getItem(srStoreKey)) || []; } catch { return []; } }
 function setClientes(arr){ localStorage.setItem(srStoreKey, JSON.stringify(arr)); }
 
-// Cambiar vistas dentro del módulo de clientes
-function showInClientsModule(el){
-  const home  = document.getElementById('clientsHome');
-  const menu  = document.getElementById('clientsMenu');
-  const list  = document.getElementById('clientsList');
-  [home,menu,list].forEach(x => x && x.classList.add('hidden'));
-  el && el.classList.remove('hidden');
-}
-
-// Pintar tabla de clientes
+// Pintar tabla de clientes (HOISTED)
 function renderTablaClientes(filtro=''){
   const tbody = document.querySelector('#tablaClientes tbody');
   if(!tbody) return;
@@ -536,20 +523,53 @@ function renderTablaClientes(filtro=''){
       <td>${c.nombre || ''}</td>
       <td>${c.rfc || ''}</td>
       <td>${c.estatus || 'Activo'}</td>
-      <td>
-        <button class="btn btnVer">Ver</button>
-      </td>
+      <td><button class="btn btnVer">Ver</button></td>
     </tr>
   `).join('') || `<tr><td colspan="4">Sin registros</td></tr>`;
 }
-// activa "Datos"
+
+// --- Botón “Nuevo Cliente” (tarjeta izquierda)
+document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
+  showInClientsModule(clientsMenu);
+  // Activa la subpestaña “Datos”
   document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
 });
 
-// (Opcional) acción temporal para "Clientes"
+// --- Botón “CLIENTES” (tarjeta derecha)
 document.getElementById('btnVerClientes')?.addEventListener('click', () => {
-  showInClientsModule(document.getElementById('clientsList'));
-  renderTablaClientes();
+  showInClientsModule(clientsList);
+  renderTablaClientes(); // pinta/actualiza la tabla
+});
+
+// --- Botones dentro de la ventana “Clientes”
+document.getElementById('btnVolverHome')?.addEventListener('click', () => {
+  showInClientsModule(clientsHome);
+});
+
+document.getElementById('btnNuevoDesdeLista')?.addEventListener('click', () => {
+  showInClientsModule(clientsMenu);
+  document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
+});
+
+// --- Búsqueda en la lista
+document.getElementById('searchCli')?.addEventListener('input', (e) => {
+  renderTablaClientes(e.target.value);
+});
+</script>
+      const last = localStorage.getItem('sr_last_user');
+      if (last) document.getElementById('usuario').value = last;
+      document.getElementById('btnGuardar').onclick = () => {
+        localStorage.setItem('sr_last_user', document.getElementById('usuario').value);
+        alert('Usuario guardado');
+      };
+      document.getElementById('btnEntrar').onclick = () => {
+        const u = document.getElementById('usuario').value;
+        const p = document.getElementById('password').value;
+        if (usuarios.find(x => x.usuario === u && x.password === p)) showSection('dashboard');
+        else alert('Usuario o contraseña incorrectos');
+      };
+
+  
 
   // Botones de la ventana "Clientes"
 document.getElementById('btnVolverHome')?.addEventListener('click', () => {
