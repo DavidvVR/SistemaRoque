@@ -163,6 +163,9 @@
 }
 .btn { padding:8px 16px; border:2px solid var(--frame-border); background:#e5e5e5; border-radius:8px; cursor:pointer; }
 .btn.primary { background:#efe9ff; border-color:#7c3aed; }  
+
+ /* --- te ayuda a que no se baje nada de esa celda --- */
+    .doc-table td.actions { white-space: nowrap; }
     
   </style>
 </head>
@@ -540,69 +543,40 @@ const srStoreKey = 'sr_clientes';
 function getClientes(){ try { return JSON.parse(localStorage.getItem(srStoreKey)) || []; } catch { return []; } }
 function setClientes(arr){ localStorage.setItem(srStoreKey, JSON.stringify(arr)); }
 
-// Pintar tabla de clientes (HOISTED)
 function renderTablaClientes(filtro=''){
   const tbody = document.querySelector('#tablaClientes tbody');
   if(!tbody) return;
   const data = getClientes();
   const q = (filtro||'').toLowerCase();
   const fil = data.filter(c =>
-    (!q) || (c.nombre?.toLowerCase().includes(q) || c.rfc?.toLowerCase().includes(q) || c.id?.toLowerCase().includes(q))
+    (!q) || (c.nombre?.toLowerCase().includes(q) || c.rfc?.toLowerCase().includes(q) || String(c.id||'').toLowerCase().includes(q))
   );
+
   tbody.innerHTML = fil.map(c => `
     <tr>
       <td>${c.id || ''}</td>
       <td>${c.nombre || ''}</td>
       <td>${c.rfc || ''}</td>
       <td>${c.estatus || 'Activo'}</td>
-     <td>
-       <td>
-        <button class="btn btnVer">Ver</button>
-        <span class="icon-btn btnDelete" title="Eliminar" data-id="${c.id}">🗑️</span>
-      </td>
+      <td class="actions">
+        <button class="btn btnVer" data-id="${c.id}">Ver</button>
         <span class="icon-btn btnDelete" title="Eliminar" data-id="${c.id}">🗑️</span>
       </td>
     </tr>
   `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
-   tbody.querySelectorAll('.btnDelete').forEach(btn => {
+
+  // Listeners (si prefieres mantenerlos así)
+  tbody.querySelectorAll('.btnDelete').forEach(btn => {
     btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
+  });
+  tbody.querySelectorAll('.btnVer').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // aquí lo que quieras hacer al ver el cliente
+      alert('Ver cliente: ' + btn.dataset.id);
+    });
   });
 }
 
-const confirmDeleteModal = document.getElementById('confirmDeleteModal');
-const btnDeleteYes = document.getElementById('deleteConfirmYes');
-const btnDeleteNo = document.getElementById('deleteConfirmNo');
-let deleteTargetId = null;
-
-function openDeleteModal(id){
-  deleteTargetId = id;
-  confirmDeleteModal.classList.remove('hidden');
-  confirmDeleteModal.style.display = 'flex';
-  
-}
-      
-    function closeDeleteModal(){
-  confirmDeleteModal.classList.add('hidden');
-  confirmDeleteModal.style.display = 'none';
-  deleteTargetId = null;
-}
-
-btnDeleteYes?.addEventListener('click', () => {
-  if(deleteTargetId){
-    const arr = getClientes().filter(c => String(c.id) !== String(deleteTargetId));
-    setClientes(arr);
-    renderTablaClientes(document.getElementById('searchCli')?.value || '');
-  }
-  closeDeleteModal();
-});
-
-[btnDeleteNo, confirmDeleteModal.querySelector('.close')].forEach(btn =>
-  btn?.addEventListener('click', closeDeleteModal)
-);
-
-window.addEventListener('click', e => {
-  if(e.target === confirmDeleteModal) closeDeleteModal();
-});
 // Limpiar formularios del apartado "Nuevo Cliente"
 function limpiarFormularioCliente(){
   if(!clientsMenu) return;
