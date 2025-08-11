@@ -302,6 +302,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 </div>
 
     <div id="clientsMenu"class="clients-menu hidden">
+     <h2 id="tituloCliente" style="text-align:center;margin-bottom:16px;">Nuevo Cliente</h2>
       <div class="sub-tabs">
         <div class="sub-tab active" data-content="tab-datos">Datos Generales</div>
         <div class="sub-tab" data-content="tab-docs">Documentación</div>
@@ -589,6 +590,7 @@ function showInClientsModule(el){
 
 // “BD” local simple de clientes (HOISTED)
 const srStoreKey = 'sr_clientes';
+let editingClientId = null;
 function getClientes(){ try { return JSON.parse(localStorage.getItem(srStoreKey)) || []; } catch { return []; } }
 function setClientes(arr){ localStorage.setItem(srStoreKey, JSON.stringify(arr)); }
 
@@ -608,6 +610,7 @@ function renderTablaClientes(filtro=''){
       <td>${c.rfc || ''}</td>
       <td>${c.estatus || 'Activo'}</td>
       <td class="actions">
+              <span class="icon-btn btnEdit" title="Editar" data-id="${c.id}">✏️</span>
         <span class="icon-btn btnDelete" title="Eliminar" data-id="${c.id}">🗑️</span>
       </td>
     </tr>
@@ -617,11 +620,91 @@ function renderTablaClientes(filtro=''){
   tbody.querySelectorAll('.btnDelete').forEach(btn => {
     btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
   });
-   tbody.querySelectorAll('.client-id-link').forEach(link => {
+   tbody.querySelectorAll('.btnEdit').forEach(btn => {
+    btn.addEventListener('click', () => editCliente(btn.dataset.id));
+  });
+  tbody.querySelectorAll('.client-id-link').forEach(link => {
     link.addEventListener('click', () => mostrarDetalleCliente(link.dataset.id));
   });
 }
+// --- Eliminar cliente ---
+const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+const deleteConfirmYes = document.getElementById('deleteConfirmYes');
+const deleteConfirmNo  = document.getElementById('deleteConfirmNo');
+let deleteId = null;
 
+function openDeleteModal(id){
+  deleteId = id;
+  confirmDeleteModal.classList.remove('hidden');
+  confirmDeleteModal.style.display = 'flex';
+}
+function closeDeleteModal(){
+  confirmDeleteModal.classList.add('hidden');
+  confirmDeleteModal.style.display = 'none';
+  deleteId = null;
+}
+deleteConfirmYes?.addEventListener('click', () => {
+  if(deleteId){
+    const arr = getClientes();
+    const idx = arr.findIndex(c => c.id === deleteId);
+    if(idx >= 0){
+      arr.splice(idx,1);
+      setClientes(arr);
+      renderTablaClientes();
+    }
+  }
+  closeDeleteModal();
+});
+deleteConfirmNo?.addEventListener('click', closeDeleteModal);
+confirmDeleteModal?.querySelector('.close')?.addEventListener('click', closeDeleteModal);
+window.addEventListener('click', e => { if(e.target === confirmDeleteModal) closeDeleteModal(); });
+
+// --- Editar cliente ---
+function editCliente(id){
+  const cliente = getClientes().find(c => c.id === id);
+  if(!cliente) return;
+  editingClientId = id;
+  document.getElementById('tituloCliente').textContent = 'Editar Cliente';
+  showInClientsModule(clientsMenu);
+  document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
+  limpiarFormularioCliente();
+  document.getElementById('inpNombre').value = cliente.nombre || '';
+  document.getElementById('selEstatus').value = cliente.estatus || 'Activo';
+  document.getElementById('inpRFC').value = cliente.rfc || '';
+  document.getElementById('txtDireccion').value = cliente.domicilio || '';
+  document.getElementById('txtComentario').value = cliente.comentario || '';
+  (cliente.docs || []).forEach((doc, idx) => {
+    const st = document.getElementById(`status${idx+1}`);
+    if(st){
+      if(doc.estatus){
+        st.textContent = '✅ Sí';
+        st.classList.remove('status-no');
+        st.classList.add('status-yes');
+      } else {
+        st.textContent = '❌ No';
+        st.classList.remove('status-yes');
+        st.classList.add('status-no');
+      }
+    }
+  });
+  const tarifasBody = document.querySelector('#tablaTarifas tbody');
+  if(tarifasBody){
+    tarifasBody.innerHTML = '';
+    (cliente.tarifas || []).forEach(t => {
+      const tr = document.createElement('tr');
+      tr.dataset.info = JSON.stringify(t);
+      const cOrigenDestino = `${t.estadoOrigen} - ${t.estadoDestino}`;
+      const cTipo = t.tipoUnidad;
+      const cTarifa = Number(t.tarifa).toLocaleString('es-MX', {style:'currency', currency:'MXN'});
+      const cCred  = t.diasCredito || 0;
+      const cKm    = t.kmRecorrer || 0;
+      tr.innerHTML = `<td>${cOrigenDestino}</td><td>${cTipo}</td><td>${cTarifa}</td><td>${cCred}</td><td>${cKm}</td><td><span class="icon-btn edit-tarifa" title="Editar">✏️</span></td>`;
+      tarifasBody.appendChild(tr);
+    });
+  }
+}
+
+      
 // Limpiar formularios del apartado "Nuevo Cliente"
 function limpiarFormularioCliente(){
   if(!clientsMenu) return;
@@ -643,6 +726,9 @@ function limpiarFormularioCliente(){
 
 // --- Botón “Nuevo Cliente” (tarjeta izquierda)
 document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
+  editingClientId = null;
+  limpiarFormularioCliente();
+  document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
   showInClientsModule(clientsMenu);
   // Activa la subpestaña “Datos”
   document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
@@ -650,6 +736,8 @@ document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
 
 // --- Botón “CLIENTES” (tarjeta derecha)
 document.getElementById('btnVerClientes')?.addEventListener('click', () => {
+   editingClientId = null;
+  document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
   showInClientsModule(clientsList);
   renderTablaClientes(); // pinta/actualiza la tabla
   limpiarFormularioCliente(); // limpia formulario de nuevo cliente
@@ -657,10 +745,15 @@ document.getElementById('btnVerClientes')?.addEventListener('click', () => {
          
 // --- Botones dentro de la ventana “Clientes”
 document.getElementById('btnVolverHome')?.addEventListener('click', () => {
+  editingClientId = null;
+  document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
   showInClientsModule(clientsHome);
 });
 
 document.getElementById('btnNuevoDesdeLista')?.addEventListener('click', () => {
+  editingClientId = null;
+  limpiarFormularioCliente();
+  document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
   showInClientsModule(clientsMenu);
   document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
 });
@@ -754,9 +847,16 @@ const comentario = (document.getElementById('txtComentario')?.value || '').trim(
   }
 
   const arr = getClientes();
-  const id = generarSiguienteId(arr);
-
-  arr.push({ id, nombre, rfc, estatus, domicilio, comentario, docs, tarifas });
+  let id = editingClientId;
+  if(editingClientId){
+    const idx = arr.findIndex(c => c.id === editingClientId);
+    if(idx >= 0){
+      arr[idx] = { id: editingClientId, nombre, rfc, estatus, domicilio, comentario, docs, tarifas };
+    }
+  } else {
+    id = generarSiguienteId(arr);
+    arr.push({ id, nombre, rfc, estatus, domicilio, comentario, docs, tarifas });
+  }
   setClientes(arr);
 
   // 🔄 Actualizar tabla en vista "Clientes registrados"
@@ -771,6 +871,9 @@ const comentario = (document.getElementById('txtComentario')?.value || '').trim(
   // Mostrar modal
   clienteModal.classList.remove('hidden');
   clienteModal.style.display = 'flex';
+  editingClientId = null;
+
+ document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
 });
 
 // Cerrar modal de confirmación
