@@ -790,8 +790,81 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
       </thead>
       <tbody>
         <!-- Filas generadas dinámicamente -->
+
+      
       </tbody>
     </table>
+    <div id="unidadModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-content" style="min-width: 720px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <h3>Alta de Unidad Vehicular</h3>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="uTarjeta">Tarjeta de Circulación*</label>
+        <input id="uTarjeta" type="text" placeholder="Número de tarjeta" required>
+      </div>
+      <div class="form-group">
+        <label for="uPlacas">Placas*</label>
+        <input id="uPlacas" type="text" placeholder="ABC123A" required>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="uEco">Eco</label>
+        <input id="uEco" type="text" placeholder="Económico interno">
+      </div>
+      <div class="form-group">
+        <label for="uTipo">Tipo*</label>
+        <select id="uTipo" required>
+          <option value="">Seleccione…</option>
+          <option>Tractor</option>
+          <option>Unidad seca 53"</option>
+          <option>Refrigerada 53"</option>
+          <option>Thorton</option>
+          <option>3.5</option>
+          <option>Torton</option>
+          <option>Rabón</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="uVencePoliza">Vencimiento Póliza</label>
+        <input id="uVencePoliza" type="date">
+      </div>
+      <div class="form-group">
+        <label for="uAseguradora">Aseguradora</label>
+        <input id="uAseguradora" type="text" placeholder="Nombre de aseguradora">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="uMarca">Marca</label>
+        <input id="uMarca" type="text" placeholder="Kenworth / Freightliner…">
+      </div>
+      <div class="form-group">
+        <label for="uAnio">Año</label>
+        <input id="uAnio" type="number" min="1980" max="2100" placeholder="2022">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group form-group-full">
+        <label for="uPermisoSCT">Permiso SCT</label>
+        <input id="uPermisoSCT" type="text" placeholder="Número de permiso SCT">
+      </div>
+    </div>
+
+    <div class="modal-buttons">
+      <button type="button" class="btn-cancelar">Cancelar</button>
+      <button type="button" class="btn-guardar">Guardar</button>
+    </div>
+  </div>
+</div>
   </div>
 
   </div>
@@ -1710,7 +1783,151 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     console.error(err);
     alert('No fue posible leer el archivo. Verifica que sea .xlsx y tenga las hojas: Clientes, Documentacion y Tarifas.');
   }
-});
+  / ===== Modal "Alta de Unidad Vehicular" =====
+(function(){
+  const unidadModal = document.getElementById('unidadModal');
+  const tablaUnidadesBody = document.querySelector('#tablaUnidades tbody');
+  const btnAddUnit = document.querySelector('.add-unit');
+
+  // Referencias a inputs
+  const $ = (id) => document.getElementById(id);
+  const f = {
+    tarjeta: $('uTarjeta'),
+    placas: $('uPlacas'),
+    eco: $('uEco'),
+    tipo: $('uTipo'),
+    vencePoliza: $('uVencePoliza'),
+    aseguradora: $('uAseguradora'),
+    marca: $('uMarca'),
+    anio: $('uAnio'),
+    permiso: $('uPermisoSCT'),
+  };
+
+  let unidadEditingRow = null; // si no es null, estamos editando
+
+  function limpiarFormUnidad(){
+    f.tarjeta.value = '';
+    f.placas.value = '';
+    f.eco.value = '';
+    f.tipo.value = '';
+    f.vencePoliza.value = '';
+    f.aseguradora.value = '';
+    f.marca.value = '';
+    f.anio.value = '';
+    f.permiso.value = '';
+  }
+
+  function mostrarUnidadModal(){
+    unidadModal.classList.remove('hidden');
+    unidadModal.style.display = 'flex';
+  }
+  function ocultarUnidadModal(){
+    unidadModal.classList.add('hidden');
+    unidadModal.style.display = 'none';
+  }
+
+  // Abrir modal desde el botón +Agregar Unidad
+  btnAddUnit?.addEventListener('click', () => {
+    unidadEditingRow = null;
+    limpiarFormUnidad();
+    // título fijo (si quieres podrías alternarlo a "Editar Unidad")
+    unidadModal.querySelector('h3').textContent = 'Alta de Unidad Vehicular';
+    mostrarUnidadModal();
+  });
+
+  // Cerrar modal (X y Cancelar)
+  unidadModal.querySelector('.close')?.addEventListener('click', ocultarUnidadModal);
+  unidadModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultarUnidadModal);
+
+  // Guardar (crear/editar fila)
+  unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+    const datos = {
+      tarjeta: (f.tarjeta.value || '').trim(),
+      placas: (f.placas.value || '').trim(),
+      eco: (f.eco.value || '').trim(),
+      tipo: f.tipo.value,
+      vencePoliza: f.vencePoliza.value, // ISO yyyy-mm-dd
+      aseguradora: (f.aseguradora.value || '').trim(),
+      marca: (f.marca.value || '').trim(),
+      anio: f.anio.value ? Number(f.anio.value) : '',
+      permiso: (f.permiso.value || '').trim(),
+    };
+
+    // Validación mínima
+    if(!datos.tarjeta || !datos.placas || !datos.tipo){
+      alert('Completa los campos obligatorios: Tarjeta, Placas y Tipo.');
+      return;
+    }
+
+    const venceLegible = datos.vencePoliza
+      ? new Date(datos.vencePoliza + 'T00:00:00').toLocaleDateString('es-MX')
+      : '';
+
+    if (unidadEditingRow) {
+      // Actualizar fila existente
+      unidadEditingRow.cells[0].textContent = datos.tarjeta;
+      unidadEditingRow.cells[1].textContent = datos.placas;
+      unidadEditingRow.cells[2].textContent = datos.eco;
+      unidadEditingRow.cells[3].textContent = datos.tipo;
+      unidadEditingRow.cells[4].textContent = venceLegible;
+      unidadEditingRow.cells[5].textContent = datos.aseguradora;
+      unidadEditingRow.cells[6].textContent = datos.marca;
+      unidadEditingRow.cells[7].textContent = datos.anio || '';
+      unidadEditingRow.cells[8].textContent = datos.permiso;
+
+      unidadEditingRow.dataset.info = JSON.stringify(datos);
+    } else {
+      // Crear nueva fila
+      const tr = document.createElement('tr');
+      tr.dataset.info = JSON.stringify(datos);
+      tr.innerHTML = `
+        <td>${datos.tarjeta}</td>
+        <td>${datos.placas}</td>
+        <td>${datos.eco}</td>
+        <td>${datos.tipo}</td>
+        <td>${venceLegible}</td>
+        <td>${datos.aseguradora}</td>
+        <td>${datos.marca}</td>
+        <td>${datos.anio || ''}</td>
+        <td>${datos.permiso}</td>
+      `;
+      tablaUnidadesBody.appendChild(tr);
+    }
+
+    ocultarUnidadModal();
+    limpiarFormUnidad();
+    unidadEditingRow = null;
+  });
+
+  // (Opcional) Cerrar clic afuera
+  window.addEventListener('click', (e) => {
+    if (e.target === unidadModal) ocultarUnidadModal();
+  });
+
+  // Habilitar edición al hacer doble clic en una fila
+  tablaUnidadesBody?.addEventListener('dblclick', (e) => {
+    const row = e.target.closest('tr');
+    if(!row) return;
+    try{
+      const datos = JSON.parse(row.dataset.info || '{}');
+      f.tarjeta.value = datos.tarjeta || '';
+      f.placas.value = datos.placas || '';
+      f.eco.value = datos.eco || '';
+      f.tipo.value = datos.tipo || '';
+      f.vencePoliza.value = datos.vencePoliza || '';
+      f.aseguradora.value = datos.aseguradora || '';
+      f.marca.value = datos.marca || '';
+      f.anio.value = datos.anio || '';
+      f.permiso.value = datos.permiso || '';
+
+      unidadEditingRow = row;
+      unidadModal.querySelector('h3').textContent = 'Editar Unidad Vehicular';
+      mostrarUnidadModal();
+    }catch{
+      alert('No fue posible cargar los datos de la unidad para edición.');
+    }
+  });
+})();
 </script>
 
 </body>
