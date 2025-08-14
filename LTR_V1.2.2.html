@@ -208,6 +208,15 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 .confirm-cliente .datos-cliente p {
   margin: 4px 0;
 }
+    .perms-list .list-toolbar{
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:12px;
+}
+.perms-list .list-actions{ display:flex; gap:8px; }
+.perms-list .search{ display:flex; gap:8px; align-items:center; }
+.perms-list .search input{
+  padding:8px; border:2px solid var(--input-border); border-radius:8px; min-width:220px;
+}
+    
   </style>
 </head>
 <body>
@@ -585,7 +594,39 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 </div>
 
   </div>
+<!-- permModule -->
+<div id="permModule" class="frame hidden" aria-label="Módulo Permisionarios">
 
+  <!-- Ventana: Permisionarios registrados -->
+  <div id="permsList" class="clients-menu perms-list" aria-label="Permisionarios registrados">
+    <div class="list-toolbar">
+      <div><h3>Permisionarios registrados</h3></div>
+      <div class="search">
+        <label for="searchPerm">Buscar:</label>
+        <input id="searchPerm" type="text" placeholder="Nombre, RFC…">
+      </div>
+      <div class="list-actions">
+        <button id="btnPermVolver" class="btn">Volver</button>
+      </div>
+    </div>
+
+    <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
+      <table class="doc-table" id="tablaPerms">
+        <thead>
+          <tr>
+            <th>ID Permisionario</th>
+            <th>Nombre/Razón Social</th>
+            <th>RFC</th>
+            <th>Estatus</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody><!-- filas dinámicas --></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
   <script>
     const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
     function showSection(id) {
@@ -604,6 +645,125 @@ document.getElementById('modClientes').onclick = () => {
   document.getElementById('clientsMenu')?.classList.add('hidden');
   document.getElementById('clientsList')?.classList.add('hidden');
 };
+  // === Navegación: Dashboard → Módulo Permisionarios ===
+document.getElementById('modPerm').onclick = () => {
+  showSection('permModule');              // muestra el frame de Permisionarios
+  renderTablaPerms();                     // pinta/actualiza la tabla
+};
+
+// === “BD” local simple de permisionarios ===
+const srPermKey = 'sr_permisionarios';
+function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
+function setPerms(arr){ localStorage.setItem(srPermKey, JSON.stringify(arr)); }
+
+// === Render de la tabla de Permisionarios ===
+function renderTablaPerms(filtro=''){
+  const tbody = document.querySelector('#tablaPerms tbody');
+  if(!tbody) return;
+
+  const data = getPerms();
+  const q = (filtro||'').toLowerCase();
+
+  const fil = data.filter(p =>
+    (!q) ||
+    (String(p.id||'').toLowerCase().includes(q) ||
+     (p.nombre||'').toLowerCase().includes(q) ||
+     (p.rfc||'').toLowerCase().includes(q))
+  );
+
+  tbody.innerHTML = fil.map(p => `
+    <tr>
+      <td>${p.id || ''}</td>
+      <td>${p.nombre || ''}</td>
+      <td>${p.rfc || ''}</td>
+      <td>${p.estatus || 'Activo'}</td>
+      <td class="actions">
+        <span class="icon-btn btnPermEdit" title="Editar" data-id="${p.id}">✏️</span>
+        <span class="icon-btn btnPermDelete btnDelete" title="Eliminar" data-id="${p.id}">🗑️</span>
+      </td>
+    </tr>
+  `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
+
+  // Listeners por fila
+  tbody.querySelectorAll('.btnPermDelete').forEach(btn => {
+    btn.addEventListener('click', () => openDeletePerm(btn.dataset.id));
+  });
+  tbody.querySelectorAll('.btnPermEdit').forEach(btn => {
+    btn.addEventListener('click', () => editPerm(btn.dataset.id));
+  });
+}
+
+// === Buscar en la lista de Permisionarios ===
+document.getElementById('searchPerm')?.addEventListener('input', (e) => {
+  renderTablaPerms(e.target.value);
+});
+
+// === Volver al Dashboard desde Permisionarios ===
+document.getElementById('btnPermVolver')?.addEventListener('click', () => {
+  showSection('dashboard');
+});
+
+// === Eliminar Permisionario (reusa tu modal de confirmación) ===
+let deletePermId = null;
+function openDeletePerm(id){
+  deletePermId = id;
+  // Reutilizamos el mismo modal de confirmación existente
+  const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+  confirmDeleteModal.classList.remove('hidden');
+  confirmDeleteModal.style.display = 'flex';
+
+  // Aseguramos handlers locales:
+  const yes = document.getElementById('deleteConfirmYes');
+  const no  = document.getElementById('deleteConfirmNo');
+
+  const onYes = () => {
+    const arr = getPerms();
+    const idx = arr.findIndex(p => p.id === deletePermId);
+    if(idx >= 0){ arr.splice(idx,1); setPerms(arr); renderTablaPerms(); }
+    cleanup();
+  };
+  const onNo = cleanup;
+
+  function cleanup(){
+    // Cerramos modal
+    confirmDeleteModal.classList.add('hidden');
+    confirmDeleteModal.style.display = 'none';
+    // Quitamos estos listeners puntuales para no duplicar
+    yes.removeEventListener('click', onYes);
+    no.removeEventListener('click', onNo);
+    deletePermId = null;
+  }
+
+  yes.addEventListener('click', onYes);
+  no.addEventListener('click', onNo);
+}
+
+// === Editar Permisionario (flujo mínimo: por ahora solo alerta) ===
+function editPerm(id){
+  const perm = getPerms().find(p => p.id === id);
+  if(!perm){ return; }
+  // Aquí puedes abrir un formulario de edición (similar a "Nuevo Cliente")
+  alert(`Editar Permisionario: ${perm.id} - ${perm.nombre}`);
+}
+
+// === Utilidad para generar ID consecutivo tipo LTR-PR-01 ===
+function generarSiguienteIdPerm(arr){
+  const prefijo = 'LTR-PR-';
+  const maxNum = arr.reduce((max, p) => {
+    const m = (p.id || '').match(/^LTR-PR-(\d+)$/);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return n > max ? n : max;
+  }, 0);
+  return `${prefijo}${String(maxNum + 1).padStart(2, '0')}`;
+}
+
+// (Opcional) Semilla de ejemplo para que veas algo en la tabla la 1ª vez:
+if(getPerms().length === 0){
+  setPerms([
+    { id: 'LTR-PR-01', nombre: 'Permisionario Demo S.A. de C.V.', rfc: 'PDE010101AB1', estatus: 'Activo' },
+    { id: 'LTR-PR-02', nombre: 'Transporte Ejemplar S.A.', rfc: 'TEJ020202CD2', estatus: 'Inactivo' }
+  ]);
+}    
 
 // --- Helpers de vistas dentro del módulo de clientes (HOISTED/FUERA de cualquier click)
 const clientsHome = document.getElementById('clientsHome');
