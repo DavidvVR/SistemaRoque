@@ -728,16 +728,39 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 
   <!-- Subcontenido: Documentos -->
   <div id="perm-docs" class="subcontent">
-    <div class="form-row">
-          <div class="fld">
-        <label for="permLicencia">Licencia/Concesión</label>
-        <input id="permLicencia" type="text" placeholder="Núm. de concesión">
-      </div>
-      <div class="fld">
-        <label for="permVigencia">Vigencia</label>
-        <input id="permVigencia" type="date">
-      </div>
-     
+       <h3 class="section-title">Documentación</h3>
+    <div class="doc-table-wrapper">
+      <table class="doc-table">
+        <thead>
+          <tr><th>Comprobante</th><th>Estatus</th><th>Documento</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="1">📁</span><span class="icon-btn perm-view" data-row="1">🔍</span><input type="file" id="permFile1"/></td>
+            <td id="permStatus1" class="status-no">❌ No</td><td>Acta Constitutiva</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="2">📁</span><span class="icon-btn perm-view" data-row="2">🔍</span><input type="file" id="permFile2"/></td>
+            <td id="permStatus2" class="status-no">❌ No</td><td>Poder Rep. Legal</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="3">📁</span><span class="icon-btn perm-view" data-row="3">🔍</span><input type="file" id="permFile3"/></td>
+            <td id="permStatus3" class="status-no">❌ No</td><td>Comprobante de Domicilio</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="4">📁</span><span class="icon-btn perm-view" data-row="4">🔍</span><input type="file" id="permFile4"/></td>
+            <td id="permStatus4" class="status-no">❌ No</td><td>Constancia de Situación Fiscal</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="5">📁</span><span class="icon-btn perm-view" data-row="5">🔍</span><input type="file" id="permFile5"/></td>
+            <td id="permStatus5" class="status-no">❌ No</td><td>INE Rep. Legal</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="6">📁</span><span class="icon-btn perm-view" data-row="6">🔍</span><input type="file" id="permFile6"/></td>
+            <td id="permStatus6" class="status-no">❌ No</td><td>Contrato</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -1334,7 +1357,31 @@ window.addEventListener('click', (e) => {
           }
         };
       });
-
+  document.querySelectorAll('.perm-folder').forEach(btn => {
+        btn.onclick = () => {
+          const row = btn.dataset.row;
+          const inp = document.getElementById('permFile' + row);
+          inp.click();
+          inp.onchange = () => {
+            const st = document.getElementById('permStatus' + row);
+            st.textContent = '✅ Sí';
+            st.classList.remove('status-no');
+            st.classList.add('status-yes');
+          };
+        };
+      });
+      document.querySelectorAll('.perm-view').forEach(btn => {
+        btn.onclick = () => {
+          const row = btn.dataset.row;
+          const inp = document.getElementById('permFile' + row);
+          if (inp.files.length) {
+            const url = URL.createObjectURL(inp.files[0]);
+            window.open(url);
+          } else {
+            alert('No hay archivo cargado aún');
+          }
+        };
+      });
       /* --- Tarifas / Modal --- */
       const modal = document.getElementById('tarifaModal');
       const tablaTarifas = document.querySelector('#tablaTarifas tbody');
