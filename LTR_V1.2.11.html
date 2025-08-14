@@ -63,14 +63,15 @@
     }
 
     .btn {
-  padding: 8px 16px;
-  margin: 8px 4px;
-  border: 2px solid #000;    /* Puedes usar var(--frame-border) si tienes variables CSS */
-  background: #e5e5e5;
-  cursor: pointer;
-  font-weight: 700;
-  border-radius: 8px;
+    padding: 8px 16px;
+      margin: 8px 4px;
+      border: 2px solid var(--frame-border);
+      background: #e5e5e5;
+      cursor: pointer;
+      font-weight: 700;
+      border-radius: 8px;
     }
+    .btn.primary { background:#efe9ff; border-color:#7c3aed; }
   
     .sub-tab.active { background: var(--tab-active); }
     .sub-content { display:none; }
@@ -179,8 +180,6 @@
 .clients-list .search input{
   padding:8px; border:2px solid var(--input-border); border-radius:8px; min-width:220px;
 }
-.btn { padding:8px 16px; border:2px solid var(--frame-border); background:#e5e5e5; border-radius:8px; cursor:pointer; }
-btn.primary { background:#efe9ff; border-color:#7c3aed; }
 
 .client-id-link { color:#000; text-decoration:underline; cursor:pointer; }
 
