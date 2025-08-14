@@ -1094,32 +1094,7 @@ document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
   alert('Aquí abrirías el formulario para agregar una nueva unidad');
 });
 
-      // Mostrar modal de Alta de Unidad
-document.querySelector('.add-unit')?.addEventListener('click', function() {
-  const unidadModal = document.getElementById('unidadModal');
-  if (unidadModal) {
-    unidadModal.classList.remove('hidden');
-    unidadModal.style.display = 'flex'; // Para que se muestre correctamente centrado
-  }
-});
-
-// Cerrar modal de Alta de Unidad
-document.querySelector('#unidadModal .close')?.addEventListener('click', function() {
-  const unidadModal = document.getElementById('unidadModal');
-  if (unidadModal) {
-    unidadModal.classList.add('hidden');
-    unidadModal.style.display = 'none';
-  }
-});
-
-// También cerrar si das click en "Cancelar" dentro del modal
-document.querySelector('#unidadModal .btn-cancelar')?.addEventListener('click', function() {
-  const unidadModal = document.getElementById('unidadModal');
-  if (unidadModal) {
-    unidadModal.classList.add('hidden');
-    unidadModal.style.display = 'none';
-  }
-});
+ 
   // Feedback (puedes reemplazar por tu modal con éxito)
   alert(`¡Permisionario guardado!\nID: ${id}\nNombre: ${nombre}`);
 
@@ -1812,10 +1787,9 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
   }
   // Modal "Alta de Unidad Vehicular" =====
 (function(){
-document.querySelector('#unidadModal .close').onclick = function() {
-  document.getElementById('unidadModal').classList.add('hidden');
-  document.getElementById('unidadModal').style.display = 'none';
-};
+  const btnAddUnit = document.querySelector('.add-unit');
+  const unidadModal = document.getElementById('unidadModal');
+  const tablaUnidadesBody = document.querySelector('#tablaUnidades tbody');
 
   // Referencias a inputs
   const $ = (id) => document.getElementById(id);
