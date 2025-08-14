@@ -935,10 +935,14 @@ document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
   document.getElementById('permRFC').value = '';
   document.getElementById('permEstatus').value = 'Activo';
   document.getElementById('permContacto').value = '';
-  document.getElementById('permLicencia').value = '';
-  document.getElementById('permVigencia').value = '';
+ // Algunos campos pueden no existir dependiendo de la versión del formulario
+  const licInput = document.getElementById('permLicencia');
+  if(licInput) licInput.value = '';
+  const vigInput = document.getElementById('permVigencia');
+  if(vigInput) vigInput.value = '';
   document.getElementById('permUnidades').value = '';
   document.getElementById('permNotas').value = '';
+  
 
   // Reset de subpestañas
   document.querySelectorAll('#permsMenu .subtab').forEach(t => t.classList.remove('active'));
@@ -974,8 +978,8 @@ document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
   const rfc      = document.getElementById('permRFC').value.trim();
   const estatus  = document.getElementById('permEstatus').value;
   const contacto = document.getElementById('permContacto').value.trim();
-  const licencia = document.getElementById('permLicencia').value.trim();
-  const vigencia = document.getElementById('permVigencia').value;
+  const licencia = document.getElementById('permLicencia')?.value.trim() || '';
+  const vigencia = document.getElementById('permVigencia')?.value || '';
   const unidades = document.getElementById('permUnidades').value.trim();
   const notas    = document.getElementById('permNotas').value.trim();
 
