@@ -1152,7 +1152,7 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     const wb = XLSX.read(data, { type: 'array' });
 
     const shClientes = wb.Sheets['Clientes'];
-    const shDocs     = wb.Sheets['Documentacion'];
+    const shDocs     = wb.Sheets['Documentación'];
     const shTarifas  = wb.Sheets['Tarifas'];
 
     const rowsClientes = shClientes ? XLSX.utils.sheet_to_json(shClientes) : [];
@@ -1177,6 +1177,7 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
         kmRecorrer: Number(r['Km Recorrer']||0),
         tarifa: Number(r['Tarifa']||0)
       });
+      
     });
 
     const docNames = [
