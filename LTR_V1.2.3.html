@@ -216,6 +216,40 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 .perms-list .search input{
   padding:8px; border:2px solid var(--input-border); border-radius:8px; min-width:220px;
 }
+    /* --- Botón + Nuevo Permisionario --- */
+.perms-list .list-actions {
+  display: flex; gap: 8px;
+}
+.btn-primary {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--primary, #2d6cdf);
+  color: #fff;
+}
+
+/* --- Sub-tabs Permisionarios --- */
+.subtabs { display:flex; gap:8px; margin: 12px 0; border-bottom: 2px solid var(--input-border); }
+.subtabs .subtab {
+  padding: 8px 12px; cursor:pointer; border-radius: 8px 8px 0 0;
+}
+.subtabs .subtab.active {
+  background: var(--chip-bg, #f0f3f7);
+  font-weight: 600;
+}
+.subcontent { display:none; }
+.subcontent.active { display:block; }
+
+.form-row { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px; }
+.form-row .fld { display:flex; flex-direction:column; gap:6px; }
+.form-row input, .form-row select, .form-row textarea {
+  padding: 8px; border: 2px solid var(--input-border); border-radius: 8px;
+}
+.actions-bar { display:flex; gap:8px; justify-content:flex-end; margin-top: 12px; 
+}
+    
     
   </style>
 </head>
@@ -625,7 +659,111 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
       </table>
     </div>
   </div>
+<div id="permsList" class="clients-menu perms-list" aria-label="Permisionarios registrados">
+  <div class="list-toolbar">
+    <div><h3>Permisionarios registrados</h3></div>
+    <div class="search">
+      <label for="searchPerm">Buscar:</label>
+      <input id="searchPerm" type="text" placeholder="Nombre, RFC…">
+    </div>
+    <div class="list-actions">
+      <button id="btnPermNuevo" class="btn-primary">+ Nuevo Permisionario</button>
+      <button id="btnPermVolver" class="btn">Volver</button>
+    </div>
+  </div>
 
+  <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
+    <table class="doc-table" id="tablaPerms">
+      <thead>
+        <tr>
+          <th>ID Permisionario</th>
+          <th>Nombre/Razón Social</th>
+          <th>RFC</th>
+          <th>Estatus</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody><!-- filas dinámicas --></tbody>
+    </table>
+  </div>
+</div>
+  <!-- Menú/Formulario: Nuevo Permisionario -->
+<div id="permsMenu" class="frame hidden" aria-label="Nuevo Permisionario">
+  <h3>Nuevo Permisionario</h3>
+
+  <div class="subtabs" role="tablist" aria-label="Subpestañas Permisionarios">
+    <div class="subtab active" data-target="perm-datos" role="tab" aria-selected="true">Datos</div>
+    <div class="subtab" data-target="perm-docs" role="tab">Documentos</div>
+    <div class="subtab" data-target="perm-unidades" role="tab">Unidades</div>
+    <div class="subtab" data-target="perm-coment" role="tab">Operadores</div>
+  </div>
+
+  <!-- Subcontenido: Datos -->
+  <div id="perm-datos" class="subcontent active">
+    <div class="form-row">
+      <div class="fld">
+        <label for="permNombre">Nombre/Razón social</label>
+        <input id="permNombre" type="text" placeholder="Permisionario S.A. de C.V.">
+      </div>
+      <div class="fld">
+        <label for="permRFC">RFC</label>
+        <input id="permRFC" type="text" placeholder="XXXX010101XXX">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="fld">
+        <label for="permEstatus">Estatus</label>
+        <select id="permEstatus">
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label for="permContacto">Contacto</label>
+        <input id="permContacto" type="text" placeholder="Nombre de contacto">
+      </div>
+    </div>
+  </div>
+
+  <!-- Subcontenido: Documentos -->
+  <div id="perm-docs" class="subcontent">
+    <div class="form-row">
+      <div class="fld">
+        <label for="permLicencia">Licencia/Concesión</label>
+        <input id="permLicencia" type="text" placeholder="Núm. de concesión">
+      </div>
+      <div class="fld">
+        <label for="permVigencia">Vigencia</label>
+        <input id="permVigencia" type="date">
+      </div>
+    </div>
+  </div>
+
+  <!-- Subcontenido: Unidades -->
+  <div id="perm-unidades" class="subcontent">
+    <div class="form-row">
+      <div class="fld">
+        <label for="permUnidades">Unidades registradas (texto breve)</label>
+        <textarea id="permUnidades" rows="3" placeholder="Ej: Tracto 1, Caja 123; Tracto 2, Caja 456…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subcontenido: Comentarios -->
+  <div id="perm-coment" class="subcontent">
+    <div class="form-row">
+      <div class="fld">
+        <label for="permNotas">Notas / Comentarios</label>
+        <textarea id="permNotas" rows="3" placeholder="Observaciones generales…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-bar">
+    <button id="btnPermCancelar" class="btn">Cancelar</button>
+    <button id="btnPermGuardar" class="btn-primary">Guardar Permisionario</button>
+  </div>
+</div>
 </div>
   <script>
     const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
@@ -763,6 +901,79 @@ if(getPerms().length === 0){
     { id: 'LTR-PR-01', nombre: 'Permisionario Demo S.A. de C.V.', rfc: 'PDE010101AB1', estatus: 'Activo' },
     { id: 'LTR-PR-02', nombre: 'Transporte Ejemplar S.A.', rfc: 'TEJ020202CD2', estatus: 'Inactivo' }
   ]);
+  // === Mostrar formulario Nuevo Permisionario ===
+document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
+  // Limpiar formulario
+  document.getElementById('permNombre').value = '';
+  document.getElementById('permRFC').value = '';
+  document.getElementById('permEstatus').value = 'Activo';
+  document.getElementById('permContacto').value = '';
+  document.getElementById('permLicencia').value = '';
+  document.getElementById('permVigencia').value = '';
+  document.getElementById('permUnidades').value = '';
+  document.getElementById('permNotas').value = '';
+
+  // Reset de subpestañas
+  document.querySelectorAll('#permsMenu .subtab').forEach(t => t.classList.remove('active'));
+  document.querySelector('#permsMenu .subtab[data-target="perm-datos"]').classList.add('active');
+  document.querySelectorAll('#permsMenu .subcontent').forEach(c => c.classList.remove('active'));
+  document.getElementById('perm-datos').classList.add('active');
+
+  // Mostrar formulario y ocultar lista
+  document.getElementById('permsList').classList.add('hidden');
+  document.getElementById('permsMenu').classList.remove('hidden');
+});
+
+// === Subpestañas (Datos / Documentos / Unidades / Comentarios) ===
+document.querySelectorAll('#permsMenu .subtab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#permsMenu .subtab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const tgt = tab.dataset.target;
+    document.querySelectorAll('#permsMenu .subcontent').forEach(c => c.classList.remove('active'));
+    document.getElementById(tgt).classList.add('active');
+  });
+});
+
+// === Cancelar (volver a la lista) ===
+document.getElementById('btnPermCancelar')?.addEventListener('click', () => {
+  document.getElementById('permsMenu').classList.add('hidden');
+  document.getElementById('permsList').classList.remove('hidden');
+});
+
+// === Guardar Permisionario ===
+document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
+  const nombre   = document.getElementById('permNombre').value.trim();
+  const rfc      = document.getElementById('permRFC').value.trim();
+  const estatus  = document.getElementById('permEstatus').value;
+  const contacto = document.getElementById('permContacto').value.trim();
+  const licencia = document.getElementById('permLicencia').value.trim();
+  const vigencia = document.getElementById('permVigencia').value;
+  const unidades = document.getElementById('permUnidades').value.trim();
+  const notas    = document.getElementById('permNotas').value.trim();
+
+  if(!nombre || !rfc){
+    alert('Por favor, completa al menos Nombre/Razón social y RFC.');
+    return;
+  }
+
+  const arr = getPerms();
+  const id = generarSiguienteIdPerm(arr);
+
+  arr.push({
+    id, nombre, rfc, estatus,
+    contacto, licencia, vigencia, unidades, notas
+  });
+  setPerms(arr);
+
+  // Feedback (puedes reemplazar por tu modal de éxito)
+  alert(`¡Permisionario guardado!\nID: ${id}\nNombre: ${nombre}`);
+
+  // Volver a la lista y refrescar
+  document.getElementById('permsMenu').classList.add('hidden');
+  document.getElementById('permsList').classList.remove('hidden');
+  renderTablaPerms();
+});
 }    
 
 // --- Helpers de vistas dentro del módulo de clientes (HOISTED/FUERA de cualquier click)
