@@ -654,6 +654,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     </div>
   </div>
 
+  
   <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
     <table class="doc-table" id="tablaPerms">
       <thead>
@@ -767,6 +768,8 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   <!-- Subcontenido: Unidades -->
   <div id="perm-unidades" class="subcontent">
     <h3 class="section-title">Unidades</h3>
+    <button class="btn add-unit">+ Agregar Unidad</button>
+
   <div class="doc-table-wrapper" style="max-height:250px; overflow-y:auto;">
     <table class="doc-table" id="tablaUnidades">
       <thead>
@@ -1013,8 +1016,11 @@ document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
     contacto, licencia, vigencia, unidades, notas
   });
   setPerms(arr);
+  document.querySelector('.add-unit')?.addEventListener('click', () => {
+  alert('Aquí abrirías el formulario para agregar una nueva unidad');
+});
 
-  // Feedback (puedes reemplazar por tu modal de éxito)
+  // Feedback (puedes reemplazar por tu modal con éxito)
   alert(`¡Permisionario guardado!\nID: ${id}\nNombre: ${nombre}`);
 
   // Volver a la lista y refrescar
