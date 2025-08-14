@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+      <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -1048,7 +1048,7 @@ document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
   document.getElementById('permsMenu').classList.remove('hidden');
 });
 
-// === Subpestañas (Datos / Documentos / Unidades / Comentarios) ===
+//  Subpestañas (Datos / Documentos / Unidades / Comentarios) 
 document.querySelectorAll('#permsMenu .subtab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('#permsMenu .subtab').forEach(t => t.classList.remove('active'));
@@ -1059,13 +1059,13 @@ document.querySelectorAll('#permsMenu .subtab').forEach(tab => {
   });
 });
 
-// === Cancelar (volver a la lista) ===
+// Cancelar (volver a la lista) ===
 document.getElementById('btnPermCancelar')?.addEventListener('click', () => {
   document.getElementById('permsMenu').classList.add('hidden');
   document.getElementById('permsList').classList.remove('hidden');
 });
 
-// === Guardar Permisionario ===
+// Guardar Permisionario ===
 document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
   const nombre   = document.getElementById('permNombre').value.trim();
   const rfc      = document.getElementById('permRFC').value.trim();
