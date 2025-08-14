@@ -1023,7 +1023,7 @@ if(getPerms().length === 0){
   ]);
   }
   
-  // === Mostrar formulario Nuevo Permisionario ===
+  //  Mostrar formulario Nuevo Permisionario 
 document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
   // Limpiar formulario
   document.getElementById('permNombre').value = '';
@@ -1249,7 +1249,7 @@ function limpiarFormularioCliente(){
   if(tarifasBody) tarifasBody.innerHTML = '';
 }
 
-// --- Botón “Nuevo Cliente” (tarjeta izquierda)
+// Botón “Nuevo Cliente” (tarjeta izquierda)
 document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
   editingClientId = null;
   limpiarFormularioCliente();
@@ -1259,7 +1259,7 @@ document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
   document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
 });
 
-// --- Botón “CLIENTES” (tarjeta derecha)
+// Botón “CLIENTES” (tarjeta derecha)
 document.getElementById('btnVerClientes')?.addEventListener('click', () => {
    editingClientId = null;
   document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
@@ -1269,13 +1269,13 @@ document.getElementById('btnVerClientes')?.addEventListener('click', () => {
 });
 
       
-// --- Volver al dashboard desde el menú principal de Clientes ---
+// Volver al dashboard desde el menú principal de Clientes ---
 document.getElementById('btnClientesBack')?.addEventListener('click', () => {
   showSection('dashboard');
 });
 
          
-// --- Botones dentro de la ventana “Clientes”
+// Botones dentro de la ventana “Clientes”
 document.getElementById('btnVolverHome')?.addEventListener('click', () => {
   editingClientId = null;
   document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
@@ -1290,7 +1290,7 @@ document.getElementById('btnNuevoDesdeLista')?.addEventListener('click', () => {
   document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
 });
 
-// --- Búsqueda en la lista
+// Búsqueda en la lista
 document.getElementById('searchCli')?.addEventListener('input', (e) => {
   renderTablaClientes(e.target.value);
 });
@@ -1333,7 +1333,7 @@ document.querySelectorAll('.sub-tab').forEach(tab => {
   tab.addEventListener('click', updateSaveButtonVisibility);
 });
 
-// --- Guardar cliente y mostrar confirmación ---
+// Guardar cliente y mostrar confirmación ---
 const clienteModal = document.getElementById('clienteModal');
 const clienteModalClose = clienteModal.querySelector('.close');
 const clienteModalBtnCerrar = clienteModal.querySelector('.btn-cerrar');
@@ -1667,7 +1667,7 @@ window.addEventListener('click', (e) => {
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
-// --- Importación desde Excel (Clientes, Documentación, Tarifas y Contactos) ---
+// Importación desde Excel (Clientes, Documentación, Tarifas y Contactos) ---
 document.getElementById('btnImportExcel')?.addEventListener('click', () => {
   document.getElementById('excelInput').click();
 });
@@ -1783,11 +1783,13 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     console.error(err);
     alert('No fue posible leer el archivo. Verifica que sea .xlsx y tenga las hojas: Clientes, Documentacion y Tarifas.');
   }
+      });
   // Modal "Alta de Unidad Vehicular" =====
 (function(){
-  const btnAddUnit = document.querySelector('.add-unit');
+  const btnAddUnit = document.querySelector('#permsMenu .add-unit');
   const unidadModal = document.getElementById('unidadModal');
   const tablaUnidadesBody = document.querySelector('#tablaUnidades tbody');
+      
 
   // Referencias a inputs
   const $ = (id) => document.getElementById(id);
