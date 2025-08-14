@@ -344,7 +344,10 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     </div>
   </div>
 </div>
-
+ <div class="home-actions">
+    <button id="btnClientesBack" class="btn">Volver</button>
+  </div>
+</div>
     <div id="clientsMenu"class="clients-menu hidden">
      <h2 id="tituloCliente" style="text-align:center;margin-bottom:16px;">Nuevo Cliente</h2>
       <div class="sub-tabs">
@@ -1104,6 +1107,13 @@ document.getElementById('btnVerClientes')?.addEventListener('click', () => {
   renderTablaClientes(); // pinta/actualiza la tabla
   limpiarFormularioCliente(); // limpia formulario de nuevo cliente
 });
+
+      
+// --- Volver al dashboard desde el menú principal de Clientes ---
+document.getElementById('btnClientesBack')?.addEventListener('click', () => {
+  showSection('dashboard');
+});
+
          
 // --- Botones dentro de la ventana “Clientes”
 document.getElementById('btnVolverHome')?.addEventListener('click', () => {
