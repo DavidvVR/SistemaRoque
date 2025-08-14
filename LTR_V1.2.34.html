@@ -254,6 +254,8 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   padding: 8px; border: 2px solid var(--input-border); border-radius: 8px;
 }
 .actions-bar { display:flex; gap:8px; justify-content:flex-end; margin-top: 12px; 
+.file-row { display:flex; align-items:center; gap:8px; }
+.file-row input[type="text"] { flex:1; }              
 }
     
     
@@ -800,10 +802,14 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     <h3>Alta de Unidad Vehicular</h3>
 
     <div class="form-row">
-      <div class="form-group">
-        <label for="uTarjeta">Tarjeta de Circulación*</label>
-        <input id="uTarjeta" type="text" placeholder="Número de tarjeta" required>
-      </div>
+     <div class="form-group">
+  <label for="uTarjetaName">Tarjeta de Circulación*</label>
+  <div class="file-row">
+    <button type="button" id="btnUTarjetaPick" class="icon-btn" title="Adjuntar">📁</button>
+    <input id="uTarjetaFile" type="file" accept=".pdf,.jpg,.jpeg,.png" required>
+    <input id="uTarjetaName" type="text" placeholder="Selecciona un archivo…" readonly required>
+  </div>
+</div>
       <div class="form-group">
         <label for="uPlacas">Placas*</label>
         <input id="uPlacas" type="text" placeholder="ABC123A" required>
@@ -1906,6 +1912,7 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     if (e.target === unidadModal) ocultarUnidadModal();
   });
 
+      
   // Habilitar edición al hacer doble clic en una fila
   tablaUnidadesBody?.addEventListener('dblclick', (e) => {
     const row = e.target.closest('tr');
@@ -1927,6 +1934,109 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
       mostrarUnidadModal();
     }catch{
       alert('No fue posible cargar los datos de la unidad para edición.');
+    }
+  });
+})();
+      const unidadesTbody = document.querySelector('#tablaUnidades tbody');
+  const unidadModal   = document.getElementById('unidadModal');
+
+  // --- File picker de Tarjeta de circulación ---
+  const btnPick   = document.getElementById('btnUTarjetaPick');
+  const fileInput = document.getElementById('uTarjetaFile');
+  const fileName  = document.getElementById('uTarjetaName');
+
+  btnPick?.addEventListener('click', () => fileInput?.click());
+  fileInput?.addEventListener('change', () => {
+    fileName.value = fileInput.files?.[0]?.name || '';
+  });
+
+  // --- Abrir modal desde "+ Agregar Unidad" si no lo tienes ya conectado ---
+  document.querySelector('.add-unit')?.addEventListener('click', () => {
+    unidadModal.classList.remove('hidden');
+    unidadModal.style.display = 'flex';
+  });
+
+  // --- Cerrar modal (X y Cancelar) ---
+  unidadModal.querySelector('.close')?.addEventListener('click', closeUnidadModal);
+  unidadModal.querySelector('.btn-cancelar')?.addEventListener('click', closeUnidadModal);
+  window.addEventListener('click', (e) => { if (e.target === unidadModal) closeUnidadModal(); });
+  function closeUnidadModal(){
+    unidadModal.classList.add('hidden');
+    unidadModal.style.display = 'none';
+  }
+
+  // --- Guardar: crear fila con icono 🔍 que abre el archivo adjunto ---
+  unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+    // Campos del formulario
+    const uTarjetaOK    = fileInput.files && fileInput.files.length > 0;
+    const uTarjetaFile  = uTarjetaOK ? fileInput.files[0] : null;
+    const uTarjetaName  = fileName.value.trim();
+
+    const uPlacas       = document.getElementById('uPlacas')?.value.trim() || '';
+    const uEco          = document.getElementById('uEco')?.value.trim() || '';
+    const uTipo         = document.getElementById('uTipo')?.value || '';
+    const uVencePoliza  = document.getElementById('uVencePoliza')?.value || '';
+    const uAseguradora  = document.getElementById('uAseguradora')?.value.trim() || '';
+    const uMarca        = document.getElementById('uMarca')?.value.trim() || '';
+    const uAnio         = document.getElementById('uAnio')?.value || '';
+    const uPermisoSCT   = document.getElementById('uPermisoSCT')?.value.trim() || '';
+
+    // Validación básica (Tarjeta es obligatoria)
+    if (!uTarjetaOK) { alert('Adjunta la Tarjeta de circulación.'); return; }
+    if (!uTipo)      { alert('Selecciona el Tipo de unidad.');    return; }
+
+    // Prepara URL temporal para poder visualizar luego
+    const tcUrl = URL.createObjectURL(uTarjetaFile);
+
+    // Info serializable mínima para la fila (si lo necesitas para editar más tarde)
+    const dataInfo = {
+      placas: uPlacas, eco: uEco, tipo: uTipo, vencePoliza: uVencePoliza,
+      aseguradora: uAseguradora, marca: uMarca, anio: uAnio, permisoSCT: uPermisoSCT,
+      tcName: uTarjetaName
+    };
+
+    const tr = document.createElement('tr');
+    tr.dataset.info = JSON.stringify(dataInfo);
+    tr.dataset.tcUrl = tcUrl;                   // guardamos la URL para abrirla con la lupa
+    tr.dataset.tcName = uTarjetaName || '';     // por si quieres mostrar tooltip con el nombre
+
+    // Orden de columnas según tu thead:
+    // Tarjeta de Circulación | Placas | Eco | Tipo | Vencimiento Poliza | Aseguradora | Marca | Año | Permiso SCT
+    tr.innerHTML = `
+      <td title="${uTarjetaName || 'Tarjeta de circulación'}">
+        <span class="icon-btn ver-tc" aria-label="Ver Tarjeta de circulación" title="Ver Tarjeta de circulación">🔍</span>
+      </td>
+      <td>${uPlacas}</td>
+      <td>${uEco}</td>
+      <td>${uTipo}</td>
+      <td>${uVencePoliza || ''}</td>
+      <td>${uAseguradora}</td>
+      <td>${uMarca}</td>
+      <td>${uAnio}</td>
+      <td>${uPermisoSCT}</td>
+    `;
+
+    unidadesTbody.appendChild(tr);
+
+    // Limpia el formulario del modal para siguiente alta
+    fileInput.value = '';
+    fileName.value  = '';
+    ['uPlacas','uEco','uTipo','uVencePoliza','uAseguradora','uMarca','uAnio','uPermisoSCT']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = (el.tagName === 'SELECT') ? '' : ''; });
+
+    closeUnidadModal();
+  });
+
+  // --- Delegación: click en la lupa 🔍 para abrir el archivo ---
+  unidadesTbody?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.ver-tc');
+    if (!btn) return;
+    const tr = btn.closest('tr');
+    const url = tr?.dataset.tcUrl;
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      alert('No hay archivo adjuntado en esta fila.');
     }
   });
 })();
