@@ -220,14 +220,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 .perms-list .list-actions {
   display: flex; gap: 8px;
 }
-.btn-primary {
-  padding: 8px 12px;
-  border: 0;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  background: var(--primary, #2d6cdf);
-  color: #fff;
+.btn-primary {.btn.primary { background:#efe9ff; border-color:#7c3aed; }
 }
 
 /* --- Sub-tabs Permisionarios --- */
@@ -628,37 +621,11 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 </div>
 
   </div>
-<!-- permModule -->
+<!-- Inicio Mod 2 -->
 <div id="permModule" class="frame hidden" aria-label="Módulo Permisionarios">
 
   <!-- Ventana: Permisionarios registrados -->
-  <div id="permsList" class="clients-menu perms-list" aria-label="Permisionarios registrados">
-    <div class="list-toolbar">
-      <div><h3>Permisionarios registrados</h3></div>
-      <div class="search">
-        <label for="searchPerm">Buscar:</label>
-        <input id="searchPerm" type="text" placeholder="Nombre, RFC…">
-      </div>
-      <div class="list-actions">
-        <button id="btnPermVolver" class="btn">Volver</button>
-      </div>
-    </div>
 
-    <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
-      <table class="doc-table" id="tablaPerms">
-        <thead>
-          <tr>
-            <th>ID Permisionario</th>
-            <th>Nombre/Razón Social</th>
-            <th>RFC</th>
-            <th>Estatus</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody><!-- filas dinámicas --></tbody>
-      </table>
-    </div>
-  </div>
 <div id="permsList" class="clients-menu perms-list" aria-label="Permisionarios registrados">
   <div class="list-toolbar">
     <div><h3>Permisionarios registrados</h3></div>
