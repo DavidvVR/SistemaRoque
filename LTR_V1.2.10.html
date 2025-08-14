@@ -76,6 +76,13 @@
     .sub-content { display:none; }
     .sub-content.active { display:block; }
     .form-group { display:grid; grid-template-columns:220px 1fr; align-items:center; gap:12px; margin:8px 0; }
+     .contact-group { grid-template-columns:220px 1fr 1fr 1fr; }
+    .section-divider {
+      border:0;
+      height:1px;
+      margin:16px 0;
+      background:linear-gradient(to right, transparent, rgba(0,0,0,0.3), transparent);
+    }
     h3.section-title { margin-top:16px; font-size:1.1rem; border-bottom:1px solid #000; padding-bottom:4px; }
     .button-row { display:flex; justify-content:center; gap:12px; margin-top:16px; }
     /* Documentation table */
@@ -363,26 +370,28 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
         <div class="form-group"><label>Estatus</label><select id="selEstatus"><option>Activo</option><option>Inactivo</option></select></div>
         <div class="form-group"><label>RFC</label><input type="text" id="inpRFC"></div>
         <div class="form-group"><label>Dirección</label><textarea id="txtDireccion" style="width:100%;height:70px;border:2px solid #ccc;border-radius:6px;"></textarea></div>
+         <hr class="section-divider">
         <h3 class="section-title">Contactos</h3>
-<div class="form-group">
-  <label>Operaciones</label>
-  <input type="text" placeholder="Email">
-  <input type="email" placeholder="Nombre">
-  <input type="text" placeholder="Tel.">
-</div>
-<div class="form-group">
-  <label>Administración</label>
-  <input type="text" placeholder="Email">
-  <input type="email" placeholder="Nombre">
-  <input type="text" placeholder="Tel.">
-</div>
-<div class="form-group">
-  <label>Comercial</label>
-  <input type="text" placeholder="Email">
-  <input type="email" placeholder="Nombre">
-  <input type="text" placeholder="Tel.">
-</div>
- </div>       
+<div class="form-group contact-group">
+          <label>Operaciones</label>
+          <input type="email" placeholder="Email">
+          <input type="text" placeholder="Nombre">
+          <input type="text" placeholder="Tel.">
+        </div>
+        <div class="form-group contact-group">
+          <label>Administración</label>
+          <input type="email" placeholder="Email">
+          <input type="text" placeholder="Nombre">
+          <input type="text" placeholder="Tel.">
+        </div>
+        <div class="form-group contact-group">
+          <label>Comercial</label>
+          <input type="email" placeholder="Email">
+          <input type="text" placeholder="Nombre">
+          <input type="text" placeholder="Tel.">
+        </div>
+      </div>
+
 
       <div id="tab-docs" class="sub-content">
         <h3 class="section-title">Documentación</h3>
