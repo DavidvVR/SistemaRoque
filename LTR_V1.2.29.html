@@ -1783,11 +1783,12 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     console.error(err);
     alert('No fue posible leer el archivo. Verifica que sea .xlsx y tenga las hojas: Clientes, Documentacion y Tarifas.');
   }
-  / ===== Modal "Alta de Unidad Vehicular" =====
+  // Modal "Alta de Unidad Vehicular" =====
 (function(){
-  const unidadModal = document.getElementById('unidadModal');
-  const tablaUnidadesBody = document.querySelector('#tablaUnidades tbody');
-  const btnAddUnit = document.querySelector('.add-unit');
+document.querySelector('#unidadModal .close').onclick = function() {
+  document.getElementById('unidadModal').classList.add('hidden');
+  document.getElementById('unidadModal').style.display = 'none';
+};
 
   // Referencias a inputs
   const $ = (id) => document.getElementById(id);
