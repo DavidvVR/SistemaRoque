@@ -162,7 +162,15 @@
 .choice-card svg{ width:96px; height:96px;}
 .choice-label{ font-weight:700; letter-spacing:.03em;}
 @media (max-width:780px){ .home-grid{grid-template-columns:1fr;} }
-
+#clientsModule{
+  display:flex;
+  flex-direction:column;
+}
+.home-actions{
+  margin-top:auto;
+  display:flex;
+  justify-content:flex-end;
+}
   /* --- Lista de clientes (nueva ventana) --- */
 .clients-list .list-toolbar{
   display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:12px;
