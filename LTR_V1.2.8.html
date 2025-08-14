@@ -868,6 +868,8 @@ if(getPerms().length === 0){
     { id: 'LTR-PR-01', nombre: 'Permisionario Demo S.A. de C.V.', rfc: 'PDE010101AB1', estatus: 'Activo' },
     { id: 'LTR-PR-02', nombre: 'Transporte Ejemplar S.A.', rfc: 'TEJ020202CD2', estatus: 'Inactivo' }
   ]);
+  }
+  
   // === Mostrar formulario Nuevo Permisionario ===
 document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
   // Limpiar formulario
@@ -941,7 +943,7 @@ document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
   document.getElementById('permsList').classList.remove('hidden');
   renderTablaPerms();
 });
-}    
+    
 
 // --- Helpers de vistas dentro del módulo de clientes (HOISTED/FUERA de cualquier click)
 const clientsHome = document.getElementById('clientsHome');
