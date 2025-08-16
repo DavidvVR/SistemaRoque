@@ -1210,9 +1210,8 @@ document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
   const licencia = document.getElementById('permLicencia')?.value.trim() || '';
   const vigencia = document.getElementById('permVigencia')?.value || '';
   const unidades = document.querySelectorAll('#tablaUnidades tbody tr').length;
-    const notas    = document.getElementById('permNotas')?.value.trim() || '';
-        const notas    = document.getElementById('permNotas')?.value.trim() || '';
-
+  const notas    = document.getElementById('permNotas')?.value.trim() || '';
+        
   if(!nombre || !rfc){
     alert('Por favor, completa al menos Nombre/Razón social y RFC.');
     return;
@@ -2723,32 +2722,6 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
      
 })();
 </script>
-<script>
-      // Modal "Agregar Operador"
-function updatePermGuardarState(){
-      const nombre = document.getElementById('permNombre')?.value.trim();
-      const rfc = document.getElementById('permRFC')?.value.trim();
-      const units = document.querySelectorAll('#tablaUnidades tbody tr').length;
-      const operators = document.querySelectorAll('#tablaOperadores tbody tr').length;
-      const btn = document.getElementById('btnPermGuardar');
-      if(btn){
-        btn.disabled = !(nombre && rfc && units > 0 && operators > 0);
-    }
-      const tUnidades = document.querySelector('#tablaUnidades tbody');
-  if(tUnidades) tUnidades.innerHTML = '';
-  const tOperadores = document.querySelector('#tablaOperadores tbody');
-  if(tOperadores) tOperadores.innerHTML = '';
-  updatePermGuardarState();
-      }
-      const permNombreEl = document.getElementById('permNombre');
-const permRFCEl = document.getElementById('permRFC');
-permNombreEl?.addEventListener('input', updatePermGuardarState);
-permRFCEl?.addEventListener('input', updatePermGuardarState);
-updatePermGuardarState();
- }
-      
 
-
-</script>
 </body>
 </html>
