@@ -2600,35 +2600,36 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
   });
 })();
       
-</script>
-
-      <script>
-// Modal "Agregar Operador"
-(function(){
-  const btnAddOperator = document.querySelector('#permsMenu .add-operator');
-  const operadorModal = document.getElementById('operadorModal');
+<script>
+(function () {
+  // === Modal "Agregar Operador" ===
+  const btnAddOperator      = document.querySelector('#permsMenu .add-operator');
+  const operadorModal       = document.getElementById('operadorModal');
   const tablaOperadoresBody = document.querySelector('#tablaOperadores tbody');
 
   const $ = (id) => document.getElementById(id);
   const f = {
-    nombre: $('opNombre'),
-    numero: $('opNumeroLicencia'),
-    licencia: $('opLicencia'),
-    vtoLic: $('opVtoLicencia'),
-    apto: $('opAptoMedico'),
+    nombre:  $('opNombre'),
+    numero:  $('opNumeroLicencia'),
+    licencia:$('opLicencia'),
+    vtoLic:  $('opVtoLicencia'),
+    apto:    $('opAptoMedico'),
     vtoApto: $('opVtoApto'),
-    rfc: $('opRFC'),
+    rfc:     $('opRFC'),
   };
 
-  function limpiar(){
+  function limpiar() {
     Object.values(f).forEach(el => { if (el) el.value = ''; });
   }
 
-  function mostrar(){
+  function mostrar() {
+    if (!operadorModal) return;
     operadorModal.classList.remove('hidden');
     operadorModal.style.display = 'flex';
   }
-  function ocultar(){
+
+  function ocultar() {
+    if (!operadorModal) return;
     operadorModal.classList.add('hidden');
     operadorModal.style.display = 'none';
   }
@@ -2638,26 +2639,26 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     mostrar();
   });
 
-  operadorModal.querySelector('.close')?.addEventListener('click', ocultar);
-  operadorModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultar);
+  operadorModal?.querySelector('.close')?.addEventListener('click', ocultar);
+  operadorModal?.querySelector('.btn-cancelar')?.addEventListener('click', ocultar);
 
-  operadorModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+  operadorModal?.querySelector('.btn-guardar')?.addEventListener('click', () => {
     const datos = {
-      nombre: f.nombre.value.trim(),
-      numero: f.numero.value.trim(),
-      licencia: f.licencia.value.trim(),
-      vtoLic: f.vtoLic.value,
-      apto: f.apto.value.trim(),
-      vtoApto: f.vtoApto.value,
-      rfc: f.rfc.value.trim(),
+      nombre:  f.nombre?.value.trim()  || '',
+      numero:  f.numero?.value.trim()  || '',
+      licencia:f.licencia?.value.trim()|| '',
+      vtoLic:  f.vtoLic?.value         || '',
+      apto:    f.apto?.value.trim()    || '',
+      vtoApto: f.vtoApto?.value        || '',
+      rfc:     f.rfc?.value.trim()     || '',
     };
 
-    if(!datos.nombre){
+    if (!datos.nombre) {
       alert('Ingrese el nombre del operador.');
       return;
     }
 
-    const vtoLicLegible = datos.vtoLic ? new Date(datos.vtoLic + 'T00:00:00').toLocaleDateString('es-MX') : '';
+    const vtoLicLegible  = datos.vtoLic  ? new Date(datos.vtoLic  + 'T00:00:00').toLocaleDateString('es-MX') : '';
     const vtoAptoLegible = datos.vtoApto ? new Date(datos.vtoApto + 'T00:00:00').toLocaleDateString('es-MX') : '';
 
     const tr = document.createElement('tr');
@@ -2670,46 +2671,55 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
       <td>${vtoAptoLegible}</td>
       <td>${datos.rfc}</td>
     `;
-    tablaOperadoresBody.appendChild(tr);
+    tablaOperadoresBody?.appendChild(tr);
 
     ocultar();
     limpiar();
   });
 
   window.addEventListener('click', (e) => { if (e.target === operadorModal) ocultar(); });
-}
-   // === Modal Confirmación PERMISIONARIO ===
-const permModal = document.getElementById('permModal');
-const permModalClose = permModal?.querySelector('.close');
-const permModalBtnCerrar = permModal?.querySelector('.btn-cerrar');
 
-function abrirPermModal({ id, nombre, rfc, estatus }) {
-  if (!permModal) return;
+  // === Modal Confirmación PERMISIONARIO ===
+  const permModal         = document.getElementById('permModal');
+  const permModalClose    = permModal?.querySelector('.close');
+  const permModalBtnCerrar= permModal?.querySelector('.btn-cerrar');
 
-  // Llenar datos
-  document.getElementById('idPermTexto').textContent = id;
-  document.getElementById('nombrePerm').textContent = nombre;
-  document.getElementById('rfcPerm').textContent = rfc;
-  document.getElementById('estatusPerm').textContent = estatus;
+  function cerrarPermModal() {
+    if (!permModal) return;
+    permModal.classList.add('hidden');
+    permModal.style.display = 'none';
+  }
 
-  // Mostrar
-  permModal.classList.remove('hidden');
-  permModal.style.display = 'flex';
-}
+  // Exponer sólo la apertura si la llamas desde HTML/otros scripts
+  window.abrirPermModal = function ({ id, nombre, rfc, estatus } = {}) {
+    if (!permModal) return;
+    $('idPermTexto').textContent = id      || '';
+    $('nombrePerm').textContent  = nombre  || '';
+    $('rfcPerm').textContent     = rfc     || '';
+    $('estatusPerm').textContent = estatus || '';
+    permModal.classList.remove('hidden');
+    permModal.style.display = 'flex';
+  };
 
-function cerrarPermModal() {
-  if (!permModal) return;
-  permModal.classList.add('hidden');
-  permModal.style.display = 'none';
-}
+  permModalClose?.addEventListener('click', cerrarPermModal);
+  permModalBtnCerrar?.addEventListener('click', cerrarPermModal);
+  window.addEventListener('click', (e) => { if (e.target === permModal) cerrarPermModal(); });
 
-// Cierres
-permModalClose?.addEventListener('click', cerrarPermModal);
-permModalBtnCerrar?.addEventListener('click', cerrarPermModal);
-window.addEventListener('click', (e) => { if (e.target === permModal) cerrarPermModal(); });
+  // === Habilitar/Deshabilitar botón Guardar Permisionario ===
+  function updatePermGuardarState() {
+    const nombre = $('permNombre')?.value.trim();
+    const rfc    = $('permRFC')?.value.trim();
+    const btn    = $('btnPermGuardar');
+    if (btn) btn.disabled = !(nombre && rfc);
+  }
 
-            
+  ['permNombre', 'permRFC'].forEach(id => {
+    $(id)?.addEventListener('input', updatePermGuardarState);
+  });
+  // Estado inicial
+  updatePermGuardarState();
 })();
 </script>
+      
 </body>
 </html>
