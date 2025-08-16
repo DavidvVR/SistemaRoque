@@ -304,6 +304,25 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   </div>
 </div>
 
+     <!-- Modal de confirmación de permisionario -->
+<div id="permModal" class="modal hidden">
+  <div class="modal-content" style="text-align:center; padding: 40px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <h2>¡Felicidades, agregaste un nuevo permisionario!</h2>
+    <div class="id-perm" style="color:red;">
+      ID del Permisionario: <span id="idPermTexto" style="color:red; text-decoration:underline;"></span>
+    </div>
+    <div class="datos-perm" style="text-align:left;">
+      <p><strong>Nombre/Razon Social:</strong> <span id="nombrePerm"></span></p>
+      <p><strong>RFC:</strong> <span id="rfcPerm"></span></p>
+      <p><strong># unidades:</strong> <span id="unidadesPerm"></span></p>
+    </div>
+    <div class="modal-buttons">
+      <button type="button" class="btn-cerrar">Cerrar</button>
+    </div>
+  </div>
+</div> 
+
     
     
 
@@ -978,7 +997,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 
   <div class="actions-bar">
     <button id="btnPermCancelar" class="btn">Cancelar</button>
-    <button id="btnPermGuardar" class="btn-primary">Guardar Permisionario</button>
+    <button id="btnPermGuardar" class="btn" disabled>Guardar Permisionario</button>
   </div>
 </div>
 </div>
@@ -2663,7 +2682,35 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
   });
 
   window.addEventListener('click', (e) => { if (e.target === operadorModal) ocultar(); });
+     
 })();
+</script>
+<script>
+      // Modal "Agregar Operador"
+function updatePermGuardarState(){
+      const nombre = document.getElementById('permNombre')?.value.trim();
+      const rfc = document.getElementById('permRFC')?.value.trim();
+      const units = document.querySelectorAll('#tablaUnidades tbody tr').length;
+      const operators = document.querySelectorAll('#tablaOperadores tbody tr').length;
+      const btn = document.getElementById('btnPermGuardar');
+      if(btn){
+        btn.disabled = !(nombre && rfc && units > 0 && operators > 0);
+    }
+      const tUnidades = document.querySelector('#tablaUnidades tbody');
+  if(tUnidades) tUnidades.innerHTML = '';
+  const tOperadores = document.querySelector('#tablaOperadores tbody');
+  if(tOperadores) tOperadores.innerHTML = '';
+  updatePermGuardarState();
+      }
+      const permNombreEl = document.getElementById('permNombre');
+const permRFCEl = document.getElementById('permRFC');
+permNombreEl?.addEventListener('input', updatePermGuardarState);
+permRFCEl?.addEventListener('input', updatePermGuardarState);
+updatePermGuardarState();
+ }
+      
+
+
 </script>
 </body>
 </html>
