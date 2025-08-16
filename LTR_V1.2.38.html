@@ -1683,7 +1683,16 @@ window.addEventListener('click', (e) => {
 
 
 
-  <script src="js_modules/login.js"></script>
+  <script src="js_modules/login.js"> 
+        
+        const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
+    function showSection(id) {
+      document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+     </script>
 <script src="js_modules/dashboard.js"></script>
 <script src="js_modules/clientes.js"></script>
 <script src="js_modules/permisionarios.js">
