@@ -909,6 +909,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
         <thead>
           <tr>
             <th>Nombre</th>
+            <th>Número de Licencia</th>
             <th>Licencia</th>
             <th>Vto de Licencia</th>
             <th>Apto Médico</th>
@@ -920,6 +921,58 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
           <!-- Filas generadas dinámicamente -->
         </tbody>
       </table>
+     
+      <div id="operadorModal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content" style="min-width:480px;">
+          <span class="close" title="Cerrar">&times;</span>
+          <h3>Agregar Operador</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="opNombre">Nombre</label>
+              <input id="opNombre" type="text">
+            </div>
+            <div class="form-group">
+              <label for="opNumeroLicencia">Número de Licencia</label>
+              <input id="opNumeroLicencia" type="text">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="opLicencia">Licencia</label>
+              <input id="opLicencia" type="text">
+            </div>
+            <div class="form-group">
+              <label for="opVtoLicencia">Vto de Licencia</label>
+              <input id="opVtoLicencia" type="date">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="opAptoMedico">Apto Médico</label>
+              <input id="opAptoMedico" type="text">
+            </div>
+            <div class="form-group">
+              <label for="opVtoApto">Vto apto</label>
+              <input id="opVtoApto" type="date">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-group-full">
+              <label for="opRFC">RFC</label>
+              <input id="opRFC" type="text">
+            </div>
+          </div>
+
+          <div class="modal-buttons">
+            <button type="button" class="btn-cancelar">Cancelar</button>
+            <button type="button" class="btn-guardar">Guardar</button>
+          </div>
+        </div>
+      </div>     
     </div>
   </div>
 
@@ -2532,7 +2585,85 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     }
   });
 })();
+      
 </script>
 
+      <script>
+// Modal "Agregar Operador"
+(function(){
+  const btnAddOperator = document.querySelector('#permsMenu .add-operator');
+  const operadorModal = document.getElementById('operadorModal');
+  const tablaOperadoresBody = document.querySelector('#tablaOperadores tbody');
+
+  const $ = (id) => document.getElementById(id);
+  const f = {
+    nombre: $('opNombre'),
+    numero: $('opNumeroLicencia'),
+    licencia: $('opLicencia'),
+    vtoLic: $('opVtoLicencia'),
+    apto: $('opAptoMedico'),
+    vtoApto: $('opVtoApto'),
+    rfc: $('opRFC'),
+  };
+
+  function limpiar(){
+    Object.values(f).forEach(el => { if (el) el.value = ''; });
+  }
+
+  function mostrar(){
+    operadorModal.classList.remove('hidden');
+    operadorModal.style.display = 'flex';
+  }
+  function ocultar(){
+    operadorModal.classList.add('hidden');
+    operadorModal.style.display = 'none';
+  }
+
+  btnAddOperator?.addEventListener('click', () => {
+    limpiar();
+    mostrar();
+  });
+
+  operadorModal.querySelector('.close')?.addEventListener('click', ocultar);
+  operadorModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultar);
+
+  operadorModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+    const datos = {
+      nombre: f.nombre.value.trim(),
+      numero: f.numero.value.trim(),
+      licencia: f.licencia.value.trim(),
+      vtoLic: f.vtoLic.value,
+      apto: f.apto.value.trim(),
+      vtoApto: f.vtoApto.value,
+      rfc: f.rfc.value.trim(),
+    };
+
+    if(!datos.nombre){
+      alert('Ingrese el nombre del operador.');
+      return;
+    }
+
+    const vtoLicLegible = datos.vtoLic ? new Date(datos.vtoLic + 'T00:00:00').toLocaleDateString('es-MX') : '';
+    const vtoAptoLegible = datos.vtoApto ? new Date(datos.vtoApto + 'T00:00:00').toLocaleDateString('es-MX') : '';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${datos.nombre}</td>
+      <td>${datos.numero}</td>
+      <td>${datos.licencia}</td>
+      <td>${vtoLicLegible}</td>
+      <td>${datos.apto}</td>
+      <td>${vtoAptoLegible}</td>
+      <td>${datos.rfc}</td>
+    `;
+    tablaOperadoresBody.appendChild(tr);
+
+    ocultar();
+    limpiar();
+  });
+
+  window.addEventListener('click', (e) => { if (e.target === operadorModal) ocultar(); });
+})();
+</script>
 </body>
 </html>
