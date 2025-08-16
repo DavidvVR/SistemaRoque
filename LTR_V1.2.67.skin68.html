@@ -1,0 +1,3047 @@
+      <!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SistemaRoque V1.2.48.2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --panel-bg: #fff;
+      --frame-border: #000;
+      --text: #222;
+      --font: "Segoe UI", Tahoma, sans-serif;
+      --input-border: #808000;
+      --section-bg: #e8e8e8;
+      --tab-bg: #ddd;
+      --tab-active: #fff;
+      --tab-border: #000;
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { background: var(--bg); font-family: var(--font); color: var(--text); }
+    .hidden { display: none; }
+    .frame {
+      position: relative;
+      margin: 50px auto; padding: 40px 20px 20px; max-width: 920px;
+      background: var(--panel-bg);
+      border: 4px solid var(--frame-border);
+      border-radius: 12px;
+    }
+    /* Login */
+    #loginFrame { text-align:center; }
+    #loginFrame input {
+      width: calc(100% - 16px); padding: 8px; margin: 6px 0;
+      border: 2px solid #ccc; border-radius: 6px;
+      font-size: .9rem;
+    }
+    #loginFrame button {
+      padding: 8px 16px; margin: 8px 4px;
+      border:2px solid var(--frame-border); background:#e5e5e5; cursor:pointer; font-weight:700; border-radius:8px;
+    }
+    /* Dashboard */
+    #dashboard h2 { text-align:center; margin-bottom:16px; }
+    .dashboard { display:grid; grid-template-columns:repeat(5,1fr); gap:20px; justify-items:center; }
+    .module { width:100px; height:100px; background:var(--panel-bg);
+      border:2px solid var(--frame-border); border-radius:8px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      cursor:pointer; transition:transform .1s;
+    }
+    .module:hover { transform:translateY(-3px); }
+    .module-icon { font-size:2rem; }
+    .module-label { margin-top:8px; font-weight:bold; font-size:.9rem; text-align:center; }
+    /* clientsModule */
+    .clients-menu {
+      margin: 0 auto; width: 100%; max-width:860px; background:var(--section-bg);
+      border-radius:12px; padding:20px;
+    }
+    /* Sub-tabs */
+    .sub-tabs { display:flex; border-bottom:2px solid var(--tab-border); margin-bottom:16px; }
+    .sub-tab {
+      padding:8px 16px; cursor:pointer;
+      background: var(--tab-bg); border:2px solid var(--tab-border); border-bottom:none;
+      margin-right:4px; border-radius:8px 8px 0 0;
+    }
+
+    .btn {
+  padding: 8px 16px;
+  margin: 8px 4px;
+  border: 2px solid #000;    /* Puedes usar var(--frame-border) si tienes variables CSS */
+  background: #e5e5e5;
+  cursor: pointer;
+  font-weight: 700;
+  border-radius: 8px;
+    }
+  
+    .sub-tab.active { background: var(--tab-active); }
+    .sub-content { display:none; }
+    .sub-content.active { display:block; }
+    .form-group { display:grid; grid-template-columns:220px 1fr; align-items:center; gap:12px; margin:8px 0; }
+    h3.section-title { margin-top:16px; font-size:1.1rem; border-bottom:1px solid #000; padding-bottom:4px; }
+    .button-row { display:flex; justify-content:center; gap:12px; margin-top:16px; }
+    /* Documentation table */
+    .doc-table-wrapper { border:2px dashed var(--input-border); padding:12px; }
+    table.doc-table { width:100%; border-collapse: collapse; }
+    table.doc-table th, table.doc-table td { border:1px solid var(--input-border); padding:8px; text-align:center; }
+    table.doc-table th { background:#eee; }
+    .icon-btn { cursor:pointer; margin: 0 4px; font-size:1.2rem; }
+    .btnDelete { color: #d00; }
+    .status-no { color: red; font-weight:bold; }
+    .status-yes { color: green; font-weight:bold; }
+    input[type="file"] { display: none; }
+    /* Modal */
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-content {
+      background-color: var(--panel-bg);
+      padding: 20px;
+      border: 2px solid var(--frame-border);
+      border-radius: 8px;
+      width: max-content;
+      max-width: 96vw;
+      max-height: 90vh;
+      overflow: auto;
+      position: relative;
+    }
+    .close {
+      position: absolute;
+      right: 10px;
+      top: 5px;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .form-group-full {
+      grid-column: span 2;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 8px;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+     /* --- Selector inicial de Clientes --- */
+.clients-home{
+  margin:0 auto 12px; width:100%; max-width:860px;
+  background:#e9e9ec; border-radius:12px; padding:28px 24px;
+  outline:3px solid #7c3aed; /* morado */
+}
+.home-grid{display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:center; justify-items:center;}
+.choice-card{
+  width:100%; min-height:220px; background:#efefef; border:2px solid #000; border-radius:12px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+  cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; user-select:none;
+}
+.choice-card:hover{ transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.15);}
+.choice-card svg{ width:96px; height:96px;}
+.choice-label{ font-weight:700; letter-spacing:.03em;}
+@media (max-width:780px){ .home-grid{grid-template-columns:1fr;} }
+    
+#clientsModule{
+  display:flex;
+  flex-direction:column;
+}
+    #clientsModule.hidden {
+  display:none;
+}
+.h
+.home-actions{
+  
+  margin-top:auto;
+  display:flex;
+  justify-content:flex-end;
+}
+  /* --- Lista de clientes (nueva ventana) --- */
+.clients-list .list-toolbar{
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:12px;
+}
+.clients-list .list-actions{ display:flex; gap:8px; }
+.clients-list .search{ display:flex; gap:8px; align-items:center; }
+.clients-list .search input{
+  padding:8px; border:2px solid var(--input-border); border-radius:8px; min-width:220px;
+}
+.btn { padding:8px 16px; border:2px solid var(--frame-border); background:#e5e5e5; border-radius:8px; cursor:pointer; }
+btn.primary { background:#efe9ff; border-color:#7c3aed; }
+
+.client-id-link { color:#000; text-decoration:underline; cursor:pointer; }
+
+
+ /* --- te ayuda a que no se baje nada de esa celda --- */
+    .doc-table td.actions { white-space: nowrap; }
+
+    .confirm-cliente {
+  background-color: #666; /* gris oscuro */
+  color: #fff;
+  text-align: center;
+}
+
+.confirm-cliente h3 {
+  margin-bottom: 8px;
+}
+
+.confirm-cliente .id-cliente {
+  color: red;
+  font-weight: bold;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+
+.confirm-cliente .datos-cliente {
+  text-align: left;
+  background-color: rgba(255,255,255,0.1);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.confirm-cliente .datos-cliente p {
+  margin: 4px 0;
+}
+    
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:12px;
+}
+.perms-list .list-actions{ display:flex; gap:8px; }
+.perms-list .search{ display:flex; gap:8px; align-items:center; }
+.perms-list .search input{
+  padding:8px; border:2px solid var(--input-border); border-radius:8px; min-width:220px;
+}
+  /* --- Botón + Nuevo Permisionario --- */
+.btn.primary { background:#efe9ff; border-color:#7c3aed; }
+
+/* --- Formulario: Nuevo Permisionario --- */
+#permsMenu { background: var(--section-bg); }
+
+/* --- Sub-tabs Permisionarios --- */
+.subtabs { display:flex; gap:8px; margin: 12px 0; border-bottom: 2px solid var(--input-border); }
+.subtabs .subtab {
+  padding: 8px 12px; cursor:pointer; border-radius: 8px 8px 0 0;
+}
+.subtabs .subtab.active {
+  background: var(--chip-bg, #f0f3f7);
+  font-weight: 600;
+}
+.subcontent { display:none; }
+.subcontent.active { display:block; }
+
+.form-row { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px; }
+.form-row .fld { display:flex; flex-direction:column; gap:6px; }
+.form-row input, .form-row select, .form-row textarea {
+  padding: 8px; border: 2px solid var(--input-border); border-radius: 8px;
+}
+.actions-bar { display:flex; gap:8px; justify-content:flex-end; margin-top: 12px; 
+}
+    
+    
+  /* V1.2.48.2 UX refinements */
+.icon-btn{ cursor:pointer; display:inline-flex; align-items:center; justify-content:center; line-height:1; }
+.field-error{ color:#c62828; font-size:.85rem; margin-top:4px; }
+.form-group.error input,
+.form-group.error select{ border:1px solid #c62828 !important; outline-color:#c62828; }
+.file-row input[type="text"]{ flex:1; }
+</style>
+
+<!-- THEME 1.2.68 OVERRIDES: purely visual, no JS changes -->
+<style id="theme-1268-overrides">
+  :root{
+    --accent:#1f7a4f;
+    --accent-2:#22a06b;
+    --accent-soft:#e9f7f1;
+    --danger:#c0392b;
+    --text:#1e1e1e;
+    --muted:#6b7280;
+    --bg:#f7f7f8;
+    --white:#ffffff;
+    --shadow:0 10px 24px rgba(0,0,0,.08);
+    --radius:16px;
+  }
+  /* Base */
+  body{
+    color:var(--text);
+    background:var(--bg);
+    line-height:1.45;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  }
+  /* Cards / Frames */
+  .frame,
+  .clients-menu,
+  .clients-home,
+  .clients-list,
+  #permModule .clients-menu,
+  #permsMenu.frame {
+    background:var(--white) !important;
+    border:none !important;
+    border-radius:var(--radius) !important;
+    box-shadow:var(--shadow) !important;
+    padding:24px !important;
+  }
+  /* Tables */
+  .doc-table, .doc-table-wrapper table, table.doc-table {
+    width:100%;
+    border-collapse:collapse;
+    border-radius:12px;
+    overflow:hidden;
+  }
+  .doc-table th, table.doc-table th {
+    text-align:left;
+    font-size:.9rem;
+    color:#374151;
+    background:#f2f2f3;
+    padding:12px 10px;
+    border-bottom:1px solid #e6e6e8;
+  }
+  .doc-table td, table.doc-table td {
+    padding:12px 10px;
+    border-bottom:1px solid #eee;
+  }
+  .doc-table tr:hover { background:#fafafa; }
+  /* Buttons */
+  .btn, button, .button-row button, .list-actions .btn {
+    border:none !important;
+    border-radius:999px !important;
+    padding:10px 16px !important;
+    background:var(--accent) !important;
+    color:#fff !important;
+    font-weight:700 !important;
+    cursor:pointer;
+    transition:.2s transform ease, .2s opacity ease;
+  }
+  .btn:hover, button:hover { opacity:.92; transform:translateY(-1px); }
+  .btn.primary { background:var(--accent-2) !important; }
+  .btn.ghost { background:transparent !important; color:var(--accent) !important; border:2px solid var(--accent) !important; }
+  .btn.danger { background:var(--danger) !important; }
+  /* Inputs */
+  input, select, textarea {
+    border:1.5px solid #d9dde3 !important;
+    border-radius:12px !important;
+    padding:10px 12px !important;
+    outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease;
+    background:#fff;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color:var(--accent) !important;
+    box-shadow:0 0 0 3px rgba(34,160,107,.12);
+  }
+  /* Sub-tabs */
+  .sub-tabs, .subtabs {
+    border-bottom:1px solid #e6e6e8 !important;
+    gap:8px;
+  }
+  .sub-tab, .subtabs .subtab {
+    background:#f4f5f7 !important;
+    border:none !important;
+    color:#111827;
+    border-radius:12px 12px 0 0 !important;
+    padding:10px 14px !important;
+  }
+  .sub-tab.active, .subtabs .subtab.active { background:#fff !important; box-shadow:inset 0 -2px 0 var(--accent); font-weight:700; }
+  /* Search inputs */
+  .search input { border:1.5px solid #d9dde3 !important; border-radius:12px !important; }
+  /* Modals */
+  .modal{
+    background:rgba(0,0,0,.35) !important;
+    padding:20px !important;
+  }
+  .modal .modal-content{
+    background:#fff !important;
+    border:none !important;
+    border-radius:20px !important;
+    box-shadow:var(--shadow) !important;
+    width:min(720px, 96vw) !important;
+    max-height:90vh !important;
+    padding:28px !important;
+    position:relative;
+  }
+  .modal .close{
+    position:absolute; right:10px; top:8px;
+    font-size:28px; line-height:1; cursor:pointer; color:#111827;
+  }
+  /* Confirmation modal styling parity */
+  .confirm-cliente, .modal-content.confirm-cliente { border-top:6px solid var(--accent) !important; }
+  .id-cliente{
+    background:var(--accent-soft); color:var(--accent);
+    border:1px dashed var(--accent);
+    border-radius:12px; padding:10px 12px; font-weight:800; letter-spacing:.4px;
+    display:inline-block;
+  }
+  /* Badges in lists (if present) */
+  .badge{ padding:4px 10px; border-radius:999px; font-weight:700; font-size:.82rem; }
+  .badge.activo{ background:#e6ffe6; color:#0a7e2b; }
+  .badge.inactivo{ background:#ffecec; color:#a01919; }
+  /* Responsive grids */
+  @media (max-width:760px){
+    .form-row{ grid-template-columns: 1fr !important; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Modales (movidos dentro de <body>) -->
+<!-- Modal de confirmación de cliente -->
+<div id="clienteModal" class="modal hidden">
+  <div class="modal-content" style="text-align:center; padding: 40px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <h2>¡Felicidades, agregaste un nuevo cliente!</h2>
+    <div class="id-cliente">ID CLIENTE: <span id="idClienteTexto">LTR-CL-01</span></div>
+    <div class="datos-cliente">
+      <p><strong>Cliente:</strong> <span id="nombreCliente"></span></p>
+      <p><strong>RFC:</strong> <span id="rfcCliente"></span></p>
+      <p><strong>Domicilio:</strong> <span id="domicilioCliente"></span></p>
+    </div>
+    <div class="modal-buttons">
+      <button type="button" class="btn-cerrar">Cerrar</button>
+  </div>
+  </div>
+  <!-- Modal de confirmación de eliminación -->
+</div>
+
+<div id="confirmDeleteModal" class="modal hidden">
+  <div class="modal-content" style="text-align:center; padding: 40px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <p>¿Desea eliminar este cliente?</p>
+    <div class="modal-buttons" style="justify-content:center;">
+      <button id="deleteConfirmYes" class="btn primary">Sí</button>
+      <button id="deleteConfirmNo" class="btn">No</button>
+    </div>
+  </div>
+</div>
+<!-- Modal para ver detalles del cliente -->
+<div id="detalleClienteModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close" title="Cerrar">&times;</span>
+    <div id="detalleClienteContenido"></div>
+  </div>
+</div>
+
+    
+    
+
+    <!-- Aqui acaba el .css y empieza el html la segunda parte para que sea mas facil ubicarlo -->
+
+
+    
+    
+  <!-- LOGIN -->
+  <div id="loginFrame" class="frame">
+    <input type="text" id="usuario" placeholder="David Vargas R.">
+    <input type="password" id="password" placeholder="1234">
+    <div>
+      <button id="btnGuardar">Guardar</button>
+      <button id="btnEntrar">Entrar</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="frame hidden">
+    <h2>Menú Principal</h2>
+    <div class="dashboard">
+      <div class="module" id="modClientes"><div class="module-icon">📋</div><div class="module-label">Clientes</div></div>
+      <div class="module" id="modPerm"><div class="module-icon">🚚</div><div class="module-label">Permisionarios</div></div>
+      <div class="module" id="modAsign"><div class="module-icon">📅</div><div class="module-label">Asignación</div></div>
+      <div class="module" id="modMonit"><div class="module-icon">📡</div><div class="module-label">Monitoreo</div></div>
+      <div class="module" id="modCoord"><div class="module-icon">🔧</div><div class="module-label">Coordinación</div></div>
+      <div class="module" id="modCCP"><div class="module-icon">💰</div><div class="module-label">Ctas Cob/PP</div></div>
+      <div class="module" id="modLiq"><div class="module-icon">📊</div><div class="module-label">Liquidación</div></div>
+      <div class="module" id="modMant"><div class="module-icon">🛠️</div><div class="module-label">Mantenimiento</div></div>
+      <div class="module" id="modAdmin"><div class="module-icon">🗄️</div><div class="module-label">Administración</div></div>
+      <div class="module" id="modDocs"><div class="module-icon">📄</div><div class="module-label">Documentación</div></div>
+    </div>
+  </div>
+
+  <!-- clientsModule -->
+  <div id="clientsModule" class="frame hidden">
+    <!-- Selector inicial -->
+<div id="clientsHome" class="clients-home">
+  <div class="home-grid">
+    <!-- Nuevo Cliente -->
+    <div id="btnNuevoCliente" class="choice-card" role="button" tabindex="0" aria-label="Nuevo cliente">
+      <!-- icono apretón de manos -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 12l3 3a2 2 0 1 1-3 3l-2-2-1 1a2 2 0 1 1-3-3l1-1-1-1a2 2 0 0 1 3-3l1 1 1-1a2 2 0 1 1 3 3l-2 2z"/>
+        <path d="M18 8l3-3M6 8 3 5"/>
+      </svg>
+      <div class="choice-label">NUEVO CLIENTE</div>
+    </div>
+
+    <!-- Clientes -->
+    <div id="btnVerClientes" class="choice-card" role="button" tabindex="0" aria-label="Clientes">
+      <!-- icono grupo de personas -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="3"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a3 3 0 0 1 0 5.75"/>
+      </svg>
+      <div class="choice-label">CLIENTES</div>
+    </div>
+  </div>
+</div>
+ <div class="home-actions">
+    <button id="btnClientesBack" class="btn">Volver</button>
+  </div>
+  <div id="clientsMenu" class="clients-menu hidden">
+     <h2 id="tituloCliente" style="text-align:center;margin-bottom:16px;">Nuevo Cliente</h2>
+      <div class="sub-tabs">
+        <div class="sub-tab active" data-content="tab-datos">Datos Generales</div>
+        <div class="sub-tab" data-content="tab-docs">Documentación</div>
+        <div class="sub-tab" data-content="tab-tarifas">Tarifas</div>
+        <div class="sub-tab" data-content="tab-comentario">Comentarios</div>
+      </div>
+
+      <div id="tab-datos" class="sub-content active">
+        <h3 class="section-title">Datos Generales</h3>
+        <div class="form-group"><label>Nombre / Razón Social</label><input type="text" id="inpNombre"></div>
+        <div class="form-group"><label>Estatus</label><select id="selEstatus"><option>Activo</option><option>Inactivo</option></select></div>
+        <div class="form-group"><label>RFC</label><input type="text" id="inpRFC"></div>
+        <div class="form-group"><label>Dirección</label><textarea id="txtDireccion" style="width:100%;height:70px;border:2px solid #ccc;border-radius:6px;"></textarea></div>
+        <h3 class="section-title">Contactos</h3>
+<div class="form-group">
+  <label>Operaciones</label>
+  <input type="text" placeholder="Email">
+  <input type="email" placeholder="Nombre">
+  <input type="text" placeholder="Tel.">
+</div>
+<div class="form-group">
+  <label>Administración</label>
+  <input type="text" placeholder="Email">
+  <input type="email" placeholder="Nombre">
+  <input type="text" placeholder="Tel.">
+</div>
+<div class="form-group">
+  <label>Comercial</label>
+  <input type="text" placeholder="Email">
+  <input type="email" placeholder="Nombre">
+  <input type="text" placeholder="Tel.">
+</div>
+ </div>       
+
+      <div id="tab-docs" class="sub-content">
+        <h3 class="section-title">Documentación</h3>
+        <div class="doc-table-wrapper">
+          <table class="doc-table">
+            <thead>
+              <tr><th>Comprobante</th><th>Estatus</th><th>Documento</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="icon-btn folder" data-row="1">📁</span><span class="icon-btn view" data-row="1">🔍</span><input type="file" id="file1"/></td>
+                <td id="status1" class="status-no">❌ No</td><td>Acta Constitutiva</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="2">📁</span><span class="icon-btn view" data-row="2">🔍</span><input type="file" id="file2"/></td>
+                <td id="status2" class="status-no">❌ No</td><td>Poder Rep. Legal</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="3">📁</span><span class="icon-btn view" data-row="3">🔍</span><input type="file" id="file3"/></td>
+                <td id="status3" class="status-no">❌ No</td><td>Comprobante de Domicilio</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="4">📁</span><span class="icon-btn view" data-row="4">🔍</span><input type="file" id="file4"/></td>
+                <td id="status4" class="status-no">❌ No</td><td>Constancia de Situación Fiscal</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="5">📁</span><span class="icon-btn view" data-row="5">🔍</span><input type="file" id="file5"/></td>
+                <td id="status5" class="status-no">❌ No</td><td>INE Rep. Legal</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="6">📁</span><span class="icon-btn view" data-row="6">🔍</span><input type="file" id="file6"/></td>
+                <td id="status6" class="status-no">❌ No</td><td>Contrato</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-tarifas" class="sub-content"><h3 class="section-title">Tarifas</h3>
+        <button class="btn add-route">+ Agregar Ruta/Tarifa</button>
+        <div class="doc-table-wrapper" style="max-height:250px; overflow-y:auto;">
+          <table class="doc-table" id="tablaTarifas">
+            <thead>
+              <tr>
+                <th>Origen - Destino</th>
+                <th>Tipo de Unidad</th>
+                <th>Tarifa</th>
+                <th>Días de Crédito</th>
+                <th>Km a recorrer</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Filas generadas dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Modal -->
+        <div id="tarifaModal" class="modal hidden">
+          <div class="modal-content">
+            <span class="close" title="Cerrar">&times;</span>
+            <h3>Agregar Nueva Ruta/Tarifa</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="estadoOrigen">Estado de Origen*</label>
+                <select id="estadoOrigen" name="estadoOrigen" required>
+                  <option value="">Seleccione un estado...</option>
+                  <option value="Aguascalientes">Aguascalientes</option>
+                  <option value="Baja California">Baja California</option>
+                  <option value="Baja California Sur">Baja California Sur</option>
+                  <option value="Campeche">Campeche</option>
+                  <option value="Coahuila">Coahuila</option>
+                  <option value="Colima">Colima</option>
+                  <option value="Chiapas">Chiapas</option>
+                  <option value="Chihuahua">Chihuahua</option>
+                  <option value="Ciudad de México">Ciudad de México</option>
+                  <option value="Durango">Durango</option>
+                  <option value="Guanajuato">Guanajuato</option>
+                  <option value="Guerrero">Guerrero</option>
+                  <option value="Hidalgo">Hidalgo</option>
+                  <option value="Jalisco">Jalisco</option>
+                  <option value="Estado de México">Estado de México</option>
+                  <option value="Michoacán">Michoacán</option>
+                  <option value="Morelos">Morelos</option>
+                  <option value="Nayarit">Nayarit</option>
+                  <option value="Nuevo León">Nuevo León</option>
+                  <option value="Oaxaca">Oaxaca</option>
+                  <option value="Puebla">Puebla</option>
+                  <option value="Querétaro">Querétaro</option>
+                  <option value="Quintana Roo">Quintana Roo</option>
+                  <option value="San Luis Potosí">San Luis Potosí</option>
+                  <option value="Sinaloa">Sinaloa</option>
+                  <option value="Sonora">Sonora</option>
+                  <option value="Tabasco">Tabasco</option>
+                  <option value="Tamaulipas">Tamaulipas</option>
+                  <option value="Tlaxcala">Tlaxcala</option>
+                  <option value="Veracruz">Veracruz</option>
+                  <option value="Yucatán">Yucatán</option>
+                  <option value="Zacatecas">Zacatecas</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="municipioOrigen">Municipio de Origen</label>
+                <input type="text" id="municipioOrigen" placeholder="Opcional">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="estadoDestino">Estado de Destino*</label>
+                <select id="estadoDestino" name="estadoDestino" required>
+                  <option value="">Seleccione un estado...</option>
+                  <option value="Aguascalientes">Aguascalientes</option>
+                  <option value="Baja California">Baja California</option>
+                  <option value="Baja California Sur">Baja California Sur</option>
+                  <option value="Campeche">Campeche</option>
+                  <option value="Coahuila">Coahuila</option>
+                  <option value="Colima">Colima</option>
+                  <option value="Chiapas">Chiapas</option>
+                  <option value="Chihuahua">Chihuahua</option>
+                  <option value="Ciudad de México">Ciudad de México</option>
+                  <option value="Durango">Durango</option>
+                  <option value="Guanajuato">Guanajuato</option>
+                  <option value="Guerrero">Guerrero</option>
+                  <option value="Hidalgo">Hidalgo</option>
+                  <option value="Jalisco">Jalisco</option>
+                  <option value="Estado de México">Estado de México</option>
+                  <option value="Michoacán">Michoacán</option>
+                  <option value="Morelos">Morelos</option>
+                  <option value="Nayarit">Nayarit</option>
+                  <option value="Nuevo León">Nuevo León</option>
+                  <option value="Oaxaca">Oaxaca</option>
+                  <option value="Puebla">Puebla</option>
+                  <option value="Querétaro">Querétaro</option>
+                  <option value="Quintana Roo">Quintana Roo</option>
+                  <option value="San Luis Potosí">San Luis Potosí</option>
+                  <option value="Sinaloa">Sinaloa</option>
+                  <option value="Sonora">Sonora</option>
+                  <option value="Tabasco">Tabasco</option>
+                  <option value="Tamaulipas">Tamaulipas</option>
+                  <option value="Tlaxcala">Tlaxcala</option>
+                  <option value="Veracruz">Veracruz</option>
+                  <option value="Yucatán">Yucatán</option>
+                  <option value="Zacatecas">Zacatecas</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="municipioDestino">Municipio de Destino</label>
+                <input type="text" id="municipioDestino" placeholder="Opcional">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group form-group-full">
+                <label for="tipoUnidad">Tipo de unidad*</label>
+                <select id="tipoUnidad" required>
+                  <option value="">Seleccione...</option>
+                  <option value="Unidad seca de 53">Unidad seca de 53"</option>
+                  <option value="Refrigerada de 53">Refrigerada de 53"</option>
+                  <option value="Thorton">Thorton</option>
+                  <option value="3.5">3.5</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="diasCredito">Días de Crédito</label>
+                <input type="number" id="diasCredito" min="0" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label for="kmRecorrer">Km a recorrer</label>
+                <input type="number" id="kmRecorrer" min="0" placeholder="0">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="tarifa">Tarifa*</label>
+                <input type="number" id="tarifa" min="0" step="0.01" required placeholder="0.00">
+              </div>
+            </div>
+
+            <div class="modal-buttons">
+              <button type="button" class="btn-cancelar">Cancelar</button>
+              <button type="button" class="btn-guardar">Guardar</button>
+            </div>
+          </div>
+        </div>
+        <!-- /Modal -->
+      </div>
+
+      <div id="tab-comentario" class="sub-content">
+        <h3 class="section-title">Comentarios</h3>
+            <div class="form-group"><label>Comentario</label><textarea id="txtComentario" style="width:100%;height:120px;border:2px solid #ccc;border-radius:6px;"></textarea></div>
+      </div>
+
+      <div class="button-row">
+  <button id="saveClient">Guardar</button>
+  <button id="exitClient">Salir</button>
+</div>
+    </div>
+    <!-- NUEVA VENTANA: Lista de Clientes -->
+<div id="clientsList" class="clients-menu clients-list hidden" aria-label="Lista de clientes">
+  <div class="list-toolbar">
+    <div><h3>Clientes registrados</h3></div>
+    <div class="search">
+      <label for="searchCli">Buscar:</label>
+      <input id="searchCli" type="text" placeholder="Nombre, RFC…">
+    </div>
+    <div class="list-actions">
+      <button id="btnNuevoDesdeLista" class="btn primary">+ Nuevo Cliente</button>
+      <button id="btnVolverHome" class="btn">Volver</button>
+      <button id="btnImportExcel" class="btn">Importar Excel</button>
+      <input id="excelInput" type="file" accept=".xlsx,.xls" style="display:none">
+    </div>
+  </div>
+
+  <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
+    <table class="doc-table" id="tablaClientes">
+      <thead>
+        <tr>
+          <th>ID Cliente</th>
+          <th>Nombre/Razón Social</th>
+          <th>RFC</th>
+          <th>Estatus</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody><!-- filas dinámicas --></tbody>
+    </table>
+  </div>
+</div>
+
+  </div>
+<!-- Inicio Mod 2 -->
+<div id="permModule" class="frame hidden" aria-label="Módulo Permisionarios">
+
+  <!-- Ventana: Permisionarios registrados -->
+
+<div id="permsList" class="clients-menu perms-list" aria-label="Permisionarios registrados">
+  <div class="list-toolbar">
+    <div><h3>Permisionarios registrados</h3></div>
+    <div class="search">
+      <label for="searchPerm">Buscar:</label>
+      <input id="searchPerm" type="text" placeholder="Nombre, RFC…">
+    </div>
+    <div class="list-actions">
+   <button id="btnPermNuevo" class="btn primary">+ Nuevo Permisionario</button>
+      <button id="btnPermVolver" class="btn">Volver</button>
+    </div>
+  </div>
+
+  
+  <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
+    <table class="doc-table" id="tablaPerms">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre/Razón Social</th>
+          <th>Ranking</th>
+          <th>Estatus</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody><!-- filas dinámicas --></tbody>
+    </table>
+  </div>
+</div>
+  <!-- Menú/Formulario: Nuevo Permisionario -->
+<div id="permsMenu" class="frame hidden" aria-label="Nuevo Permisionario">
+  <h3>Nuevo Permisionario</h3>
+
+  <div class="subtabs" role="tablist" aria-label="Subpestañas Permisionarios">
+    <div class="subtab active" data-target="perm-datos" role="tab" aria-selected="true">Datos</div>
+    <div class="subtab" data-target="perm-docs" role="tab">Documentos</div>
+    <div class="subtab" data-target="perm-unidades" role="tab">Unidades</div>
+    <div class="subtab" data-target="perm-coment" role="tab">Operadores</div>
+  </div>
+
+  <!-- Subcontenido: Datos -->
+  <div id="perm-datos" class="subcontent active">
+    <div class="form-row">
+      <div class="fld">
+        <label for="permNombre">Nombre/Razón social</label>
+        <input id="permNombre" type="text" placeholder="Permisionario S.A. de C.V.">
+      </div>
+      <div class="fld">
+        <label for="permRFC">RFC</label>
+        <input id="permRFC" type="text" placeholder="XXXX010101XXX">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="fld">
+        <label for="permEstatus">Estatus</label>
+        <select id="permEstatus">
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label for="permContacto">Domicilio</label>
+        <input id="permContacto" type="text" placeholder="Nombre de contacto">
+      </div>
+    </div>
+    <h3 class="section-title">Contactos</h3>
+    <div class="form-group">
+      <label>Operaciones</label>
+      <input type="text" placeholder="Email">
+      <input type="email" placeholder="Nombre">
+      <input type="text" placeholder="Tel.">
+    </div>
+    <div class="form-group">
+      <label>Administración</label>
+      <input type="text" placeholder="Email">
+      <input type="email" placeholder="Nombre">
+      <input type="text" placeholder="Tel.">
+    </div>
+    <div class="form-group">
+      <label>Comercial</label>
+      <input type="text" placeholder="Email">
+      <input type="email" placeholder="Nombre">
+      <input type="text" placeholder="Tel.">
+    </div>
+  </div>
+
+  <!-- Subcontenido: Documentos -->
+  <div id="perm-docs" class="subcontent">
+       <h3 class="section-title">Documentación</h3>
+    <div class="doc-table-wrapper">
+      <table class="doc-table">
+        <thead>
+          <tr><th>Comprobante</th><th>Estatus</th><th>Documento</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="1">📁</span><span class="icon-btn perm-view" data-row="1">🔍</span><input type="file" id="permFile1"/></td>
+            <td id="permStatus1" class="status-no">❌ No</td><td>Acta Constitutiva</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="2">📁</span><span class="icon-btn perm-view" data-row="2">🔍</span><input type="file" id="permFile2"/></td>
+            <td id="permStatus2" class="status-no">❌ No</td><td>Poder Rep. Legal</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="3">📁</span><span class="icon-btn perm-view" data-row="3">🔍</span><input type="file" id="permFile3"/></td>
+            <td id="permStatus3" class="status-no">❌ No</td><td>Comprobante de Domicilio</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="4">📁</span><span class="icon-btn perm-view" data-row="4">🔍</span><input type="file" id="permFile4"/></td>
+            <td id="permStatus4" class="status-no">❌ No</td><td>Constancia de Situación Fiscal</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="5">📁</span><span class="icon-btn perm-view" data-row="5">🔍</span><input type="file" id="permFile5"/></td>
+            <td id="permStatus5" class="status-no">❌ No</td><td>INE Rep. Legal</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="6">📁</span><span class="icon-btn perm-view" data-row="6">🔍</span><input type="file" id="permFile6"/></td>
+            <td id="permStatus6" class="status-no">❌ No</td><td>Contrato</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Subcontenido: Unidades -->
+  <div id="perm-unidades" class="subcontent">
+    <h3 class="section-title">Unidades</h3>
+    <button class="btn add-unit">+ Agregar Unidad</button>
+
+  <div class="doc-table-wrapper" style="max-height:250px; overflow-y:auto;">
+    <table class="doc-table" id="tablaUnidades">
+      <thead>
+        <tr>
+          <th>Tarjeta de Circulación</th>
+          <th>Placas</th>
+          <th>Eco</th>
+          <th>Tipo</th>
+          <th>Vencimiento Poliza</th>
+          <th>Aseguradora</th>
+          <th>Marca</th>
+          <th>Año</th>
+          <th>Permiso SCT</th>
+          
+          
+          
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Filas generadas dinámicamente -->
+
+      
+      </tbody>
+    </table>
+    <div id="unidadModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-content" style="min-width: 720px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <h3>Alta de Unidad Vehicular</h3>
+
+    <div class="form-row">
+      <div class="form-group">
+  <label for="uTarjetaName">Tarjeta de Circulación*</label>
+  <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+    <button type="button" id="btnUTarjetaPick" class="icon-btn" title="Adjuntar">📁</button>
+    <input id="uTarjetaFile" type="file" accept=".pdf,.jpg,.jpeg,.png" required>
+    <input id="uTarjetaName" type="text" placeholder="Selecciona un archivo…" readonly required>
+    <!-- compatibilidad con código previo: refleja el nombre en un input oculto con id=uTarjeta -->
+    <input id="uTarjeta" type="hidden" value="">
+  
+<div class="field-error" data-for="uTarjetaName"></div></div>
+</div>
+      <div class="form-group">
+        <label for="uPlacas">Placas*</label>
+        <input id="uPlacas" type="text" placeholder="ABC123A" required>
+      </div>
+    </div>
+        
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="uEco">Eco</label>
+        <input id="uEco" type="text" placeholder="Económico interno">
+      </div>
+      <div class="form-group">
+        <label for="uTipo">Tipo*</label>
+        <select id="uTipo" required>
+          <option value="">Seleccione…</option>
+          <option>Tractor</option>
+          <option>Unidad seca 53"</option>
+          <option>Refrigerada 53"</option>
+          <option>Thorton</option>
+          <option>3.5</option>
+          <option>Torton</option>
+          <option>Rabón</option>
+        </select>
+      
+<div class="field-error" data-for="uTipo"></div></div>
+    </div>
+
+        
+    <div class="form-row">
+        <div class="form-group">
+        <label for="uAseguradora">Aseguradora</label>
+        <input id="uAseguradora" type="text" placeholder="Nombre de aseguradora">
+      </div>
+      <div class="form-group">
+        <label for="uVencePoliza">Vencimiento Póliza</label>
+        <input id="uVencePoliza" type="date">
+      </div>
+<div class="form-group">
+  <label for="uPolizaName">Póliza de Seguro</label>
+  <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+    <button type="button" id="btnUPolizaPick" class="icon-btn" title="Adjuntar póliza" aria-label="Adjuntar póliza">📁</button>
+    <input id="uPolizaFile" type="file" accept="application/pdf,image/*" required style="display:none">
+    <input id="uPolizaName" type="text" placeholder="Selecciona un archivo…" readonly autocomplete="off">
+    <input id="uPoliza" type="hidden" value="">
+  
+<div class="field-error" data-for="uPolizaName"></div></div>
+</div>
+      <div class="form-group">
+        <label for="uAseguradora">Aseguradora</label>
+        <input id="uAseguradora" type="text" placeholder="Nombre de aseguradora">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="uMarca">Marca</label>
+        <input id="uMarca" type="text" placeholder="Kenworth / Freightliner…">
+      </div>
+      <div class="form-group">
+        <label for="uAnio">Año</label>
+        <input id="uAnio" type="number" min="1980" max="2100" placeholder="2022">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group form-group-full">
+        <label for="uPermisoSCT">Permiso SCT</label>
+        <input id="uPermisoSCT" type="text" placeholder="Número de permiso SCT">
+      </div>
+    </div>
+
+    <div class="modal-buttons">
+      <button type="button" class="btn-cancelar">Cancelar</button>
+      <button type="button" class="btn-guardar">Guardar</button>
+    </div>
+  </div>
+</div>
+  </div>
+
+  </div>
+
+  <!-- Subcontenido: Operadores -->
+  <div id="perm-coment" class="subcontent">
+    <h3 class="section-title">Operadores</h3>
+    <button class="btn add-operator">+ Agregar Operador</button>
+
+    <div class="doc-table-wrapper" style="max-height:250px; overflow-y:auto;">
+      <table class="doc-table" id="tablaOperadores">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Número de Licencia</th>
+            <th>Licencia</th>
+            <th>Vto de Licencia</th>
+            <th>Apto Médico</th>
+            <th>Vto de apto.</th>
+            <th>RFC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Filas generadas dinámicamente -->
+        </tbody>
+      </table>
+     
+      <div id="operadorModal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content" style="min-width:480px;">
+          <span class="close" title="Cerrar">&times;</span>
+          <h3>Agregar Operador</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="opNombre">Nombre</label>
+              <input id="opNombre" type="text">
+            </div>
+            <div class="form-group">
+              <label for="opNumeroLicencia">Número de Licencia</label>
+              <input id="opNumeroLicencia" type="text">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="opLicencia">Licencia</label>
+              <input id="opLicencia" type="text">
+            </div>
+            <div class="form-group">
+              <label for="opVtoLicencia">Vto de Licencia</label>
+              <input id="opVtoLicencia" type="date">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="opAptoMedico">Apto Médico</label>
+              <input id="opAptoMedico" type="text">
+            </div>
+            <div class="form-group">
+              <label for="opVtoApto">Vto apto</label>
+              <input id="opVtoApto" type="date">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-group-full">
+              <label for="opRFC">RFC</label>
+              <input id="opRFC" type="text">
+            </div>
+          </div>
+
+          <div class="modal-buttons">
+            <button type="button" class="btn-cancelar">Cancelar</button>
+            <button type="button" class="btn-guardar">Guardar</button>
+          </div>
+        </div>
+      </div>     
+    </div>
+  </div>
+
+  <div class="actions-bar">
+    <button id="btnPermCancelar" class="btn">Cancelar</button>
+    <button id="btnPermGuardar" class="btn" disabled>Guardar Permisionario</button>
+  </div>
+</div>
+</div>
+  <script>
+    const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
+    function showSection(id) {
+      document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+     
+      /* Login */
+      // --- NAVEGACIÓN (Dashboard → Módulo Clientes)
+document.getElementById('modClientes').onclick = () => {
+  showSection('clientsModule');
+  // Al entrar al módulo, mostramos la pantalla de inicio (dos tarjetas)
+  document.getElementById('clientsHome')?.classList.remove('hidden');
+  document.getElementById('clientsMenu')?.classList.add('hidden');
+  document.getElementById('clientsList')?.classList.add('hidden');
+};
+  // === Navegación: Dashboard → Módulo Permisionarios ===
+document.getElementById('modPerm').onclick = () => {
+  showSection('permModule');              // muestra el frame de Permisionarios
+  renderTablaPerms();                     // pinta/actualiza la tabla
+};
+
+// === “BD” local simple de permisionarios ===
+const srPermKey = 'sr_permisionarios';
+function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
+function setPerms(arr){ localStorage.setItem(srPermKey, JSON.stringify(arr)); }
+
+// === Render de la tabla de Permisionarios ===
+function renderTablaPerms(filtro=''){
+  const tbody = document.querySelector('#tablaPerms tbody');
+  if(!tbody) return;
+
+  const data = getPerms();
+  const q = (filtro||'').toLowerCase();
+
+  const fil = data.filter(p =>
+    (!q) ||
+    (String(p.id||'').toLowerCase().includes(q) ||
+     (p.nombre||'').toLowerCase().includes(q) ||
+     (p.rfc||'').toLowerCase().includes(q))
+  );
+
+  tbody.innerHTML = fil.map(p => `
+    <tr>
+      <td>${p.id || ''}</td>
+      <td>${p.nombre || ''}</td>
+      <td>${p.rfc || ''}</td>
+      <td>${p.estatus || 'Activo'}</td>
+      <td class="actions">
+        <span class="icon-btn btnPermEdit" title="Editar" data-id="${p.id}">✏️</span>
+        <span class="icon-btn btnPermDelete btnDelete" title="Eliminar" data-id="${p.id}">🗑️</span>
+      </td>
+    </tr>
+  `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
+
+  // Listeners por fila
+  tbody.querySelectorAll('.btnPermDelete').forEach(btn => {
+    btn.addEventListener('click', () => openDeletePerm(btn.dataset.id));
+  });
+  tbody.querySelectorAll('.btnPermEdit').forEach(btn => {
+    btn.addEventListener('click', () => editPerm(btn.dataset.id));
+  });
+}
+
+// === Buscar en la lista de Permisionarios ===
+document.getElementById('searchPerm')?.addEventListener('input', (e) => {
+  renderTablaPerms(e.target.value);
+});
+
+// === Volver al Dashboard desde Permisionarios ===
+document.getElementById('btnPermVolver')?.addEventListener('click', () => {
+  showSection('dashboard');
+});
+
+// === Eliminar Permisionario (reusa tu modal de confirmación) ===
+let deletePermId = null;
+function openDeletePerm(id){
+  deletePermId = id;
+  // Reutilizamos el mismo modal de confirmación existente
+  const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+  confirmDeleteModal.classList.remove('hidden');
+  confirmDeleteModal.style.display = 'flex';
+
+  // Aseguramos handlers locales:
+  const yes = document.getElementById('deleteConfirmYes');
+  const no  = document.getElementById('deleteConfirmNo');
+
+  const onYes = () => {
+    const arr = getPerms();
+    const idx = arr.findIndex(p => p.id === deletePermId);
+    if(idx >= 0){ arr.splice(idx,1); setPerms(arr); renderTablaPerms(); }
+    cleanup();
+  };
+  const onNo = cleanup;
+
+  function cleanup(){
+    // Cerramos modal
+    confirmDeleteModal.classList.add('hidden');
+    confirmDeleteModal.style.display = 'none';
+    // Quitamos estos listeners puntuales para no duplicar
+    yes.removeEventListener('click', onYes);
+    no.removeEventListener('click', onNo);
+    deletePermId = null;
+  }
+
+  yes.addEventListener('click', onYes);
+  no.addEventListener('click', onNo);
+}
+
+// === Editar Permisionario (flujo mínimo: por ahora solo alerta) ===
+function editPerm(id){
+  const perm = getPerms().find(p => p.id === id);
+  if(!perm){ return; }
+  // Aquí puedes abrir un formulario de edición (similar a "Nuevo Cliente")
+  alert(`Editar Permisionario: ${perm.id} - ${perm.nombre}`);
+}
+
+// === Utilidad para generar ID consecutivo tipo LTR-PR-01 ===
+function generarSiguienteIdPerm(arr){
+  const prefijo = 'LTR-PR-';
+  const maxNum = arr.reduce((max, p) => {
+    const m = (p.id || '').match(/^LTR-PR-(\d+)$/);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return n > max ? n : max;
+  }, 0);
+  return `${prefijo}${String(maxNum + 1).padStart(2, '0')}`;
+}
+
+// (Opcional) Semilla de ejemplo para que veas algo en la tabla la 1ª vez:
+if(getPerms().length === 0){
+  setPerms([
+    { id: 'LTR-PR-01', nombre: 'Permisionario Demo S.A. de C.V.', rfc: 'PDE010101AB1', estatus: 'Activo' },
+    { id: 'LTR-PR-02', nombre: 'Transporte Ejemplar S.A.', rfc: 'TEJ020202CD2', estatus: 'Inactivo' }
+  ]);
+  }
+  
+  //  Mostrar formulario Nuevo Permisionario 
+document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
+  // Limpiar formulario
+  document.getElementById('permNombre').value = '';
+  document.getElementById('permRFC').value = '';
+  document.getElementById('permEstatus').value = 'Activo';
+  document.getElementById('permContacto').value = '';
+ // Algunos campos pueden no existir dependiendo de la versión del formulario
+  const licInput = document.getElementById('permLicencia');
+  if(licInput) licInput.value = '';
+  const vigInput = document.getElementById('permVigencia');
+  if(vigInput) vigInput.value = '';
+
+
+  // Reset de subpestañas
+  document.querySelectorAll('#permsMenu .subtab').forEach(t => t.classList.remove('active'));
+  document.querySelector('#permsMenu .subtab[data-target="perm-datos"]').classList.add('active');
+  document.querySelectorAll('#permsMenu .subcontent').forEach(c => c.classList.remove('active'));
+  document.getElementById('perm-datos').classList.add('active');
+
+  // Mostrar formulario y ocultar lista
+  document.getElementById('permsList').classList.add('hidden');
+  document.getElementById('permsMenu').classList.remove('hidden');
+});
+
+//  Subpestañas (Datos / Documentos / Unidades / Comentarios) 
+document.querySelectorAll('#permsMenu .subtab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#permsMenu .subtab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const tgt = tab.dataset.target;
+    document.querySelectorAll('#permsMenu .subcontent').forEach(c => c.classList.remove('active'));
+    document.getElementById(tgt).classList.add('active');
+  });
+});
+
+// Cancelar (volver a la lista) ===
+document.getElementById('btnPermCancelar')?.addEventListener('click', () => {
+  document.getElementById('permsMenu').classList.add('hidden');
+  document.getElementById('permsList').classList.remove('hidden');
+});
+
+// Guardar Permisionario ===
+document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
+  const nombre   = document.getElementById('permNombre').value.trim();
+  const rfc      = document.getElementById('permRFC').value.trim();
+  const estatus  = document.getElementById('permEstatus').value;
+  const contacto = document.getElementById('permContacto').value.trim();
+  const licencia = document.getElementById('permLicencia')?.value.trim() || '';
+  const vigencia = document.getElementById('permVigencia')?.value || '';
+  const unidades = document.getElementById('permUnidades').value.trim();
+  const notas    = document.getElementById('permNotas').value.trim();
+
+  if(!nombre || !rfc){
+    alert('Por favor, completa al menos Nombre/Razón social y RFC.');
+    return;
+  }
+
+  const arr = getPerms();
+  const id = generarSiguienteIdPerm(arr);
+      
+
+  arr.push({
+    id, nombre, rfc, estatus,
+    contacto, licencia, vigencia, unidades, notas
+  });
+  setPerms(arr);
+ 
+
+ 
+  // Feedback (puedes reemplazar por tu modal con éxito)
+  alert(`¡Permisionario guardado!\nID: ${id}\nNombre: ${nombre}`);
+
+  // Volver a la lista y refrescar
+  document.getElementById('permsMenu').classList.add('hidden');
+  document.getElementById('permsList').classList.remove('hidden');
+  renderTablaPerms();
+});
+    
+
+// --- Helpers de vistas dentro del módulo de clientes (HOISTED/FUERA de cualquier click)
+const clientsHome = document.getElementById('clientsHome');
+const clientsMenu = document.getElementById('clientsMenu');
+const clientsList = document.getElementById('clientsList');
+
+function showInClientsModule(el){
+  [clientsHome, clientsMenu, clientsList].forEach(x => x && x.classList.add('hidden'));
+  el && el.classList.remove('hidden');
+}
+
+// “BD” local simple de clientes (HOISTED)
+const srStoreKey = 'sr_clientes';
+let editingClientId = null;
+function getClientes(){ try { return JSON.parse(localStorage.getItem(srStoreKey)) || []; } catch { return []; } }
+function setClientes(arr){ localStorage.setItem(srStoreKey, JSON.stringify(arr)); }
+
+function renderTablaClientes(filtro=''){
+  const tbody = document.querySelector('#tablaClientes tbody');
+  if(!tbody) return;
+  const data = getClientes();
+  const q = (filtro||'').toLowerCase();
+  const fil = data.filter(c =>
+    (!q) || (c.nombre?.toLowerCase().includes(q) || c.rfc?.toLowerCase().includes(q) || String(c.id||'').toLowerCase().includes(q))
+  );
+
+  tbody.innerHTML = fil.map(c => `
+    <tr>
+      <td><span class="client-id-link" data-id="${c.id}">${c.id || ''}</span></td>
+      <td>${c.nombre || ''}</td>
+      <td>${c.rfc || ''}</td>
+      <td>${c.estatus || 'Activo'}</td>
+      <td class="actions">
+              <span class="icon-btn btnEdit" title="Editar" data-id="${c.id}">✏️</span>
+        <span class="icon-btn btnDelete" title="Eliminar" data-id="${c.id}">🗑️</span>
+      </td>
+    </tr>
+  `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
+
+  // Listeners (si prefieres mantenerlos así)
+  tbody.querySelectorAll('.btnDelete').forEach(btn => {
+    btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
+  });
+   tbody.querySelectorAll('.btnEdit').forEach(btn => {
+    btn.addEventListener('click', () => editCliente(btn.dataset.id));
+  });
+  tbody.querySelectorAll('.client-id-link').forEach(link => {
+    link.addEventListener('click', () => mostrarDetalleCliente(link.dataset.id));
+  });
+}
+// --- Eliminar cliente ---
+const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+const deleteConfirmYes = document.getElementById('deleteConfirmYes');
+const deleteConfirmNo  = document.getElementById('deleteConfirmNo');
+let deleteId = null;
+
+function openDeleteModal(id){
+  deleteId = id;
+  confirmDeleteModal.classList.remove('hidden');
+  confirmDeleteModal.style.display = 'flex';
+}
+function closeDeleteModal(){
+  confirmDeleteModal.classList.add('hidden');
+  confirmDeleteModal.style.display = 'none';
+  deleteId = null;
+}
+deleteConfirmYes?.addEventListener('click', () => {
+  if(deleteId){
+    const arr = getClientes();
+    const idx = arr.findIndex(c => c.id === deleteId);
+    if(idx >= 0){
+      arr.splice(idx,1);
+      setClientes(arr);
+      renderTablaClientes();
+    }
+  }
+  closeDeleteModal();
+});
+deleteConfirmNo?.addEventListener('click', closeDeleteModal);
+confirmDeleteModal?.querySelector('.close')?.addEventListener('click', closeDeleteModal);
+window.addEventListener('click', e => { if(e.target === confirmDeleteModal) closeDeleteModal(); });
+
+// --- Editar cliente ---
+function editCliente(id){
+  const cliente = getClientes().find(c => c.id === id);
+  if(!cliente) return;
+  editingClientId = id;
+  document.getElementById('tituloCliente').textContent = 'Editar Cliente';
+  showInClientsModule(clientsMenu);
+  document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
+  limpiarFormularioCliente();
+  document.getElementById('inpNombre').value = cliente.nombre || '';
+  document.getElementById('selEstatus').value = cliente.estatus || 'Activo';
+  document.getElementById('inpRFC').value = cliente.rfc || '';
+  document.getElementById('txtDireccion').value = cliente.domicilio || '';
+  document.getElementById('txtComentario').value = cliente.comentario || '';
+  (cliente.docs || []).forEach((doc, idx) => {
+    const st = document.getElementById(`status${idx+1}`);
+    if(st){
+      if(doc.estatus){
+        st.textContent = '✅ Sí';
+        st.classList.remove('status-no');
+        st.classList.add('status-yes');
+      } else {
+        st.textContent = '❌ No';
+        st.classList.remove('status-yes');
+        st.classList.add('status-no');
+      }
+    }
+  });
+  const tarifasBody = document.querySelector('#tablaTarifas tbody');
+  if(tarifasBody){
+    tarifasBody.innerHTML = '';
+    (cliente.tarifas || []).forEach(t => {
+      const tr = document.createElement('tr');
+      tr.dataset.info = JSON.stringify(t);
+      const cOrigenDestino = `${t.estadoOrigen} - ${t.estadoDestino}`;
+      const cTipo = t.tipoUnidad;
+      const cTarifa = Number(t.tarifa).toLocaleString('es-MX', {style:'currency', currency:'MXN'});
+      const cCred  = t.diasCredito || 0;
+      const cKm    = t.kmRecorrer || 0;
+      tr.innerHTML = `<td>${cOrigenDestino}</td><td>${cTipo}</td><td>${cTarifa}</td><td>${cCred}</td><td>${cKm}</td><td><span class="icon-btn edit-tarifa" title="Editar">✏️</span></td>`;
+      tarifasBody.appendChild(tr);
+    });
+  }
+}
+
+      
+// Limpiar formularios del apartado "Nuevo Cliente"
+function limpiarFormularioCliente(){
+  if(!clientsMenu) return;
+  clientsMenu.querySelectorAll('input, textarea').forEach(el => {
+    el.value = '';
+    if(el.type === 'file'){ el.value = ''; }
+  });
+  clientsMenu.querySelectorAll('select').forEach(sel => sel.selectedIndex = 0);
+  // Reinicia los estados de documentación
+  clientsMenu.querySelectorAll('.status').forEach(st => {
+    st.textContent = '❌ No';
+    st.classList.remove('status-yes');
+    st.classList.add('status-no');
+  });
+  // Limpia la tabla de tarifas
+  const tarifasBody = document.querySelector('#tablaTarifas tbody');
+  if(tarifasBody) tarifasBody.innerHTML = '';
+}
+
+// Botón “Nuevo Cliente” (tarjeta izquierda)
+document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
+  editingClientId = null;
+  limpiarFormularioCliente();
+  document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
+  showInClientsModule(clientsMenu);
+  // Activa la subpestaña “Datos”
+  document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
+});
+
+// Botón “CLIENTES” (tarjeta derecha)
+document.getElementById('btnVerClientes')?.addEventListener('click', () => {
+   editingClientId = null;
+  document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
+  showInClientsModule(clientsList);
+  renderTablaClientes(); // pinta/actualiza la tabla
+  limpiarFormularioCliente(); // limpia formulario de nuevo cliente
+});
+
+      
+// Volver al dashboard desde el menú principal de Clientes ---
+document.getElementById('btnClientesBack')?.addEventListener('click', () => {
+  showSection('dashboard');
+});
+
+         
+// Botones dentro de la ventana “Clientes”
+document.getElementById('btnVolverHome')?.addEventListener('click', () => {
+  editingClientId = null;
+  document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
+  showInClientsModule(clientsHome);
+});
+
+document.getElementById('btnNuevoDesdeLista')?.addEventListener('click', () => {
+  editingClientId = null;
+  limpiarFormularioCliente();
+  document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
+  showInClientsModule(clientsMenu);
+  document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
+});
+
+// Búsqueda en la lista
+document.getElementById('searchCli')?.addEventListener('input', (e) => {
+  renderTablaClientes(e.target.value);
+});
+
+      const last = localStorage.getItem('sr_last_user');
+      if (last) document.getElementById('usuario').value = last;
+      document.getElementById('btnGuardar').onclick = () => {
+        localStorage.setItem('sr_last_user', document.getElementById('usuario').value);
+        alert('Usuario guardado');
+      };
+      document.getElementById('btnEntrar').onclick = () => {
+        const u = document.getElementById('usuario').value;
+        const p = document.getElementById('password').value;
+        if (usuarios.find(x => x.usuario === u && x.password === p)) showSection('dashboard');
+        else alert('Usuario o contraseña incorrectos');
+      };
+
+      document.querySelectorAll('.sub-tab').forEach(tab => {
+        tab.onclick = () => {
+          document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById(tab.dataset.content).classList.add('active');
+        };
+      });
+      document.getElementById('exitClient').onclick = () => showSection('dashboard');
+// Mostrar/ocultar botón Guardar según la pestaña activa
+const saveBtn = document.getElementById('saveClient');
+function updateSaveButtonVisibility() {
+  const activeTab = document.querySelector('.sub-tab.active');
+  if (activeTab && activeTab.dataset.content === 'tab-comentario') {
+    saveBtn.style.display = 'inline-block';
+  } else {
+    saveBtn.style.display = 'none';
+  }
+}
+updateSaveButtonVisibility();
+
+document.querySelectorAll('.sub-tab').forEach(tab => {
+  tab.addEventListener('click', updateSaveButtonVisibility);
+});
+
+// Guardar cliente y mostrar confirmación ---
+const clienteModal = document.getElementById('clienteModal');
+const clienteModalClose = clienteModal.querySelector('.close');
+const clienteModalBtnCerrar = clienteModal.querySelector('.btn-cerrar');
+
+// Función para generar siguiente ID consecutivo
+function generarSiguienteId(arr) {
+  const prefijo = 'LTR-CL-';
+  const maxNum = arr.reduce((max, c) => {
+    const m = (c.id || '').match(/^LTR-CL-(\d+)$/);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return n > max ? n : max;
+  }, 0);
+  return `${prefijo}${String(maxNum + 1).padStart(2, '0')}`;
+}
+
+saveBtn.addEventListener('click', () => {
+  const nombre = (document.getElementById('inpNombre')?.value || '').trim();
+  const rfc = (document.getElementById('inpRFC')?.value || '').trim();
+  const estatus = document.getElementById('selEstatus')?.value || 'Activo';
+  const domicilio = (document.getElementById('txtDireccion')?.value || '').trim();
+const comentario = (document.getElementById('txtComentario')?.value || '').trim();
+
+  const docNames = [
+    'Acta Constitutiva',
+    'Poder Rep. Legal',
+    'Comprobante de Domicilio',
+    'Constancia de Situación Fiscal',
+    'INE Rep. Legal',
+    'Contrato'
+  ];
+  const docs = docNames.map((nombre, idx) => {
+    const st = document.getElementById(`status${idx+1}`);
+    return { nombre, estatus: st?.classList.contains('status-yes') };
+  });
+
+  const tarifas = Array.from(document.querySelectorAll('#tablaTarifas tbody tr')).map(tr => {
+    try { return JSON.parse(tr.dataset.info || '{}'); } catch { return {}; }
+  });
+  // Validación básica
+  if (!nombre || !rfc) {
+    alert('Por favor llena al menos Nombre/Razón Social y RFC.');
+    return;
+  }
+
+  const arr = getClientes();
+  let id = editingClientId;
+  if(editingClientId){
+    const idx = arr.findIndex(c => c.id === editingClientId);
+    if(idx >= 0){
+      arr[idx] = { id: editingClientId, nombre, rfc, estatus, domicilio, comentario, docs, tarifas };
+    }
+  } else {
+    id = generarSiguienteId(arr);
+    arr.push({ id, nombre, rfc, estatus, domicilio, comentario, docs, tarifas });
+  }
+  setClientes(arr);
+
+  // 🔄 Actualizar tabla en vista "Clientes registrados"
+  renderTablaClientes();
+
+  // Llenar modal de confirmación
+  document.getElementById('idClienteTexto').textContent = id;
+  document.getElementById('nombreCliente').textContent = nombre;
+  document.getElementById('rfcCliente').textContent = rfc;
+  document.getElementById('domicilioCliente').textContent = domicilio;
+
+  // Mostrar modal
+  clienteModal.classList.remove('hidden');
+  clienteModal.style.display = 'flex';
+  editingClientId = null;
+
+ document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
+});
+
+// Cerrar modal de confirmación
+function cerrarClienteModal() {
+  clienteModal.classList.add('hidden');
+  clienteModal.style.display = 'none';
+}
+clienteModalClose.addEventListener('click', cerrarClienteModal);
+clienteModalBtnCerrar.addEventListener('click', cerrarClienteModal);
+window.addEventListener('click', (e) => {
+  if (e.target === clienteModal) cerrarClienteModal();
+});
+
+clienteModalClose.addEventListener('click', () => {
+  clienteModal.classList.add('hidden');
+  clienteModal.style.display = 'none';
+});
+
+window.addEventListener('click', (e) => {
+  if (e.target === clienteModal) {
+    clienteModal.classList.add('hidden');
+    clienteModal.style.display = 'none';
+  }
+});
+
+      /* Documentación */
+      document.querySelectorAll('.folder').forEach(btn => {
+        btn.onclick = () => {
+          const row = btn.dataset.row;
+          const inp = document.getElementById('file' + row);
+          inp.click();
+          inp.onchange = () => {
+            const st = document.getElementById('status' + row);
+            st.textContent = '✅ Sí';
+            st.classList.remove('status-no');
+            st.classList.add('status-yes');
+          };
+        };
+      });
+      document.querySelectorAll('.view').forEach(btn => {
+        btn.onclick = () => {
+          const row = btn.dataset.row;
+          const inp = document.getElementById('file' + row);
+          if (inp.files.length) {
+            const url = URL.createObjectURL(inp.files[0]);
+            window.open(url);
+          } else {
+            alert('No hay archivo cargado aún');
+          }
+        };
+      });
+  document.querySelectorAll('.perm-folder').forEach(btn => {
+        btn.onclick = () => {
+          const row = btn.dataset.row;
+          const inp = document.getElementById('permFile' + row);
+          inp.click();
+          inp.onchange = () => {
+            const st = document.getElementById('permStatus' + row);
+            st.textContent = '✅ Sí';
+            st.classList.remove('status-no');
+            st.classList.add('status-yes');
+          };
+        };
+      });
+      document.querySelectorAll('.perm-view').forEach(btn => {
+        btn.onclick = () => {
+          const row = btn.dataset.row;
+          const inp = document.getElementById('permFile' + row);
+          if (inp.files.length) {
+            const url = URL.createObjectURL(inp.files[0]);
+            window.open(url);
+          } else {
+            alert('No hay archivo cargado aún');
+          }
+        };
+      });
+      /* --- Tarifas / Modal --- */
+      const modal = document.getElementById('tarifaModal');
+      const tablaTarifas = document.querySelector('#tablaTarifas tbody');
+      // fila en edición (si es null, se creará una nueva)
+      let editingRow = null;
+      const tituloModal = modal.querySelector('h3');
+
+      function mostrarModal() {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+      }
+      function ocultarModal() {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
+      function activarTabTarifas() {
+        document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+        document.querySelector('.sub-tab[data-content="tab-tarifas"]').classList.add('active');
+        document.getElementById('tab-tarifas').classList.add('active');
+      }
+      function limpiarFormulario() {
+        document.getElementById('estadoOrigen').value = '';
+        document.getElementById('municipioOrigen').value = '';
+        document.getElementById('estadoDestino').value = '';
+        document.getElementById('municipioDestino').value = '';
+        document.getElementById('tipoUnidad').selectedIndex = 0;
+        document.getElementById('diasCredito').value = '';
+        document.getElementById('kmRecorrer').value = '';
+        document.getElementById('tarifa').value = '';
+      }
+      function cargarFormulario(datos) {
+        document.getElementById('estadoOrigen').value   = datos.estadoOrigen || '';
+        document.getElementById('municipioOrigen').value= datos.municipioOrigen || '';
+        document.getElementById('estadoDestino').value  = datos.estadoDestino || '';
+        document.getElementById('municipioDestino').value= datos.municipioDestino || '';
+        document.getElementById('tipoUnidad').value     = datos.tipoUnidad || '';
+        document.getElementById('diasCredito').value    = datos.diasCredito ?? '';
+        document.getElementById('kmRecorrer').value     = datos.kmRecorrer ?? '';
+        document.getElementById('tarifa').value         = datos.tarifa ?? '';
+      }
+      function guardarTarifa() {
+        const datos = {
+          estadoOrigen: document.getElementById('estadoOrigen').value.trim(),
+          municipioOrigen: document.getElementById('municipioOrigen').value.trim(),
+          estadoDestino: document.getElementById('estadoDestino').value.trim(),
+          municipioDestino: document.getElementById('municipioDestino').value.trim(),
+          tipoUnidad: document.getElementById('tipoUnidad').value,
+          diasCredito: document.getElementById('diasCredito').value,
+          kmRecorrer: document.getElementById('kmRecorrer').value,
+          tarifa: document.getElementById('tarifa').value
+        };
+
+        if (!datos.estadoOrigen || !datos.estadoDestino || !datos.tipoUnidad || !datos.tarifa) {
+          alert('Por favor complete todos los campos obligatorios (*)');
+          return;
+        }
+
+        const cOrigenDestino = `${datos.estadoOrigen} - ${datos.estadoDestino}`;
+        const cTipo = datos.tipoUnidad;
+        const cTarifa = Number(datos.tarifa).toLocaleString('es-MX', {style:'currency', currency:'MXN'});
+        const cCred  = datos.diasCredito || 0;
+        const cKm    = datos.kmRecorrer || 0;
+
+        if (editingRow) {
+          // Actualiza celdas existentes
+          editingRow.cells[0].textContent = cOrigenDestino;
+          editingRow.cells[1].textContent = cTipo;
+          editingRow.cells[2].textContent = cTarifa;
+          editingRow.cells[3].textContent = cCred;
+          editingRow.cells[4].textContent = cKm;
+          editingRow.dataset.info = JSON.stringify(datos);
+        } else {
+          const tr = document.createElement('tr');
+          tr.dataset.info = JSON.stringify(datos);
+          tr.innerHTML = `
+            <td>${cOrigenDestino}</td>
+            <td>${cTipo}</td>
+            <td>${cTarifa}</td>
+            <td>${cCred}</td>
+            <td>${cKm}</td>
+            <td><span class="icon-btn edit-tarifa" title="Editar">✏️</span></td>
+          `;
+          tablaTarifas.appendChild(tr);
+        }
+
+        ocultarModal();
+        limpiarFormulario();
+        activarTabTarifas();
+        // Reiniciar estado de edición
+        editingRow = null;
+        tituloModal.textContent = 'Agregar Nueva Ruta/Tarifa';
+      }
+
+      const agregarBtn = document.querySelector('.add-route');
+      if (agregarBtn) agregarBtn.addEventListener('click', mostrarModal);
+      if (agregarBtn) agregarBtn.addEventListener('click', () => {
+        editingRow = null;
+        tituloModal.textContent = 'Agregar Nueva Ruta/Tarifa';
+        limpiarFormulario();
+      });
+
+      document.querySelector('#tarifaModal .close').addEventListener('click', () => { ocultarModal(); activarTabTarifas(); });
+      document.querySelector('#tarifaModal .btn-cancelar').addEventListener('click', () => { ocultarModal(); activarTabTarifas(); });
+      document.querySelector('#tarifaModal .btn-guardar').addEventListener('click', guardarTarifa);
+
+      window.addEventListener('click', (e) => { if (e.target === modal) ocultarModal(); });
+
+          // Delegación: clic en ícono ✏️ para editar
+        tablaTarifas.addEventListener('click', (e) => {
+          const btn = e.target.closest('.edit-tarifa');
+          if (!btn) return;
+          const row = btn.closest('tr');
+          try {
+            const datos = JSON.parse(row.dataset.info || '{}');
+            cargarFormulario(datos);
+            editingRow = row;
+            tituloModal.textContent = 'Editar Ruta/Tarifa';
+            mostrarModal();
+          } catch {
+            alert('No fue posible cargar los datos de la fila para edición.');
+          }
+        });
+      function mostrarModalConfirmacion(cliente) {
+  document.getElementById('idClienteTexto').textContent = cliente.id;
+  document.getElementById('nombreCliente').textContent = cliente.nombre;
+  document.getElementById('rfcCliente').textContent = cliente.rfc;
+  document.getElementById('domicilioCliente').textContent = cliente.domicilio;
+
+  document.getElementById('clienteModal').classList.remove('hidden');
+  document.getElementById('clienteModal').style.display = 'flex';
+}
+
+document.querySelector('#clienteModal .btn-cerrar').addEventListener('click', () => {
+  document.getElementById('clienteModal').classList.add('hidden');
+  document.getElementById('clienteModal').style.display = 'none';
+});
+
+      
+function mostrarDetalleCliente(id){
+  const cliente = getClientes().find(c => c.id === id);
+  if(!cliente) return;
+  const cont = document.getElementById('detalleClienteContenido');
+  const docList = (cliente.docs || []).map(d => `<li>${d.nombre}: ${d.estatus ? 'Sí' : 'No'}</li>`).join('');
+  const tarifasTabla = (cliente.tarifas && cliente.tarifas.length)
+    ? `<table class="doc-table"><thead><tr><th>Origen - Destino</th><th>Tipo de Unidad</th><th>Tarifa</th><th>Días de Crédito</th><th>Km</th></tr></thead><tbody>${cliente.tarifas.map(t => `<tr><td>${t.estadoOrigen} - ${t.estadoDestino}</td><td>${t.tipoUnidad}</td><td>${Number(t.tarifa).toLocaleString('es-MX',{style:'currency',currency:'MXN'})}</td><td>${t.diasCredito}</td><td>${t.kmRecorrer}</td></tr>`).join('')}</tbody></table>`
+    : '<p>Sin tarifas registradas</p>';
+  cont.innerHTML = `
+    <h3 class="section-title">Datos Generales</h3>
+    <p><strong>Nombre/Razón Social:</strong> ${cliente.nombre || ''}</p>
+    <p><strong>RFC:</strong> ${cliente.rfc || ''}</p>
+    <p><strong>Estatus:</strong> ${cliente.estatus || ''}</p>
+    <p><strong>Domicilio:</strong> ${cliente.domicilio || ''}</p>
+    <h3 class="section-title">Contactos</h3>
+    <p><strong>Operaciones:</strong> ${((cliente.contactos||{}).operaciones||{}).nombre||""} / ${((cliente.contactos||{}).operaciones||{}).email||""} / ${((cliente.contactos||{}).operaciones||{}).tel||""}</p>
+    <p><strong>Administración:</strong> ${((cliente.contactos||{}).administracion||{}).nombre||""} / ${((cliente.contactos||{}).administracion||{}).email||""} / ${((cliente.contactos||{}).administracion||{}).tel||""}</p>
+    <p><strong>Comercial:</strong> ${((cliente.contactos||{}).comercial||{}).nombre||""} / ${((cliente.contactos||{}).comercial||{}).email||""} / ${((cliente.contactos||{}).comercial||{}).tel||""}</p>
+    <h3 class="section-title">Tarifas</h3>
+    ${tarifasTabla}
+    <h3 class="section-title">Documentación</h3>
+    <ul>${docList}</ul>
+    <h3 class="section-title">Comentarios</h3>
+    <p>${cliente.comentario || ''}</p>
+  `;
+  const modal = document.getElementById('detalleClienteModal');
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+}
+
+const detalleModal = document.getElementById('detalleClienteModal');
+detalleModal.querySelector('.close').addEventListener('click', () => {
+  detalleModal.classList.add('hidden');
+  detalleModal.style.display = 'none';
+});
+window.addEventListener('click', (e) => {
+  if (e.target === detalleModal) {
+    detalleModal.classList.add('hidden');
+    detalleModal.style.display = 'none';
+  }
+});
+    });
+  </script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<script>
+// Importación desde Excel (Clientes, Documentación, Tarifas y Contactos) ---
+document.getElementById('btnImportExcel')?.addEventListener('click', () => {
+  document.getElementById('excelInput').click();
+});
+function _norm(s){ return (String(s||'').trim()).replace(/\s+/g,' '); }
+
+document.getElementById('excelInput')?.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try{
+    const data = await file.arrayBuffer();
+    const wb = XLSX.read(data, { type: 'array' });
+
+    const shClientes = wb.Sheets['Clientes'];
+    const shDocs     = wb.Sheets['Documentación'];
+    const shTarifas  = wb.Sheets['Tarifas'];
+
+    const rowsClientes = shClientes ? XLSX.utils.sheet_to_json(shClientes) : [];
+    const rowsDocs     = shDocs     ? XLSX.utils.sheet_to_json(shDocs) : [];
+    const rowsTarifas  = shTarifas  ? XLSX.utils.sheet_to_json(shTarifas) : [];
+
+    // Indexar docs y tarifas por RFC
+    const docsByRFC = {};
+    rowsDocs.forEach(r => { docsByRFC[_norm(r.RFC)] = r; });
+
+    const tarifasByRFC = {};
+    rowsTarifas.forEach(r => {
+      const rfc = _norm(r.RFC);
+      if(!rfc) return;
+      (tarifasByRFC[rfc] ||= []).push({
+        estadoOrigen: _norm(r['Estado Origen']),
+        municipioOrigen: _norm(r['Municipio Origen']),
+        estadoDestino: _norm(r['Estado Destino']),
+        municipioDestino: _norm(r['Municipio Destino']),
+        tipoUnidad: _norm(r['Tipo Unidad']),
+        diasCredito: Number(r['Dias Credito']||0),
+        kmRecorrer: Number(r['Km Recorrer']||0),
+        tarifa: Number(r['Tarifa']||0)
+      });
+      
+    });
+
+    const docNames = [
+      'Acta Constitutiva',
+      'Poder Rep. Legal',
+      'Comprobante de Domicilio',
+      'Constancia de Situación Fiscal',
+      'INE Rep. Legal',
+      'Contrato'
+    ];
+
+    const existentes = getClientes();
+    const porRFC = {};
+    existentes.forEach(c => { if (c.rfc) porRFC[_norm(c.rfc)] = c; });
+
+    rowsClientes.forEach(r => {
+      const nombre = _norm(r['Nombre'] || r['Nombre/Razón Social']);
+      const rfc    = _norm(r['RFC']);
+      if(!nombre || !rfc) return; // requeridos
+
+      const estatus   = _norm(r['Estatus']||'Activo') || 'Activo';
+      const domicilio = _norm(r['Domicilio'] || r['Dirección']);
+      const comentario= _norm(r['Comentario']);
+
+      // Contactos (opcionales)
+      const contactos = {
+        operaciones: {
+          nombre: _norm(r['Contacto Operaciones (Nombre)']),
+          email:  _norm(r['Contacto Operaciones (Email)']),
+          tel:    _norm(r['Contacto Operaciones (Tel)']),
+        },
+        administracion: {
+          nombre: _norm(r['Contacto Administración (Nombre)'] || r['Contacto Administracion (Nombre)']),
+          email:  _norm(r['Contacto Administración (Email)']  || r['Contacto Administracion (Email)']),
+          tel:    _norm(r['Contacto Administración (Tel)']    || r['Contacto Administracion (Tel)']),
+        },
+        comercial: {
+          nombre: _norm(r['Contacto Comercial (Nombre)']),
+          email:  _norm(r['Contacto Comercial (Email)']),
+          tel:    _norm(r['Contacto Comercial (Tel)']),
+        }
+      };
+
+      const drow = docsByRFC[rfc] || {};
+      const docs = docNames.map(n => ({
+        nombre: n,
+        estatus: String(drow[n]||'No').toLowerCase().startsWith('s')
+      }));
+
+      const tarifas = (tarifasByRFC[rfc] || []).map(t => ({ ...t }));
+
+      const existente = porRFC[rfc];
+      if (existente) {
+        existente.nombre = nombre;
+        existente.estatus = estatus;
+        existente.domicilio = domicilio;
+        existente.comentario = comentario;
+        existente.docs = docs;
+        existente.tarifas = tarifas;
+        existente.contactos = contactos;
+      } else {
+        const nuevoId = generarSiguienteId(existentes);
+        const nuevo = { id: nuevoId, nombre, rfc, estatus, domicilio, comentario, docs, tarifas, contactos };
+        existentes.push(nuevo);
+        porRFC[rfc] = nuevo;
+      }
+    });
+
+    setClientes(existentes);
+    renderTablaClientes();
+    alert('Importación completada ✅');
+    e.target.value = '';
+  }catch(err){
+    console.error(err);
+    alert('No fue posible leer el archivo. Verifica que sea .xlsx y tenga las hojas: Clientes, Documentacion y Tarifas.');
+  }
+      });
+  // Modal "Alta de Unidad Vehicular" =====
+(function(){
+  const btnAddUnit = document.querySelector('#permsMenu .add-unit');
+  const unidadModal = document.getElementById('unidadModal');
+  const tablaUnidadesBody = document.querySelector('#tablaUnidades tbody');
+      
+
+  // Referencias a inputs
+  const $ = (id) => document.getElementById(id);
+  const f = {
+    tarjeta: $('uTarjeta'),
+    placas: $('uPlacas'),
+    eco: $('uEco'),
+    tipo: $('uTipo'),
+    vencePoliza: $('uVencePoliza'),
+    aseguradora: $('uAseguradora'),
+    marca: $('uMarca'),
+    anio: $('uAnio'),
+    permiso: $('uPermisoSCT'),
+  };
+
+  let unidadEditingRow = null; // si no es null, estamos editando
+
+  function limpiarFormUnidad(){
+    f.tarjeta.value = '';
+    f.placas.value = '';
+    f.eco.value = '';
+    f.tipo.value = '';
+    f.vencePoliza.value = '';
+    f.aseguradora.value = '';
+    f.marca.value = '';
+    f.anio.value = '';
+    f.permiso.value = '';
+  }
+
+  function mostrarUnidadModal(){
+    unidadModal.classList.remove('hidden');
+    unidadModal.style.display = 'flex';
+  }
+  function ocultarUnidadModal(){
+    unidadModal.classList.add('hidden');
+    unidadModal.style.display = 'none';
+  }
+
+  // Abrir modal desde el botón +Agregar Unidad
+  btnAddUnit?.addEventListener('click', () => {
+    unidadEditingRow = null;
+    limpiarFormUnidad();
+    // título fijo (si quieres podrías alternarlo a "Editar Unidad")
+    unidadModal.querySelector('h3').textContent = 'Alta de Unidad Vehicular';
+    mostrarUnidadModal();
+  });
+
+  // Cerrar modal (X y Cancelar)
+  unidadModal.querySelector('.close')?.addEventListener('click', ocultarUnidadModal);
+  unidadModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultarUnidadModal);
+
+  // Guardar (crear/editar fila)
+  unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+    const datos = {
+      tarjeta: (f.tarjeta.value || '').trim(),
+      placas: (f.placas.value || '').trim(),
+      eco: (f.eco.value || '').trim(),
+      tipo: f.tipo.value,
+      vencePoliza: f.vencePoliza.value, // ISO yyyy-mm-dd
+      aseguradora: (f.aseguradora.value || '').trim(),
+      marca: (f.marca.value || '').trim(),
+      anio: f.anio.value ? Number(f.anio.value) : '',
+      permiso: (f.permiso.value || '').trim(),
+    };
+
+    // Validación mínima
+    if(!datos.tarjeta || !datos.placas || !datos.tipo){
+      alert('Completa los campos obligatorios: Tarjeta, Placas y Tipo.');
+      return;
+    }
+
+    const venceLegible = datos.vencePoliza
+      ? new Date(datos.vencePoliza + 'T00:00:00').toLocaleDateString('es-MX')
+      : '';
+
+    if (unidadEditingRow) {
+      // Actualizar fila existente
+      unidadEditingRow.cells[0].textContent = datos.tarjeta;
+      unidadEditingRow.cells[1].textContent = datos.placas;
+      unidadEditingRow.cells[2].textContent = datos.eco;
+      unidadEditingRow.cells[3].textContent = datos.tipo;
+      unidadEditingRow.cells[4].textContent = venceLegible;
+      unidadEditingRow.cells[5].textContent = datos.aseguradora;
+      unidadEditingRow.cells[6].textContent = datos.marca;
+      unidadEditingRow.cells[7].textContent = datos.anio || '';
+      unidadEditingRow.cells[8].textContent = datos.permiso;
+
+      unidadEditingRow.dataset.info = JSON.stringify(datos);
+    } else {
+      // Crear nueva fila
+      const tr = document.createElement('tr');
+      tr.dataset.info = JSON.stringify(datos);
+      tr.innerHTML = `
+        <td>${datos.tarjeta}</td>
+        <td>${datos.placas}</td>
+        <td>${datos.eco}</td>
+        <td>${datos.tipo}</td>
+        <td>${venceLegible}</td>
+        <td>${datos.aseguradora}</td>
+        <td>${datos.marca}</td>
+        <td>${datos.anio || ''}</td>
+        <td>${datos.permiso}</td>
+      `;
+      tablaUnidadesBody.appendChild(tr);
+    }
+
+    ocultarUnidadModal();
+    limpiarFormUnidad();
+    unidadEditingRow = null;
+  });
+
+  // (Opcional) Cerrar clic afuera
+  window.addEventListener('click', (e) => {
+    if (e.target === unidadModal) ocultarUnidadModal();
+  });
+
+  // Habilitar edición al hacer doble clic en una fila
+  tablaUnidadesBody?.addEventListener('dblclick', (e) => {
+    const row = e.target.closest('tr');
+    if(!row) return;
+    try{
+      const datos = JSON.parse(row.dataset.info || '{}');
+      f.tarjeta.value = datos.tarjeta || '';
+      f.placas.value = datos.placas || '';
+      f.eco.value = datos.eco || '';
+      f.tipo.value = datos.tipo || '';
+      f.vencePoliza.value = datos.vencePoliza || '';
+      f.aseguradora.value = datos.aseguradora || '';
+      f.marca.value = datos.marca || '';
+      f.anio.value = datos.anio || '';
+      f.permiso.value = datos.permiso || '';
+
+      unidadEditingRow = row;
+      unidadModal.querySelector('h3').textContent = 'Editar Unidad Vehicular';
+      mostrarUnidadModal();
+    }catch{
+      alert('No fue posible cargar los datos de la unidad para edición.');
+    }
+  });
+})();
+</script>
+
+
+<script>
+// === Soporte adjunto Tarjeta de Circulación (V1.2.33.2) ===
+(function(){
+  const unidadModal   = document.getElementById('unidadModal');
+  const unidadesTbody = document.querySelector('#tablaUnidades tbody');
+  if(!unidadModal || !unidadesTbody) return;
+
+  const btnPick   = document.getElementById('btnUTarjetaPick');
+  const fileInput = document.getElementById('uTarjetaFile');
+  const fileName  = document.getElementById('uTarjetaName');
+  const shadowTxt = document.getElementById('uTarjeta'); // compatibilidad con código previo
+
+  // Botón 📁 abre selector
+  btnPick?.addEventListener('click', () => fileInput?.click());
+  // Al elegir archivo, reflejar nombre
+  fileInput?.addEventListener('change', () => {
+    const name = fileInput.files?.[0]?.name || '';
+    if (fileName)  fileName.value = name;
+    if (shadowTxt) shadowTxt.value = name; // por si algún código viejo lee #uTarjeta
+  });
+
+  // Observa nuevas filas en la tabla mientras el modal está abierto y hay archivo seleccionado
+  let mo = null;
+  function startObserver(){
+    if (mo) return;
+    mo = new MutationObserver((mutations) => {
+      for (const m of mutations){
+        if (m.type === 'childList' && m.addedNodes.length){
+          m.addedNodes.forEach(node => {
+            if (!(node instanceof HTMLElement)) return;
+            if (node.tagName !== 'TR') return;
+            // Si hay archivo seleccionado, reescribe la 1a celda con lupa y enlaza el blob
+            if (fileInput && fileInput.files && fileInput.files.length){
+              const f = fileInput.files[0];
+              const url = URL.createObjectURL(f);
+              const name = fileName?.value || f.name || 'Tarjeta de circulación';
+              const firstCell = node.cells?.[0];
+              if (firstCell){
+                firstCell.innerHTML = '<span class="icon-btn ver-tc" title="Ver Tarjeta">🔍</span>';
+                firstCell.title = name;
+                node.dataset.tcUrl = url;
+                node.dataset.tcName = name;
+                // Click para abrir
+                const btn = firstCell.querySelector('.ver-tc');
+                btn?.addEventListener('click', () => window.open(url, '_blank'));
+              }
+              // Limpieza visual de los inputs del modal
+              if (fileInput) fileInput.value = '';
+              if (fileName)  fileName.value  = '';
+              if (shadowTxt) shadowTxt.value = '';
+            }
+          });
+        }
+      }
+    });
+    mo.observe(unidadesTbody, {childList: true});
+  }
+  function stopObserver(){
+    if (mo){ mo.disconnect(); mo = null; }
+  }
+
+  // Abrir / cerrar modal: activar/desactivar observador
+  unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+    // El observador capturará la nueva fila y la convertirá
+    // No interferimos con tu handler original de guardar
+  }, {capture: false});
+
+  // Cuando se muestre el modal, arrancamos el observador (por si guardan varias unidades seguidas)
+  const showObs = new MutationObserver(() => {
+    const visible = getComputedStyle(unidadModal).display !== 'none' && !unidadModal.classList.contains('hidden');
+    if (visible) startObserver(); else stopObserver();
+  });
+  showObs.observe(unidadModal, {attributes: true, attributeFilter: ['style', 'class']});
+
+  // También delegamos la lupa por si recargan filas existentes (defensivo)
+  unidadesTbody.addEventListener('click', (e) => {
+    const btn = e.target.closest('.ver-tc');
+    if (!btn) return;
+    const tr = btn.closest('tr');
+    const url = tr?.dataset.tcUrl;
+    if (url) window.open(url, '_blank');
+  });
+})();
+</script>
+
+
+<script>
+// === Patch V1.2.33.3: Guardar Unidad con lupa y apertura del archivo ===
+(function(){
+  try{
+    const unidadModal = document.getElementById('unidadModal');
+    const tbody = document.querySelector('#tablaUnidades tbody');
+    if(!unidadModal || !tbody) return;
+
+    const btnGuardar = unidadModal.querySelector('.btn-guardar');
+    const btnCerrar  = unidadModal.querySelector('.btn-cancelar');
+    const btnX       = unidadModal.querySelector('.close');
+
+    const fileInput = document.getElementById('uTarjetaFile');
+    const fileName  = document.getElementById('uTarjetaName');
+
+    // Campos adicionales
+    const $ = (id) => document.getElementById(id);
+    const F = {
+      placas: $('uPlacas'),
+      eco: $('uEco'),
+      tipo: $('uTipo'),
+      vencePoliza: $('uVencePoliza'),
+      aseguradora: $('uAseguradora'),
+      marca: $('uMarca'),
+      anio: $('uAnio'),
+      permiso: $('uPermisoSCT')
+    };
+
+    function closeModal(){
+      unidadModal.classList.add('hidden');
+      unidadModal.style.display = 'none';
+    }
+
+    // Interceptamos con capture para evitar handlers previos
+    btnGuardar?.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      if(!(fileInput && fileInput.files && fileInput.files.length)){
+        alert('Adjunta la Tarjeta de circulación.');
+        return;
+      }
+      if(!F.tipo?.value){
+        alert('Selecciona el Tipo de unidad.');
+        return;
+      }
+
+      const f = fileInput.files[0];
+      const name = (fileName?.value || f.name || 'Tarjeta de circulación').trim();
+      const url  = URL.createObjectURL(f);
+
+      const datos = {
+        placas: (F.placas?.value || '').trim(),
+        eco: (F.eco?.value || '').trim(),
+        tipo: F.tipo?.value || '',
+        vencePoliza: F.vencePoliza?.value || '',
+        aseguradora: (F.aseguradora?.value || '').trim(),
+        marca: (F.marca?.value || '').trim(),
+        anio: F.anio?.value || '',
+        permiso: (F.permiso?.value || '').trim(),
+        tcName: name
+      };
+
+      const venceLegible = datos.vencePoliza
+        ? new Date(datos.vencePoliza + 'T00:00:00').toLocaleDateString('es-MX')
+        : '';
+
+      const tr = document.createElement('tr');
+      tr.dataset.info = JSON.stringify(datos);
+      tr.dataset.tcUrl = url;
+      tr.dataset.tcName = name;
+
+      tr.innerHTML = `
+        <td title="${name}">
+          <span class="icon-btn ver-tc" aria-label="Ver Tarjeta de circulación" title="Ver Tarjeta de circulación">🔍</span>
+        </td>
+        <td>${datos.placas}</td>
+        <td>${datos.eco}</td>
+        <td>${datos.tipo}</td>
+        <td>${venceLegible}</td>
+        <td>${datos.aseguradora}</td>
+        <td>${datos.marca}</td>
+        <td>${datos.anio || ''}</td>
+        <td>${datos.permiso}</td>
+      `;
+
+      tbody.appendChild(tr);
+
+      // Click en lupa
+      tr.querySelector('.ver-tc')?.addEventListener('click', () => {
+        const u = tr.dataset.tcUrl;
+        if (u) window.open(u, '_blank');
+      });
+
+      // Limpieza y cerrar
+      if(fileInput) fileInput.value = '';
+      if(fileName) fileName.value = '';
+      Object.values(F).forEach(el => { if(el) el.value = ''; });
+      closeModal();
+    }, {capture:true});
+
+    // Delegación defensiva por si hubiera filas sin listener
+    tbody.addEventListener('click', (e) => {
+      const btn = e.target.closest('.ver-tc');
+      if(!btn) return;
+      const tr = btn.closest('tr');
+      const u  = tr?.dataset.tcUrl;
+      if(u) window.open(u, '_blank');
+    });
+
+  }catch(err){
+    console.error('Patch V1.2.33.3 error:', err);
+  }
+})();
+</script>
+
+
+<script>
+// === V1.2.48.1 Integración limpia: Tarjeta + Póliza en Unidades ===
+(function(){
+  const $ = (id) => document.getElementById(id);
+
+  function onReady(fn){
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fn, {once:true});
+    } else {
+      fn();
+    }
+  }
+
+  onReady(function(){
+    const unidadModal = $('unidadModal');
+    const tbody       = document.querySelector('#tablaUnidades tbody');
+    if (!unidadModal || !tbody) return;
+
+    // --- Wire de controles Tarjeta (si existen en tu HTML actual) ---
+    const btnTarjeta  = $('btnUTarjetaPick') || $('btnTarjetaAdj');
+    const inTarjeta   = $('uTarjetaFile');
+    const nameTarjeta = $('uTarjetaName') || $('uTarjeta');
+    btnTarjeta?.addEventListener('click', () => inTarjeta?.click());
+    inTarjeta?.addEventListener('change', () => {
+      const f = inTarjeta.files?.[0] || null;
+      if (nameTarjeta) {
+        if ('value' in nameTarjeta) nameTarjeta.value = f ? (f.name || '') : '';
+        else nameTarjeta.textContent = f ? (f.name || '') : '';
+      }
+    });
+
+    // --- Wire de controles Póliza (bloque insertado arriba) ---
+    const btnPoliza   = $('btnUPolizaPick');
+    const inPoliza    = $('uPolizaFile');
+    const namePoliza  = $('uPolizaName') || $('uPoliza');
+    btnPoliza?.addEventListener('click', () => inPoliza?.click());
+    inPoliza?.addEventListener('change', () => {
+      const f = inPoliza.files?.[0] || null;
+      if (namePoliza) {
+        if ('value' in namePoliza) namePoliza.value = f ? (f.name || '') : '';
+        else namePoliza.textContent = f ? (f.name || '') : '';
+      }
+    });
+
+    // --- Campos de formulario
+    const f = {
+      placas: $('uPlacas'),
+      eco: $('uEco'),
+      tipo: $('uTipo'),
+      vencePoliza: $('uVencePoliza'),
+      aseguradora: $('uAseguradora'),
+      marca: $('uMarca'),
+      anio: $('uAnio'),
+      permiso: $('uPermisoSCT'),
+    };
+
+    // --- Botón Guardar: reemplazar para eliminar listeners antiguos y dejar uno limpio ---
+    const oldGuardar = unidadModal.querySelector('.btn-guardar');
+    if (!oldGuardar) return;
+    const newGuardar = oldGuardar.cloneNode(true);
+    oldGuardar.parentNode.replaceChild(newGuardar, oldGuardar);
+
+    newGuardar.addEventListener('click', function(e){
+      e.preventDefault();
+
+      // Validaciones mínimas
+      if(!(inTarjeta && inTarjeta.files && inTarjeta.files.length)){
+        alert('Adjunta la Tarjeta de circulación.');
+        return;
+      }
+      if(!f.tipo?.value){
+        alert('Selecciona el Tipo de unidad.');
+        return;
+      }
+
+      // Datos Tarjeta
+      const tcFile = inTarjeta.files[0];
+      const tcName = (('value' in (nameTarjeta||{})) ? (nameTarjeta.value||'') : '') || tcFile.name || 'Tarjeta de circulación';
+      const tcUrl  = URL.createObjectURL(tcFile);
+
+      // Datos Póliza (opcional)
+      let polizaUrl = null, polizaName = '';
+      if (inPoliza && inPoliza.files && inPoliza.files.length){
+        polizaUrl  = URL.createObjectURL(inPoliza.files[0]);
+        polizaName = inPoliza.files[0].name || 'Póliza';
+      }
+
+      // Otros campos
+      const placas      = (f.placas?.value || '').trim();
+      const eco         = (f.eco?.value || '').trim();
+      const tipo        = f.tipo?.value || '';
+      const vence       = f.vencePoliza?.value || '';
+      const aseguradora = (f.aseguradora?.value || '').trim();
+      const marca       = (f.marca?.value || '').trim();
+      const anio        = f.anio?.value || '';
+      const permisoSCT  = (f.permiso?.value || '').trim();
+
+      const venceLegible = vence ? new Date(vence + 'T00:00:00').toLocaleDateString('es-MX') : '';
+
+      // Construcción de la fila
+      const tr = document.createElement('tr');
+      tr.dataset.tcUrl  = tcUrl;
+      tr.dataset.tcName = tcName;
+      if (polizaUrl) tr.dataset.polizaUrl = polizaUrl;
+      if (polizaName) tr.dataset.polizaName = polizaName;
+
+      tr.innerHTML = `
+        <td title="${tcName}">
+          <span class="icon-btn ver-tc" title="Ver Tarjeta de circulación" aria-label="Ver Tarjeta de circulación">🔍</span>
+        </td>
+        <td>${placas}</td>
+        <td>${eco}</td>
+        <td>${tipo}</td>
+        <td>
+          ${venceLegible}
+          ${polizaUrl ? `<br><span class="icon-btn ver-poliza" title="Ver póliza" aria-label="Ver póliza">📄</span>` : ''}
+        </td>
+        <td>${aseguradora}</td>
+        <td>${marca}</td>
+        <td>${anio}</td>
+        <td>${permisoSCT}</td>
+      `;
+      tbody.appendChild(tr);
+
+      // Listeners de apertura
+      tr.querySelector('.ver-tc')?.addEventListener('click', () => {
+        const u = tr.dataset.tcUrl;
+        if (u) window.open(u, '_blank');
+      });
+      tr.querySelector('.ver-poliza')?.addEventListener('click', () => {
+        const u = tr.dataset.polizaUrl;
+        if (u) window.open(u, '_blank');
+      });
+
+      // Limpieza
+      if (inTarjeta) inTarjeta.value = '';
+      if (nameTarjeta && 'value' in nameTarjeta) nameTarjeta.value = '';
+      if (inPoliza) inPoliza.value = '';
+      if (namePoliza && 'value' in namePoliza) namePoliza.value = '';
+
+      ['uPlacas','uEco','uTipo','uVencePoliza','uAseguradora','uMarca','uAnio','uPermisoSCT']
+        .forEach(id => { const el = $(id); if (el) el.value = ''; });
+
+      // Ocultar modal (ajústalo a tu mecanismo real)
+      unidadModal.classList.add('hidden');
+      unidadModal.style.display = 'none';
+    });
+
+    // Delegación defensiva única
+    if (!tbody.__unidadesDelegado){
+      tbody.addEventListener('click', (e) => {
+        const btnTar = e.target.closest('.ver-tc');
+        if (btnTar) {
+          const tr = btnTar.closest('tr');
+          const u  = tr?.dataset.tcUrl;
+          if (u) window.open(u, '_blank');
+          return;
+        }
+        const btnPol = e.target.closest('.ver-poliza');
+        if (btnPol) {
+          const tr = btnPol.closest('tr');
+          const u  = tr?.dataset.polizaUrl;
+          if (u) window.open(u, '_blank');
+        }
+      });
+      Object.defineProperty(tbody, '__unidadesDelegado', {value:true, enumerable:false});
+    }
+  });
+})();
+</script>
+
+
+<script>
+// V1.2.48.2: Validación inline y UX para Tarjeta/Póliza/Tipo
+(function(){
+  const $ = (id) => document.getElementById(id);
+  const q = (sel, root=document) => root.querySelector(sel);
+
+  function onReady(fn){
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn, {once:true});
+    else fn();
+  }
+
+  onReady(function(){
+    const unidadModal = $('unidadModal');
+    const tbody       = q('#tablaUnidades tbody');
+    if (!unidadModal || !tbody) return;
+
+    // refs
+    const inTarjeta   = $('uTarjetaFile');
+    const nameTarjeta = $('uTarjetaName') || $('uTarjeta');
+    const inPoliza    = $('uPolizaFile');
+    const namePoliza  = $('uPolizaName') || $('uPoliza');
+
+    const f = {
+      tipo: $('uTipo'),
+      placas: $('uPlacas'),
+      eco: $('uEco'),
+      vencePoliza: $('uVencePoliza'),
+      aseguradora: $('uAseguradora'),
+      marca: $('uMarca'),
+      anio: $('uAnio'),
+      permiso: $('uPermisoSCT'),
+    };
+
+    // helpers de error
+    function setErrorFor(elOrId, msg){
+      const el  = typeof elOrId === 'string' ? $(elOrId) : elOrId;
+      if (!el) return false;
+      const group = el.closest ? el.closest('.form-group') : null;
+      if (group) group.classList.add('error');
+      let box = null;
+      if (group) box = group.querySelector('.field-error');
+      if (!box) {
+        // fallback global
+        box = q('.field-error[data-for="' + (el.id || '') + '"]') || null;
+      }
+      if (box) box.textContent = msg || '';
+      return true;
+    }
+    function clearError(elOrId){
+      const el  = typeof elOrId === 'string' ? $(elOrId) : elOrId;
+      if (!el) return;
+      const group = el.closest ? el.closest('.form-group') : null;
+      if (group) group.classList.remove('error');
+      let box = null;
+      if (group) box = group.querySelector('.field-error');
+      if (!box) {
+        box = q('.field-error[data-for="' + (el.id || '') + '"]') || null;
+      }
+      if (box) box.textContent = '';
+    }
+
+    // limpiar errores al cambiar valores
+    [inTarjeta, nameTarjeta, inPoliza, namePoliza, f.tipo, f.placas, f.eco, f.vencePoliza,
+     f.aseguradora, f.marca, f.anio, f.permiso].forEach(ctrl => {
+      ctrl && ctrl.addEventListener('input', () => clearError(ctrl));
+      ctrl && ctrl.addEventListener('change', () => clearError(ctrl));
+    });
+
+    // reemplazar handler de Guardar limpiamente (clonar botón)
+    const oldGuardar = unidadModal.querySelector('.btn-guardar');
+    if (!oldGuardar) return;
+    const newGuardar = oldGuardar.cloneNode(true);
+    oldGuardar.parentNode.replaceChild(newGuardar, oldGuardar);
+
+    newGuardar.addEventListener('click', function(e){
+      e.preventDefault();
+
+      let ok = true;
+
+      // validar Tarjeta
+      if(!(inTarjeta && inTarjeta.files && inTarjeta.files.length)){
+        setErrorFor(nameTarjeta || inTarjeta, 'Adjunta la Tarjeta de circulación.');
+        (nameTarjeta || inTarjeta)?.focus();
+        ok = false;
+      }
+
+      // validar Tipo
+      if(!f.tipo?.value){
+        setErrorFor(f.tipo, 'Selecciona el Tipo de unidad.');
+        f.tipo?.focus();
+        ok = false;
+      }
+
+      if (!ok) return;
+
+      // construir fila (igual que en 48.1)
+      const tcFile = inTarjeta.files[0];
+      const tcName = (('value' in (nameTarjeta||{})) ? (nameTarjeta.value||'') : '') || tcFile.name || 'Tarjeta de circulación';
+      const tcUrl  = URL.createObjectURL(tcFile);
+
+      let polizaUrl = null, polizaName = '';
+      if (inPoliza && inPoliza.files && inPoliza.files.length){
+        polizaUrl  = URL.createObjectURL(inPoliza.files[0]);
+        polizaName = inPoliza.files[0].name || 'Póliza';
+      }
+
+      const placas      = (f.placas?.value || '').trim();
+      const eco         = (f.eco?.value || '').trim();
+      const tipo        = f.tipo?.value || '';
+      const vence       = f.vencePoliza?.value || '';
+      const aseguradora = (f.aseguradora?.value || '').trim();
+      const marca       = (f.marca?.value || '').trim();
+      const anio        = f.anio?.value || '';
+      const permisoSCT  = (f.permiso?.value || '').trim();
+
+      const venceLegible = vence ? new Date(vence + 'T00:00:00').toLocaleDateString('es-MX') : '';
+
+      const tr = document.createElement('tr');
+      tr.dataset.tcUrl  = tcUrl;
+      tr.dataset.tcName = tcName;
+      if (polizaUrl) tr.dataset.polizaUrl = polizaUrl;
+      if (polizaName) tr.dataset.polizaName = polizaName;
+
+      tr.innerHTML = `
+        <td title="${tcName}">
+          <span class="icon-btn ver-tc" title="Ver Tarjeta de circulación" aria-label="Ver Tarjeta de circulación">🔍</span>
+        </td>
+        <td>${placas}</td>
+        <td>${eco}</td>
+        <td>${tipo}</td>
+        <td>
+          ${venceLegible}
+          ${polizaUrl ? `<br><span class="icon-btn ver-poliza" title="Ver póliza" aria-label="Ver póliza">📄</span>` : ''}
+        </td>
+        <td>${aseguradora}</td>
+        <td>${marca}</td>
+        <td>${anio}</td>
+        <td>${permisoSCT}</td>
+      `;
+      tbody.appendChild(tr);
+
+      tr.querySelector('.ver-tc')?.addEventListener('click', () => {
+        const u = tr.dataset.tcUrl;
+        if (u) window.open(u, '_blank');
+      });
+      tr.querySelector('.ver-poliza')?.addEventListener('click', () => {
+        const u = tr.dataset.polizaUrl;
+        if (u) window.open(u, '_blank');
+      });
+
+      // limpiar campos y errores
+      function clearVal(el){ if(!el) return; if ('value' in el) el.value = ''; }
+      clearVal(inTarjeta); clearVal(nameTarjeta);
+      clearVal(inPoliza);  clearVal(namePoliza);
+      Object.values(f).forEach(clearVal);
+      [nameTarjeta || inTarjeta, f.tipo].forEach(clearError);
+
+      // cerrar modal
+      unidadModal.classList.add('hidden');
+      unidadModal.style.display = 'none';
+    });
+
+    // delegación defensiva
+    if (!tbody.__unidadesDelegado48_2){
+      tbody.addEventListener('click', (e) => {
+        const btnTar = e.target.closest('.ver-tc');
+        if (btnTar) {
+          const tr = btnTar.closest('tr'); const u = tr?.dataset.tcUrl;
+          if (u) window.open(u, '_blank'); return;
+        }
+        const btnPol = e.target.closest('.ver-poliza');
+        if (btnPol) {
+          const tr = btnPol.closest('tr'); const u = tr?.dataset.polizaUrl;
+          if (u) window.open(u, '_blank');
+        }
+      });
+      Object.defineProperty(tbody, '__unidadesDelegado48_2', {value:true, enumerable:false});
+    }
+  });
+})();
+      
+</script>
+
+      <script>
+// Modal "Agregar Operador"
+(function(){
+  const btnAddOperator = document.querySelector('#permsMenu .add-operator');
+  const operadorModal = document.getElementById('operadorModal');
+  const tablaOperadoresBody = document.querySelector('#tablaOperadores tbody');
+
+  const $ = (id) => document.getElementById(id);
+  const f = {
+    nombre: $('opNombre'),
+    numero: $('opNumeroLicencia'),
+    licencia: $('opLicencia'),
+    vtoLic: $('opVtoLicencia'),
+    apto: $('opAptoMedico'),
+    vtoApto: $('opVtoApto'),
+    rfc: $('opRFC'),
+  };
+
+  function limpiar(){
+    Object.values(f).forEach(el => { if (el) el.value = ''; });
+  }
+
+  function mostrar(){
+    operadorModal.classList.remove('hidden');
+    operadorModal.style.display = 'flex';
+  }
+  function ocultar(){
+    operadorModal.classList.add('hidden');
+    operadorModal.style.display = 'none';
+  }
+
+  btnAddOperator?.addEventListener('click', () => {
+    limpiar();
+    mostrar();
+  });
+
+  operadorModal.querySelector('.close')?.addEventListener('click', ocultar);
+  operadorModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultar);
+
+  operadorModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+    const datos = {
+      nombre: f.nombre.value.trim(),
+      numero: f.numero.value.trim(),
+      licencia: f.licencia.value.trim(),
+      vtoLic: f.vtoLic.value,
+      apto: f.apto.value.trim(),
+      vtoApto: f.vtoApto.value,
+      rfc: f.rfc.value.trim(),
+    };
+
+    if(!datos.nombre){
+      alert('Ingrese el nombre del operador.');
+      return;
+    }
+
+    const vtoLicLegible = datos.vtoLic ? new Date(datos.vtoLic + 'T00:00:00').toLocaleDateString('es-MX') : '';
+    const vtoAptoLegible = datos.vtoApto ? new Date(datos.vtoApto + 'T00:00:00').toLocaleDateString('es-MX') : '';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${datos.nombre}</td>
+      <td>${datos.numero}</td>
+      <td>${datos.licencia}</td>
+      <td>${vtoLicLegible}</td>
+      <td>${datos.apto}</td>
+      <td>${vtoAptoLegible}</td>
+      <td>${datos.rfc}</td>
+    `;
+    tablaOperadoresBody.appendChild(tr);
+
+    ocultar();
+    limpiar();
+  });
+
+  window.addEventListener('click', (e) => { if (e.target === operadorModal) ocultar(); });
+})();
+
+/* === V1.2.65: Habilitar "Guardar Permisionario" con Nombre, RFC y Domicilio === */
+window.addEventListener('DOMContentLoaded', () => {
+  function updatePermGuardarState(){
+    const nombre = document.getElementById('permNombre')?.value.trim();
+    const rfc = document.getElementById('permRFC')?.value.trim();
+    const domicilio = document.getElementById('permContacto')?.value.trim(); // Etiquetado como "Domicilio"
+    const btn = document.getElementById('btnPermGuardar');
+    if(btn){
+      btn.disabled = !(nombre && rfc && domicilio);
+    }
+  }
+  // Listeners en los 3 campos
+  ['permNombre','permRFC','permContacto'].forEach(id => {
+    const el = document.getElementById(id);
+    el && el.addEventListener('input', updatePermGuardarState);
+  });
+  // Inicializa estado al cargar
+  updatePermGuardarState();
+
+  // Si existe el botón "+ Nuevo Permisionario", al abrir el formulario reinicia validación
+  document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
+    setTimeout(updatePermGuardarState, 0);
+  });
+  // También al cambiar de subtab dentro de Permisionarios por si el DOM se actualiza
+  document.querySelectorAll('#permsMenu .subtab').forEach(tab => {
+    tab.addEventListener('click', () => setTimeout(updatePermGuardarState, 0));
+  });
+});
+/* === /V1.2.65 === */
+
+/* === V1.2.66: Modal al guardar permisionario === */
+window.addEventListener('DOMContentLoaded', () => {
+  const btnGuardar = document.getElementById('btnPermGuardar');
+  const modal = document.getElementById('permSaveModal');
+  const btnCerrar = document.getElementById('permModalCerrar');
+  const resumen = document.getElementById('permResumenGuardado');
+
+  function showPermModal(){
+    if(!modal) return;
+    // Construir resumen básico con los valores capturados
+    const nombre = document.getElementById('permNombre')?.value?.trim() || '';
+    const rfc = document.getElementById('permRFC')?.value?.trim() || '';
+    const domicilio = document.getElementById('permContacto')?.value?.trim() || '';
+    if(resumen){
+      resumen.innerHTML = `
+        <div style="display:grid;gap:6px;">
+          <div><strong>Permisionario:</strong> ${nombre || '-'}</div>
+          <div><strong>RFC:</strong> ${rfc || '-'}</div>
+          <div><strong>Domicilio:</strong> ${domicilio || '-'}</div>
+        </div>`;
+    }
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+  }
+  function hidePermModal(){
+    if(!modal) return;
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  }
+
+  // Abrir modal al presionar Guardar (si está habilitado)
+  if(btnGuardar){
+    btnGuardar.addEventListener('click', (ev) => {
+      // Evita submit si es <button type="submit"> dentro de un <form>
+      if (typeof ev.preventDefault === 'function') ev.preventDefault();
+      if (btnGuardar.disabled) return;
+      showPermModal();
+    });
+  }
+  // Cerrar con botón y click en overlay
+  btnCerrar?.addEventListener('click', hidePermModal);
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) hidePermModal();
+  });
+  // Cerrar con tecla ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hidePermModal();
+  });
+});
+/* === /V1.2.66 === */
+
+/* === V1.2.67: ID en modal de Permisionario === */
+window.addEventListener('DOMContentLoaded', () => {
+  const btnGuardar = document.getElementById('btnPermGuardar');
+  const modal = document.getElementById('permSaveModal');
+  const resumen = document.getElementById('permResumenGuardado');
+  const idLabel = document.getElementById('permIDMostrado');
+
+  function nextPermId(){
+    const n = parseInt(localStorage.getItem('permCounter') || '0', 10) + 1;
+    localStorage.setItem('permCounter', String(n));
+    return 'LTR-PR-' + String(n).padStart(2,'0');
+  }
+
+  function buildPermResumen(){
+    const nombre = document.getElementById('permNombre')?.value?.trim() || '';
+    const rfc = document.getElementById('permRFC')?.value?.trim() || '';
+    const domicilio = document.getElementById('permContacto')?.value?.trim() || '';
+    if(resumen){
+      resumen.innerHTML = `
+        <div style="display:grid;gap:6px;">
+          <div><strong>Permisionario:</strong> ${nombre || '-'}</div>
+          <div><strong>RFC:</strong> ${rfc || '-'}</div>
+          <div><strong>Domicilio:</strong> ${domicilio || '-'}</div>
+        </div>`;
+    }
+  }
+
+  // Hook adicional: sustituye handler para inyectar ID
+  if(btnGuardar && modal){
+    btnGuardar.addEventListener('click', (ev) => {
+      if (typeof ev.preventDefault === 'function') ev.preventDefault();
+      if (btnGuardar.disabled) return;
+      const genId = nextPermId();
+      if(idLabel) idLabel.textContent = genId;
+      buildPermResumen();
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+    });
+  }
+});
+/* === /V1.2.67 === */
+
+/* === V1.2.67: Modal Guardar Cliente (Comentarios) === */
+window.addEventListener('DOMContentLoaded', () => {
+  // IDs posibles del botón "Guardar Cliente" en la pestaña Comentarios
+  const btnsGuardarCliente = [
+    document.getElementById('btnClienteGuardar'),
+    document.getElementById('btnGuardarCliente'),
+    document.getElementById('btnGuardarClienteComentarios')
+  ].filter(Boolean);
+
+  const modal = document.getElementById('clienteSaveModal');
+  const btnCerrar = document.getElementById('clienteModalCerrar');
+  const resumen = document.getElementById('clienteResumenGuardado');
+  const idLabel = document.getElementById('clienteIDMostrado');
+
+  function nextClienteId(){
+    const n = parseInt(localStorage.getItem('clientCounter') || '0', 10) + 1;
+    localStorage.setItem('clientCounter', String(n));
+    return 'LTR-CL-' + String(n).padStart(2,'0');
+  }
+
+  // Posibles IDs de campos
+  function getVal(idList){
+    for(const id of idList){
+      const el = document.getElementById(id);
+      if (el && typeof el.value === 'string' && el.value.trim().length) return el.value.trim();
+    }
+    return '';
+  }
+
+  function buildClienteResumen(){
+    const nombre = getVal(['clNombre','clienteNombre','nuevoClienteNombre']);
+    const rfc = getVal(['clRFC','clienteRFC','nuevoClienteRFC']);
+    const domicilio = getVal(['clDomicilio','clienteDomicilio','nuevoClienteDomicilio']);
+    if(resumen){
+      resumen.innerHTML = `
+        <div style="display:grid;gap:6px;">
+          <div><strong>Cliente:</strong> ${nombre || '-'}</div>
+          <div><strong>RFC:</strong> ${rfc || '-'}</div>
+          <div><strong>Domicilio:</strong> ${domicilio || '-'}</div>
+        </div>`;
+    }
+  }
+
+  function showClienteModal(){
+    if(!modal) return;
+    const genId = nextClienteId();
+    if(idLabel) idLabel.textContent = genId;
+    buildClienteResumen();
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+  }
+
+  // Abrir modal al guardar
+  if (btnsGuardarCliente.length && modal){
+    btnsGuardarCliente.forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        if (typeof ev.preventDefault === 'function') ev.preventDefault();
+        showClienteModal();
+      });
+    });
+  }
+
+  // Cerrar
+  btnCerrar?.addEventListener('click', () => {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  });
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+    }
+  });
+});
+/* === /V1.2.67 === */
+</script>
+
+<!-- === V1.2.66 | Modal Felicidades Permisionario === -->
+<div id="permSaveModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
+  <div class="modal-card" style="width:min(520px,92vw);background:#1e1e1e;color:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.5);overflow:hidden;">
+    <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px;">
+      <div style="font-size:28px;">🎉</div>
+      <h3 style="margin:0;font-size:20px;font-weight:700;">¡Felicidades, agregaste un nuevo permisionario!</h3>
+    </div>
+    <div style="padding:20px 24px;">
+      <p style="margin:0 0 12px 0;opacity:.9;">El registro se ha creado correctamente.</p>
+      <div style="margin-bottom:10px;">
+           <div id="permIDMostrado" style="color:#ff6b6b;font-weight:800;font-size:16px"></div>
+         </div>
+         <div id="permResumenGuardado" style="font-size:14px;opacity:.9;"></div>
+    </div>
+    <div style="padding:16px 24px;display:flex;gap:12px;justify-content:flex-end;background:rgba(255,255,255,.03);">
+      <button id="permModalCerrar" class="btn btn-primary" style="padding:10px 16px;border-radius:10px;border:none;cursor:pointer;">Aceptar</button>
+    </div>
+  </div>
+</div>
+<!-- === /Modal Felicidades Permisionario === -->
+
+<!-- === V1.2.67 | Modal Felicidades Cliente === -->
+<div id="clienteSaveModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
+  <div class="modal-card" style="width:min(560px,92vw);background:#1e1e1e;color:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.5);overflow:hidden;">
+    <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px;">
+      <div style="font-size:28px;">🎉</div>
+      <h3 style="margin:0;font-size:20px;font-weight:700;">¡Felicidades, agregaste un nuevo cliente!</h3>
+    </div>
+    <div style="padding:20px 24px;">
+      <div id="clienteIDMostrado" style="color:#ff6b6b;font-weight:800;font-size:18px;margin-bottom:10px;"></div>
+      <div id="clienteResumenGuardado" style="font-size:14px;opacity:.9;"></div>
+    </div>
+    <div style="padding:16px 24px;display:flex;gap:12px;justify-content:flex-end;background:rgba(255,255,255,.03);">
+      <button id="clienteModalCerrar" class="btn btn-primary" style="padding:10px 16px;border-radius:10px;border:none;cursor:pointer;">Aceptar</button>
+    </div>
+  </div>
+</div>
+<!-- === /Modal Felicidades Cliente === -->
+</body>
+</html>
