@@ -1086,6 +1086,52 @@ uTarjetaFileInput.addEventListener('change', () => {
     uTarjetaName.value = '';
   }
 });
+          // ... dentro del click de Guardar del modal de Unidades ...
+const tbodyUnidades = document.querySelector('#tablaUnidades tbody');
+
+// crea URL si hay adjunto
+const tarjetaUrl = tarjetaArchivo ? URL.createObjectURL(tarjetaArchivo) : null;
+
+// ejemplo de valores de otros campos ya tomados del modal:
+const placas   = document.getElementById('uPlacas').value.trim();
+const eco      = document.getElementById('uEco').value.trim();
+const tipo     = document.getElementById('uTipo').value;
+const vencePol = document.getElementById('uVencePoliza').value || '';
+const aseg     = document.getElementById('uAseguradora').value.trim();
+const marca    = document.getElementById('uMarca').value.trim();
+const anio     = document.getElementById('uAnio').value;
+const sct      = document.getElementById('uPermisoSCT').value.trim();
+
+const tr = document.createElement('tr');
+tr.innerHTML = `
+  <td>
+    ${tarjetaUrl ? `<span class="icon-btn view-tarjeta" title="Ver documento" data-url="${tarjetaUrl}">🔍</span>` : '—'}
+  </td>
+  <td>${placas || ''}</td>
+  <td>${eco || ''}</td>
+  <td>${tipo || ''}</td>
+  <td>${vencePol || ''}</td>
+  <td>${aseg || ''}</td>
+  <td>${marca || ''}</td>
+  <td>${anio || ''}</td>
+  <td>${sct || ''}</td>
+`;
+
+tbodyUnidades.appendChild(tr);
+
+// listener para abrir el archivo
+const viewBtn = tr.querySelector('.view-tarjeta');
+if (viewBtn) {
+  viewBtn.addEventListener('click', () => {
+    const url = viewBtn.getAttribute('data-url');
+    if (url) window.open(url, '_blank');
+  });
+}
+
+// ✅ limpiar y cerrar modal
+uTarjetaFileInput.value = '';
+uTarjetaName.value      = '';
+tarjetaArchivo          = null;
 
 // Cancelar (volver a la lista) ===
 document.getElementById('btnPermCancelar')?.addEventListener('click', () => {
