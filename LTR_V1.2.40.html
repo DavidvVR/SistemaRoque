@@ -909,205 +909,7 @@ document.getElementById('modClientes').onclick = () => {
   document.getElementById('clientsMenu')?.classList.add('hidden');
   document.getElementById('clientsList')?.classList.add('hidden');
 };
-  // === Navegación: Dashboard → Módulo Permisionarios ===
-document.getElementById('modPerm').onclick = () => {
-  showSection('permModule');              // muestra el frame de Permisionarios
-  renderTablaPerms();                     // pinta/actualiza la tabla
-};
 
-// === “BD” local simple de permisionarios ===
-const srPermKey = 'sr_permisionarios';
-function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
-function setPerms(arr){ localStorage.setItem(srPermKey, JSON.stringify(arr)); }
-
-// === Render de la tabla de Permisionarios ===
-function renderTablaPerms(filtro=''){
-  const tbody = document.querySelector('#tablaPerms tbody');
-  if(!tbody) return;
-
-  const data = getPerms();
-  const q = (filtro||'').toLowerCase();
-
-  const fil = data.filter(p =>
-    (!q) ||
-    (String(p.id||'').toLowerCase().includes(q) ||
-     (p.nombre||'').toLowerCase().includes(q) ||
-     (p.rfc||'').toLowerCase().includes(q))
-  );
-
-  tbody.innerHTML = fil.map(p => `
-    <tr>
-      <td>${p.id || ''}</td>
-      <td>${p.nombre || ''}</td>
-      <td>${p.rfc || ''}</td>
-      <td>${p.estatus || 'Activo'}</td>
-      <td class="actions">
-        <span class="icon-btn btnPermEdit" title="Editar" data-id="${p.id}">✏️</span>
-        <span class="icon-btn btnPermDelete btnDelete" title="Eliminar" data-id="${p.id}">🗑️</span>
-      </td>
-    </tr>
-  `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
-
-  // Listeners por fila
-  tbody.querySelectorAll('.btnPermDelete').forEach(btn => {
-    btn.addEventListener('click', () => openDeletePerm(btn.dataset.id));
-  });
-  tbody.querySelectorAll('.btnPermEdit').forEach(btn => {
-    btn.addEventListener('click', () => editPerm(btn.dataset.id));
-  });
-}
-
-// === Buscar en la lista de Permisionarios ===
-document.getElementById('searchPerm')?.addEventListener('input', (e) => {
-  renderTablaPerms(e.target.value);
-});
-
-// === Volver al Dashboard desde Permisionarios ===
-document.getElementById('btnPermVolver')?.addEventListener('click', () => {
-  showSection('dashboard');
-});
-
-// === Eliminar Permisionario (reusa tu modal de confirmación) ===
-let deletePermId = null;
-function openDeletePerm(id){
-  deletePermId = id;
-  // Reutilizamos el mismo modal de confirmación existente
-  const confirmDeleteModal = document.getElementById('confirmDeleteModal');
-  confirmDeleteModal.classList.remove('hidden');
-  confirmDeleteModal.style.display = 'flex';
-
-  // Aseguramos handlers locales:
-  const yes = document.getElementById('deleteConfirmYes');
-  const no  = document.getElementById('deleteConfirmNo');
-
-  const onYes = () => {
-    const arr = getPerms();
-    const idx = arr.findIndex(p => p.id === deletePermId);
-    if(idx >= 0){ arr.splice(idx,1); setPerms(arr); renderTablaPerms(); }
-    cleanup();
-  };
-  const onNo = cleanup;
-
-  function cleanup(){
-    // Cerramos modal
-    confirmDeleteModal.classList.add('hidden');
-    confirmDeleteModal.style.display = 'none';
-    // Quitamos estos listeners puntuales para no duplicar
-    yes.removeEventListener('click', onYes);
-    no.removeEventListener('click', onNo);
-    deletePermId = null;
-  }
-
-  yes.addEventListener('click', onYes);
-  no.addEventListener('click', onNo);
-}
-
-// === Editar Permisionario (flujo mínimo: por ahora solo alerta) ===
-function editPerm(id){
-  const perm = getPerms().find(p => p.id === id);
-  if(!perm){ return; }
-  // Aquí puedes abrir un formulario de edición (similar a "Nuevo Cliente")
-  alert(`Editar Permisionario: ${perm.id} - ${perm.nombre}`);
-}
-
-// === Utilidad para generar ID consecutivo tipo LTR-PR-01 ===
-function generarSiguienteIdPerm(arr){
-  const prefijo = 'LTR-PR-';
-  const maxNum = arr.reduce((max, p) => {
-    const m = (p.id || '').match(/^LTR-PR-(\d+)$/);
-    const n = m ? parseInt(m[1], 10) : 0;
-    return n > max ? n : max;
-  }, 0);
-  return `${prefijo}${String(maxNum + 1).padStart(2, '0')}`;
-}
-
-// (Opcional) Semilla de ejemplo para que veas algo en la tabla la 1ª vez:
-if(getPerms().length === 0){
-  setPerms([
-    { id: 'LTR-PR-01', nombre: 'Permisionario Demo S.A. de C.V.', rfc: 'PDE010101AB1', estatus: 'Activo' },
-    { id: 'LTR-PR-02', nombre: 'Transporte Ejemplar S.A.', rfc: 'TEJ020202CD2', estatus: 'Inactivo' }
-  ]);
-  }
-  
-  //  Mostrar formulario Nuevo Permisionario 
-document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
-  // Limpiar formulario
-  document.getElementById('permNombre').value = '';
-  document.getElementById('permRFC').value = '';
-  document.getElementById('permEstatus').value = 'Activo';
-  document.getElementById('permContacto').value = '';
- // Algunos campos pueden no existir dependiendo de la versión del formulario
-  const licInput = document.getElementById('permLicencia');
-  if(licInput) licInput.value = '';
-  const vigInput = document.getElementById('permVigencia');
-  if(vigInput) vigInput.value = '';
-
-
-  // Reset de subpestañas
-  document.querySelectorAll('#permsMenu .subtab').forEach(t => t.classList.remove('active'));
-  document.querySelector('#permsMenu .subtab[data-target="perm-datos"]').classList.add('active');
-  document.querySelectorAll('#permsMenu .subcontent').forEach(c => c.classList.remove('active'));
-  document.getElementById('perm-datos').classList.add('active');
-
-  // Mostrar formulario y ocultar lista
-  document.getElementById('permsList').classList.add('hidden');
-  document.getElementById('permsMenu').classList.remove('hidden');
-});
-
-//  Subpestañas (Datos / Documentos / Unidades / Comentarios) 
-document.querySelectorAll('#permsMenu .subtab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('#permsMenu .subtab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    const tgt = tab.dataset.target;
-    document.querySelectorAll('#permsMenu .subcontent').forEach(c => c.classList.remove('active'));
-    document.getElementById(tgt).classList.add('active');
-  });
-});
-
-// Cancelar (volver a la lista) ===
-document.getElementById('btnPermCancelar')?.addEventListener('click', () => {
-  document.getElementById('permsMenu').classList.add('hidden');
-  document.getElementById('permsList').classList.remove('hidden');
-});
-
-// Guardar Permisionario ===
-document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
-  const nombre   = document.getElementById('permNombre').value.trim();
-  const rfc      = document.getElementById('permRFC').value.trim();
-  const estatus  = document.getElementById('permEstatus').value;
-  const contacto = document.getElementById('permContacto').value.trim();
-  const licencia = document.getElementById('permLicencia')?.value.trim() || '';
-  const vigencia = document.getElementById('permVigencia')?.value || '';
-  const unidades = document.getElementById('permUnidades').value.trim();
-  const notas    = document.getElementById('permNotas').value.trim();
-
-  if(!nombre || !rfc){
-    alert('Por favor, completa al menos Nombre/Razón social y RFC.');
-    return;
-  }
-
-  const arr = getPerms();
-  const id = generarSiguienteIdPerm(arr);
-      
-
-  arr.push({
-    id, nombre, rfc, estatus,
-    contacto, licencia, vigencia, unidades, notas
-  });
-  setPerms(arr);
- 
-
- 
-  // Feedback (puedes reemplazar por tu modal con éxito)
-  alert(`¡Permisionario guardado!\nID: ${id}\nNombre: ${nombre}`);
-
-  // Volver a la lista y refrescar
-  document.getElementById('permsMenu').classList.add('hidden');
-  document.getElementById('permsList').classList.remove('hidden');
-  renderTablaPerms();
-});
-    
 
 // --- Helpers de vistas dentro del módulo de clientes (HOISTED/FUERA de cualquier click)
 const clientsHome = document.getElementById('clientsHome');
@@ -2039,6 +1841,205 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
       alert('No hay archivo adjuntado en esta fila.');
     }
   });
+        // === Navegación: Dashboard → Módulo Permisionarios ===
+document.getElementById('modPerm').onclick = () => {
+  showSection('permModule');              // muestra el frame de Permisionarios
+  renderTablaPerms();                     // pinta/actualiza la tabla
+};
+
+// === “BD” local simple de permisionarios ===
+const srPermKey = 'sr_permisionarios';
+function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
+function setPerms(arr){ localStorage.setItem(srPermKey, JSON.stringify(arr)); }
+
+// === Render de la tabla de Permisionarios ===
+function renderTablaPerms(filtro=''){
+  const tbody = document.querySelector('#tablaPerms tbody');
+  if(!tbody) return;
+
+  const data = getPerms();
+  const q = (filtro||'').toLowerCase();
+
+  const fil = data.filter(p =>
+    (!q) ||
+    (String(p.id||'').toLowerCase().includes(q) ||
+     (p.nombre||'').toLowerCase().includes(q) ||
+     (p.rfc||'').toLowerCase().includes(q))
+  );
+
+  tbody.innerHTML = fil.map(p => `
+    <tr>
+      <td>${p.id || ''}</td>
+      <td>${p.nombre || ''}</td>
+      <td>${p.rfc || ''}</td>
+      <td>${p.estatus || 'Activo'}</td>
+      <td class="actions">
+        <span class="icon-btn btnPermEdit" title="Editar" data-id="${p.id}">✏️</span>
+        <span class="icon-btn btnPermDelete btnDelete" title="Eliminar" data-id="${p.id}">🗑️</span>
+      </td>
+    </tr>
+  `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
+
+  // Listeners por fila
+  tbody.querySelectorAll('.btnPermDelete').forEach(btn => {
+    btn.addEventListener('click', () => openDeletePerm(btn.dataset.id));
+  });
+  tbody.querySelectorAll('.btnPermEdit').forEach(btn => {
+    btn.addEventListener('click', () => editPerm(btn.dataset.id));
+  });
+}
+
+// === Buscar en la lista de Permisionarios ===
+document.getElementById('searchPerm')?.addEventListener('input', (e) => {
+  renderTablaPerms(e.target.value);
+});
+
+// === Volver al Dashboard desde Permisionarios ===
+document.getElementById('btnPermVolver')?.addEventListener('click', () => {
+  showSection('dashboard');
+});
+
+// === Eliminar Permisionario (reusa tu modal de confirmación) ===
+let deletePermId = null;
+function openDeletePerm(id){
+  deletePermId = id;
+  // Reutilizamos el mismo modal de confirmación existente
+  const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+  confirmDeleteModal.classList.remove('hidden');
+  confirmDeleteModal.style.display = 'flex';
+
+  // Aseguramos handlers locales:
+  const yes = document.getElementById('deleteConfirmYes');
+  const no  = document.getElementById('deleteConfirmNo');
+
+  const onYes = () => {
+    const arr = getPerms();
+    const idx = arr.findIndex(p => p.id === deletePermId);
+    if(idx >= 0){ arr.splice(idx,1); setPerms(arr); renderTablaPerms(); }
+    cleanup();
+  };
+  const onNo = cleanup;
+
+  function cleanup(){
+    // Cerramos modal
+    confirmDeleteModal.classList.add('hidden');
+    confirmDeleteModal.style.display = 'none';
+    // Quitamos estos listeners puntuales para no duplicar
+    yes.removeEventListener('click', onYes);
+    no.removeEventListener('click', onNo);
+    deletePermId = null;
+  }
+
+  yes.addEventListener('click', onYes);
+  no.addEventListener('click', onNo);
+}
+
+// === Editar Permisionario (flujo mínimo: por ahora solo alerta) ===
+function editPerm(id){
+  const perm = getPerms().find(p => p.id === id);
+  if(!perm){ return; }
+  // Aquí puedes abrir un formulario de edición (similar a "Nuevo Cliente")
+  alert(`Editar Permisionario: ${perm.id} - ${perm.nombre}`);
+}
+
+// === Utilidad para generar ID consecutivo tipo LTR-PR-01 ===
+function generarSiguienteIdPerm(arr){
+  const prefijo = 'LTR-PR-';
+  const maxNum = arr.reduce((max, p) => {
+    const m = (p.id || '').match(/^LTR-PR-(\d+)$/);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return n > max ? n : max;
+  }, 0);
+  return `${prefijo}${String(maxNum + 1).padStart(2, '0')}`;
+}
+
+// (Opcional) Semilla de ejemplo para que veas algo en la tabla la 1ª vez:
+if(getPerms().length === 0){
+  setPerms([
+    { id: 'LTR-PR-01', nombre: 'Permisionario Demo S.A. de C.V.', rfc: 'PDE010101AB1', estatus: 'Activo' },
+    { id: 'LTR-PR-02', nombre: 'Transporte Ejemplar S.A.', rfc: 'TEJ020202CD2', estatus: 'Inactivo' }
+  ]);
+  }
+  
+  //  Mostrar formulario Nuevo Permisionario 
+document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
+  // Limpiar formulario
+  document.getElementById('permNombre').value = '';
+  document.getElementById('permRFC').value = '';
+  document.getElementById('permEstatus').value = 'Activo';
+  document.getElementById('permContacto').value = '';
+ // Algunos campos pueden no existir dependiendo de la versión del formulario
+  const licInput = document.getElementById('permLicencia');
+  if(licInput) licInput.value = '';
+  const vigInput = document.getElementById('permVigencia');
+  if(vigInput) vigInput.value = '';
+
+
+  // Reset de subpestañas
+  document.querySelectorAll('#permsMenu .subtab').forEach(t => t.classList.remove('active'));
+  document.querySelector('#permsMenu .subtab[data-target="perm-datos"]').classList.add('active');
+  document.querySelectorAll('#permsMenu .subcontent').forEach(c => c.classList.remove('active'));
+  document.getElementById('perm-datos').classList.add('active');
+
+  // Mostrar formulario y ocultar lista
+  document.getElementById('permsList').classList.add('hidden');
+  document.getElementById('permsMenu').classList.remove('hidden');
+});
+
+//  Subpestañas (Datos / Documentos / Unidades / Comentarios) 
+document.querySelectorAll('#permsMenu .subtab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#permsMenu .subtab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const tgt = tab.dataset.target;
+    document.querySelectorAll('#permsMenu .subcontent').forEach(c => c.classList.remove('active'));
+    document.getElementById(tgt).classList.add('active');
+  });
+});
+
+// Cancelar (volver a la lista) ===
+document.getElementById('btnPermCancelar')?.addEventListener('click', () => {
+  document.getElementById('permsMenu').classList.add('hidden');
+  document.getElementById('permsList').classList.remove('hidden');
+});
+
+// Guardar Permisionario ===
+document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
+  const nombre   = document.getElementById('permNombre').value.trim();
+  const rfc      = document.getElementById('permRFC').value.trim();
+  const estatus  = document.getElementById('permEstatus').value;
+  const contacto = document.getElementById('permContacto').value.trim();
+  const licencia = document.getElementById('permLicencia')?.value.trim() || '';
+  const vigencia = document.getElementById('permVigencia')?.value || '';
+  const unidades = document.getElementById('permUnidades').value.trim();
+  const notas    = document.getElementById('permNotas').value.trim();
+
+  if(!nombre || !rfc){
+    alert('Por favor, completa al menos Nombre/Razón social y RFC.');
+    return;
+  }
+
+  const arr = getPerms();
+  const id = generarSiguienteIdPerm(arr);
+      
+
+  arr.push({
+    id, nombre, rfc, estatus,
+    contacto, licencia, vigencia, unidades, notas
+  });
+  setPerms(arr);
+ 
+
+ 
+  // Feedback (puedes reemplazar por tu modal con éxito)
+  alert(`¡Permisionario guardado!\nID: ${id}\nNombre: ${nombre}`);
+
+  // Volver a la lista y refrescar
+  document.getElementById('permsMenu').classList.add('hidden');
+  document.getElementById('permsList').classList.remove('hidden');
+  renderTablaPerms();
+});
+    
 })();
 </script>
 
