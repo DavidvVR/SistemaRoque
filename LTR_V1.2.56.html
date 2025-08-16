@@ -899,13 +899,27 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 
   </div>
 
-  <!-- Subcontenido: Comentarios -->
+  <!-- Subcontenido: Operadores -->
   <div id="perm-coment" class="subcontent">
-    <div class="form-row">
-      <div class="fld">
-        <label for="permNotas">Notas / Comentarios</label>
-        <textarea id="permNotas" rows="3" placeholder="Observaciones generales…"></textarea>
-      </div>
+    <h3 class="section-title">Operadores</h3>
+    <button class="btn add-operator">+ Agregar Operador</button>
+
+    <div class="doc-table-wrapper" style="max-height:250px; overflow-y:auto;">
+      <table class="doc-table" id="tablaOperadores">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Licencia</th>
+            <th>Vto de Licencia</th>
+            <th>Apto Médico</th>
+            <th>Vto de apto.</th>
+            <th>RFC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Filas generadas dinámicamente -->
+        </tbody>
+      </table>
     </div>
   </div>
 
