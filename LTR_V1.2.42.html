@@ -801,9 +801,16 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 
     <div class="form-row">
       <div class="form-group">
-        <label for="uTarjeta">Tarjeta de Circulación*</label>
-        <input id="uTarjeta" type="text" placeholder="Número de tarjeta" required>
-      </div>
+  <label for="uTarjetaFile">Tarjeta de Circulación*</label>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <!-- input real (oculto) -->
+    <input id="uTarjetaFile" type="file" accept=".pdf,image/*" style="display:none" required>
+    <!-- botón/ícono para adjuntar -->
+    <button type="button" id="btnTarjetaAdj" class="btn" title="Adjuntar archivo">📎 Adjuntar</button>
+    <!-- campo solo-lectura que muestra el nombre -->
+    <input id="uTarjetaName" type="text" placeholder="Sin archivo" readonly required>
+  </div>
+</div>
       <div class="form-group">
         <label for="uPlacas">Placas*</label>
         <input id="uPlacas" type="text" placeholder="ABC123A" required>
@@ -1057,6 +1064,27 @@ document.querySelectorAll('#permsMenu .subtab').forEach(tab => {
     document.querySelectorAll('#permsMenu .subcontent').forEach(c => c.classList.remove('active'));
     document.getElementById(tgt).classList.add('active');
   });
+});
+          // --- Tarjeta de Circulación (adjunto) ---
+const uTarjetaFileInput = document.getElementById('uTarjetaFile');
+const btnTarjetaAdj     = document.getElementById('btnTarjetaAdj');
+const uTarjetaName      = document.getElementById('uTarjetaName');
+
+// variable para guardar el archivo seleccionado mientras el modal está abierto
+let tarjetaArchivo = null;
+
+btnTarjetaAdj.addEventListener('click', () => {
+  uTarjetaFileInput.click();
+});
+
+uTarjetaFileInput.addEventListener('change', () => {
+  if (uTarjetaFileInput.files && uTarjetaFileInput.files.length) {
+    tarjetaArchivo     = uTarjetaFileInput.files[0];
+    uTarjetaName.value = tarjetaArchivo.name;
+  } else {
+    tarjetaArchivo     = null;
+    uTarjetaName.value = '';
+  }
 });
 
 // Cancelar (volver a la lista) ===
