@@ -1086,9 +1086,7 @@ uTarjetaFileInput.addEventListener('change', () => {
     uTarjetaName.value = '';
   }
 });
-          // ... dentro del click de Guardar del modal de Unidades ...
-const tbodyUnidades = document.querySelector('#tablaUnidades tbody');
-
+   
 // crea URL si hay adjunto
 const tarjetaUrl = tarjetaArchivo ? URL.createObjectURL(tarjetaArchivo) : null;
 
@@ -1909,6 +1907,8 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     // título fijo (si quieres podrías alternarlo a "Editar Unidad")
     unidadModal.querySelector('h3').textContent = 'Alta de Unidad Vehicular';
     mostrarUnidadModal();
+        unidadModal.classList.remove('hidden');
+  unidadModal.style.display = 'flex';
   });
 
   // Cerrar modal (X y Cancelar)
