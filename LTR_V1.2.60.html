@@ -1009,7 +1009,17 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-     
+       function updatePermGuardarState(){
+      const nombre = document.getElementById('permNombre')?.value.trim();
+      const rfc = document.getElementById('permRFC')?.value.trim();
+      const units = document.querySelectorAll('#tablaUnidades tbody tr').length;
+      const operators = document.querySelectorAll('#tablaOperadores tbody tr').length;
+      const btn = document.getElementById('btnPermGuardar');
+      if(btn){
+        btn.disabled = !(nombre && rfc && units > 0 && operators > 0);
+      }
+    }
+
       /* Login */
       // --- NAVEGACIÓN (Dashboard → Módulo Clientes)
 document.getElementById('modClientes').onclick = () => {
@@ -1111,7 +1121,8 @@ function openDeletePerm(id){
   yes.addEventListener('click', onYes);
   no.addEventListener('click', onNo);
 }
-
+          
+          
 // === Editar Permisionario (flujo mínimo: por ahora solo alerta) ===
 function editPerm(id){
   const perm = getPerms().find(p => p.id === id);
@@ -1152,7 +1163,11 @@ document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
   const vigInput = document.getElementById('permVigencia');
   if(vigInput) vigInput.value = '';
 
-
+const tUnidades = document.querySelector('#tablaUnidades tbody');
+  if(tUnidades) tUnidades.innerHTML = '';
+  const tOperadores = document.querySelector('#tablaOperadores tbody');
+  if(tOperadores) tOperadores.innerHTML = '';
+  updatePermGuardarState();
   // Reset de subpestañas
   document.querySelectorAll('#permsMenu .subtab').forEach(t => t.classList.remove('active'));
   document.querySelector('#permsMenu .subtab[data-target="perm-datos"]').classList.add('active');
@@ -1180,6 +1195,11 @@ document.getElementById('btnPermCancelar')?.addEventListener('click', () => {
   document.getElementById('permsMenu').classList.add('hidden');
   document.getElementById('permsList').classList.remove('hidden');
 });
+const permNombreEl = document.getElementById('permNombre');
+const permRFCEl = document.getElementById('permRFC');
+permNombreEl?.addEventListener('input', updatePermGuardarState);
+permRFCEl?.addEventListener('input', updatePermGuardarState);
+updatePermGuardarState();
 
 // Guardar Permisionario ===
 document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
@@ -1189,8 +1209,9 @@ document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
   const contacto = document.getElementById('permContacto').value.trim();
   const licencia = document.getElementById('permLicencia')?.value.trim() || '';
   const vigencia = document.getElementById('permVigencia')?.value || '';
-  const unidades = document.getElementById('permUnidades').value.trim();
-  const notas    = document.getElementById('permNotas').value.trim();
+  const unidades = document.querySelectorAll('#tablaUnidades tbody tr').length;
+    const notas    = document.getElementById('permNotas')?.value.trim() || '';
+        const notas    = document.getElementById('permNotas')?.value.trim() || '';
 
   if(!nombre || !rfc){
     alert('Por favor, completa al menos Nombre/Razón social y RFC.');
@@ -1208,11 +1229,14 @@ document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
   setPerms(arr);
  
 
- 
-  // Feedback (puedes reemplazar por tu modal con éxito)
-  alert(`¡Permisionario guardado!\nID: ${id}\nNombre: ${nombre}`);
-
-  // Volver a la lista y refrescar
+  //
+      document.getElementById('idPermTexto').textContent = id;
+  document.getElementById('nombrePerm').textContent = nombre;
+  document.getElementById('rfcPerm').textContent = rfc;
+  document.getElementById('unidadesPerm').textContent = unidades;
+  const permModal = document.getElementById('permModal');
+  permModal.classList.remove('hidden');
+  permModal.style.display = 'flex';
   document.getElementById('permsMenu').classList.add('hidden');
   document.getElementById('permsList').classList.remove('hidden');
   renderTablaPerms();
@@ -1539,7 +1563,17 @@ clienteModalClose.addEventListener('click', () => {
   clienteModal.classList.add('hidden');
   clienteModal.style.display = 'none';
 });
-
+const permModal = document.getElementById('permModal');
+const permModalClose = permModal.querySelector('.close');
+const permModalBtnCerrar = permModal.querySelector('.btn-cerrar');
+function cerrarPermModal(){
+  permModal.classList.add('hidden');
+  permModal.style.display = 'none';
+}
+permModalClose.addEventListener('click', cerrarPermModal);
+permModalBtnCerrar.addEventListener('click', cerrarPermModal);
+window.addEventListener('click', (e) => { if (e.target === permModal) cerrarPermModal(); });
+}
 window.addEventListener('click', (e) => {
   if (e.target === clienteModal) {
     clienteModal.classList.add('hidden');
@@ -1994,6 +2028,7 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
       unidadEditingRow.cells[8].textContent = datos.permiso;
 
       unidadEditingRow.dataset.info = JSON.stringify(datos);
+          updatePermGuardarState();
     } else {
       // Crear nueva fila
       const tr = document.createElement('tr');
@@ -2010,6 +2045,7 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
         <td>${datos.permiso}</td>
       `;
       tablaUnidadesBody.appendChild(tr);
+          updatePermGuardarState();
     }
 
     ocultarUnidadModal();
@@ -2676,6 +2712,8 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
       <td>${datos.rfc}</td>
     `;
     tablaOperadoresBody.appendChild(tr);
+        updatePermGuardarState();
+
 
     ocultar();
     limpiar();
