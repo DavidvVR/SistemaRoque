@@ -806,7 +806,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     <button type="button" id="btnUTarjetaPick" class="icon-btn" title="Adjuntar">📁</button>
     <input id="uTarjetaFile" type="file" accept=".pdf,.jpg,.jpeg,.png" required>
     <input id="uTarjetaName" type="text" placeholder="Selecciona un archivo…" readonly required>
-    <!-- compatibilidad con código previo: refleja el nombre en un input oculto con id=uTarjeta -->
+  
     <input id="uTarjeta" type="hidden" value="">
   </div>
 </div>
@@ -839,10 +839,18 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 
         
     <div class="form-row">
-        <div class="form-group">
-        <label for="uAseguradora">Aseguradora</label>
-        <input id="uAseguradora" type="text" placeholder="Nombre de aseguradora">
-      </div>
+       <div class="form-group">
+  <label for="uPolizaName">Poliza de Seguro</label>
+  <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+    <button type="button" id="btnUPolizaPick" class="icon-btn" title="Adjuntar">📁</button>
+    <input id="PolizaFile" type="file" accept=".pdf,.jpg,.jpeg,.png" required>
+    <input id="uPolizaName" type="text" placeholder="Selecciona un archivo…" readonly required>
+  
+    <input id="uPoliza" type="hidden" value="">
+  </div>
+
+    
+</div>
       <div class="form-group">
         <label for="uVencePoliza">Vencimiento Póliza</label>
         <input id="uVencePoliza" type="date">
@@ -1796,6 +1804,10 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     alert('No fue posible leer el archivo. Verifica que sea .xlsx y tenga las hojas: Clientes, Documentacion y Tarifas.');
   }
       });
+
+
+
+  
   // Modal "Alta de Unidad Vehicular" =====
 (function(){
   const btnAddUnit = document.querySelector('#permsMenu .add-unit');
@@ -1811,6 +1823,7 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     eco: $('uEco'),
     tipo: $('uTipo'),
     vencePoliza: $('uVencePoliza'),
+    polizaFile: $('uPolizaFile'),
     aseguradora: $('uAseguradora'),
     marca: $('uMarca'),
     anio: $('uAnio'),
@@ -1824,6 +1837,7 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     f.placas.value = '';
     f.eco.value = '';
     f.tipo.value = '';
+    f.poliza.value = '';
     f.vencePoliza.value = '';
     f.aseguradora.value = '';
     f.marca.value = '';
@@ -1868,7 +1882,7 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     };
 
     // Validación mínima
-    if(!datos.tarjeta || !datos.placas || !datos.tipo){
+    if(!datos.tarjeta || !datos.poliza || !datos.placas || !datos.tipo){
       alert('Completa los campos obligatorios: Tarjeta, Placas y Tipo.');
       return;
     }
@@ -1883,11 +1897,12 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
       unidadEditingRow.cells[1].textContent = datos.placas;
       unidadEditingRow.cells[2].textContent = datos.eco;
       unidadEditingRow.cells[3].textContent = datos.tipo;
-      unidadEditingRow.cells[4].textContent = venceLegible;
-      unidadEditingRow.cells[5].textContent = datos.aseguradora;
-      unidadEditingRow.cells[6].textContent = datos.marca;
-      unidadEditingRow.cells[7].textContent = datos.anio || '';
-      unidadEditingRow.cells[8].textContent = datos.permiso;
+      unidadEditingRow.cells[4].textContent = datos.poliza;
+      unidadEditingRow.cells[5].textContent = venceLegible;
+      unidadEditingRow.cells[6].textContent = datos.aseguradora;
+      unidadEditingRow.cells[7].textContent = datos.marca;
+      unidadEditingRow.cells[8].textContent = datos.anio || '';
+      unidadEditingRow.cells[9].textContent = datos.permiso;
 
       unidadEditingRow.dataset.info = JSON.stringify(datos);
     } else {
@@ -1899,6 +1914,7 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
         <td>${datos.placas}</td>
         <td>${datos.eco}</td>
         <td>${datos.tipo}</td>
+        <td>${datos.poliza}</td>
         <td>${venceLegible}</td>
         <td>${datos.aseguradora}</td>
         <td>${datos.marca}</td>
@@ -1928,6 +1944,7 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
       f.placas.value = datos.placas || '';
       f.eco.value = datos.eco || '';
       f.tipo.value = datos.tipo || '';
+      f.tipo.value = datos.poliza || '';
       f.vencePoliza.value = datos.vencePoliza || '';
       f.aseguradora.value = datos.aseguradora || '';
       f.marca.value = datos.marca || '';
@@ -1965,7 +1982,42 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     if (fileName)  fileName.value = name;
     if (shadowTxt) shadowTxt.value = name; // por si algún código viejo lee #uTarjeta
   });
+  
+const btnUPolizaPick = document.getElementById('btnUPolizaPick');
+const uPolizaFile    = document.getElementById('uPolizaFile');
+  ? new Date(f.vencePoliza.value + 'T00:00:00').toLocaleDateString('es-MX')
+  : '';
 
+let polizaUrl = null, polizaName = '';
+if (uPolizaFile.files && uPolizaFile.files.length) {
+  polizaUrl  = URL.createObjectURL(uPolizaFile.files[0]);
+  polizaName = uPolizaFile.files[0].name;
+}
+
+tr.innerHTML = `
+  ...
+  <td>
+    ${venceLegible}
+    ${polizaUrl ? `<br><span class="icon-btn ver-poliza" title="Ver póliza" data-url="${polizaUrl}">📄</span>` : ''}
+  </td>
+  ...
+`;
+
+const polizaBtn = tr.querySelector('.ver-poliza');
+polizaBtn?.addEventListener('click', () => {
+  const url = polizaBtn.getAttribute('data-url');
+  if (url) window.open(url, '_blank');
+});
+const uPolizaName    = document.getElementById('uPolizaName');
+const uPolizaHidden  = document.getElementById('uPoliza'); // opcional
+
+btnUPolizaPick?.addEventListener('click', () => uPolizaFile?.click());
+
+uPolizaFile?.addEventListener('change', () => {
+  const f = uPolizaFile.files?.[0] || null;
+  uPolizaName.value = f ? f.name : '';
+  if (uPolizaHidden) uPolizaHidden.value = uPolizaName.value; // por compatibilidad
+});
   // Observa nuevas filas en la tabla mientras el modal está abierto y hay archivo seleccionado
   let mo = null;
   function startObserver(){
