@@ -903,23 +903,9 @@
 </div>
 </div>
   <script>
-    const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
-    function showSection(id) {
-      document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-     
+    
       /* Login */
-      // --- NAVEGACIÓN (Dashboard → Módulo Clientes)
-document.getElementById('modClientes').onclick = () => {
-  showSection('clientsModule');
-  // Al entrar al módulo, mostramos la pantalla de inicio (dos tarjetas)
-  document.getElementById('clientsHome')?.classList.remove('hidden');
-  document.getElementById('clientsMenu')?.classList.add('hidden');
-  document.getElementById('clientsList')?.classList.add('hidden');
-};
+      
   // === Navegación: Dashboard → Módulo Permisionarios ===
 document.getElementById('modPerm').onclick = () => {
   showSection('permModule');              // muestra el frame de Permisionarios
@@ -1119,6 +1105,32 @@ document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
   renderTablaPerms();
 });
     
+
+  </script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+
+
+  <script src="js_modules/login.js"> 
+        
+        const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
+    function showSection(id) {
+      document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+     </script>
+<script src="js_modules/dashboard.js"></script>
+<script src="js_modules/clientes.js">
+      // --- NAVEGACIÓN (Dashboard → Módulo Clientes)
+document.getElementById('modClientes').onclick = () => {
+  showSection('clientsModule');
+  // Al entrar al módulo, mostramos la pantalla de inicio (dos tarjetas)
+  document.getElementById('clientsHome')?.classList.remove('hidden');
+  document.getElementById('clientsMenu')?.classList.add('hidden');
+  document.getElementById('clientsList')?.classList.add('hidden');
+};
 
 // --- Helpers de vistas dentro del módulo de clientes (HOISTED/FUERA de cualquier click)
 const clientsHome = document.getElementById('clientsHome');
@@ -1677,24 +1689,8 @@ window.addEventListener('click', (e) => {
     detalleModal.style.display = 'none';
   }
 });
-    });
-  </script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-
-
-  <script src="js_modules/login.js"> 
-        
-        const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
-    function showSection(id) {
-      document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-     </script>
-<script src="js_modules/dashboard.js"></script>
-<script src="js_modules/clientes.js"></script>
+    });      
+</script>
 <script src="js_modules/permisionarios.js">
       // Handles "+ Agregar Unidad" modal
 
