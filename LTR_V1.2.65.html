@@ -296,6 +296,25 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     </div>
   </div>
 </div>
+      <!-- Modal de confirmación de PERMISIONARIO -->
+<div id="permModal" class="modal hidden">
+  <div class="modal-content confirm-cliente" style="text-align:center; padding: 40px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <h2>¡Permisionario guardado!</h2>
+
+    <div class="id-cliente">ID PERMISIONARIO: <span id="idPermTexto">LTR-PR-01</span></div>
+
+    <div class="datos-cliente">
+      <p><strong>Nombre / Razón social:</strong> <span id="nombrePerm"></span></p>
+      <p><strong>RFC:</strong> <span id="rfcPerm"></span></p>
+      <p><strong>Estatus:</strong> <span id="estatusPerm"></span></p>
+    </div>
+
+    <div class="modal-buttons" style="justify-content:center;">
+      <button type="button" class="btn-cerrar">Cerrar</button>
+    </div>
+  </div>
+</div>
 <!-- Modal para ver detalles del cliente -->
 <div id="detalleClienteModal" class="modal hidden">
   <div class="modal-content">
@@ -1170,33 +1189,28 @@ document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
   const contacto = document.getElementById('permContacto').value.trim();
   const licencia = document.getElementById('permLicencia')?.value.trim() || '';
   const vigencia = document.getElementById('permVigencia')?.value || '';
-  const unidades = document.getElementById('permUnidades').value.trim();
-  const notas    = document.getElementById('permNotas').value.trim();
+  const unidades = document.getElementById('permUnidades')?.value?.trim?.() || '';
+  const notas    = document.getElementById('permNotas')?.value?.trim?.() || '';
 
-  if(!nombre || !rfc){
+  if (!nombre || !rfc) {
     alert('Por favor, completa al menos Nombre/Razón social y RFC.');
     return;
   }
 
   const arr = getPerms();
   const id = generarSiguienteIdPerm(arr);
-      
 
-  arr.push({
-    id, nombre, rfc, estatus,
-    contacto, licencia, vigencia, unidades, notas
-  });
+  arr.push({ id, nombre, rfc, estatus, contacto, licencia, vigencia, unidades, notas });
   setPerms(arr);
- 
-
- 
-  // Feedback (puedes reemplazar por tu modal con éxito)
-  alert(`¡Permisionario guardado!\nID: ${id}\nNombre: ${nombre}`);
 
   // Volver a la lista y refrescar
   document.getElementById('permsMenu').classList.add('hidden');
   document.getElementById('permsList').classList.remove('hidden');
   renderTablaPerms();
+
+  // MOSTRAR MODAL (en lugar del alert)
+  abrirPermModal({ id, nombre, rfc, estatus });
+});
 });
     
 
@@ -2663,6 +2677,38 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
   });
 
   window.addEventListener('click', (e) => { if (e.target === operadorModal) ocultar(); });
+}
+   // === Modal Confirmación PERMISIONARIO ===
+const permModal = document.getElementById('permModal');
+const permModalClose = permModal?.querySelector('.close');
+const permModalBtnCerrar = permModal?.querySelector('.btn-cerrar');
+
+function abrirPermModal({ id, nombre, rfc, estatus }) {
+  if (!permModal) return;
+
+  // Llenar datos
+  document.getElementById('idPermTexto').textContent = id;
+  document.getElementById('nombrePerm').textContent = nombre;
+  document.getElementById('rfcPerm').textContent = rfc;
+  document.getElementById('estatusPerm').textContent = estatus;
+
+  // Mostrar
+  permModal.classList.remove('hidden');
+  permModal.style.display = 'flex';
+}
+
+function cerrarPermModal() {
+  if (!permModal) return;
+  permModal.classList.add('hidden');
+  permModal.style.display = 'none';
+}
+
+// Cierres
+permModalClose?.addEventListener('click', cerrarPermModal);
+permModalBtnCerrar?.addEventListener('click', cerrarPermModal);
+window.addEventListener('click', (e) => { if (e.target === permModal) cerrarPermModal(); });
+
+            
 })();
 </script>
 </body>
