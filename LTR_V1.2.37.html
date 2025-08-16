@@ -1686,6 +1686,40 @@ window.addEventListener('click', (e) => {
   <script src="js_modules/login.js"></script>
 <script src="js_modules/dashboard.js"></script>
 <script src="js_modules/clientes.js"></script>
-<script src="js_modules/permisionarios.js"></script>
+<script src="js_modules/permisionarios.js">
+      // Handles "+ Agregar Unidad" modal
+
+document.addEventListener('DOMContentLoaded', () => {
+  const addUnitBtn = document.querySelector('.add-unit');
+  const modal = document.getElementById('unidadModal');
+  if (!modal) return;
+  const closeBtn = modal.querySelector('.close');
+  const cancelBtn = modal.querySelector('.btn-cancelar');
+
+  const openModal = () => {
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+  };
+
+  const closeModal = () => {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  };
+
+  addUnitBtn?.addEventListener('click', () => {
+    openModal();
+  });
+
+  closeBtn?.addEventListener('click', closeModal);
+  cancelBtn?.addEventListener('click', closeModal);
+
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+});
+
+</script>
 </body>
 </html>
