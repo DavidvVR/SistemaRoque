@@ -1087,49 +1087,63 @@ uTarjetaFileInput.addEventListener('change', () => {
   }
 });
    
-// crea URL si hay adjunto
-const tarjetaUrl = tarjetaArchivo ? URL.createObjectURL(tarjetaArchivo) : null;
+// --- Guardar (crear fila) ---
+document.querySelector('#unidadModal .btn-guardar')?.addEventListener('click', () => {
+  const tbodyUnidades = document.querySelector('#tablaUnidades tbody');
 
-// ejemplo de valores de otros campos ya tomados del modal:
-const placas   = document.getElementById('uPlacas').value.trim();
-const eco      = document.getElementById('uEco').value.trim();
-const tipo     = document.getElementById('uTipo').value;
-const vencePol = document.getElementById('uVencePoliza').value || '';
-const aseg     = document.getElementById('uAseguradora').value.trim();
-const marca    = document.getElementById('uMarca').value.trim();
-const anio     = document.getElementById('uAnio').value;
-const sct      = document.getElementById('uPermisoSCT').value.trim();
+  // crea URL si hay adjunto
+  const tarjetaUrl = (uTarjetaFileInput.files?.length ? URL.createObjectURL(uTarjetaFileInput.files[0]) : null);
 
-const tr = document.createElement('tr');
-tr.innerHTML = `
-  <td>
-    ${tarjetaUrl ? `<span class="icon-btn view-tarjeta" title="Ver documento" data-url="${tarjetaUrl}">🔍</span>` : '—'}
-  </td>
-  <td>${placas || ''}</td>
-  <td>${eco || ''}</td>
-  <td>${tipo || ''}</td>
-  <td>${vencePol || ''}</td>
-  <td>${aseg || ''}</td>
-  <td>${marca || ''}</td>
-  <td>${anio || ''}</td>
-  <td>${sct || ''}</td>
-`;
+  // toma valores
+  const placas   = document.getElementById('uPlacas').value.trim();
+  const eco      = document.getElementById('uEco').value.trim();
+  const tipo     = document.getElementById('uTipo').value;
+  const vencePol = document.getElementById('uVencePoliza').value || '';
+  const aseg     = document.getElementById('uAseguradora').value.trim();
+  const marca    = document.getElementById('uMarca').value.trim();
+  const anio     = document.getElementById('uAnio').value;
+  const sct      = document.getElementById('uPermisoSCT').value.trim();
 
-tbodyUnidades.appendChild(tr);
+  // validaciones básicas
+  if (!uTarjetaFileInput.files?.length) { alert('Adjunta la Tarjeta de circulación.'); return; }
+  if (!tipo) { alert('Selecciona el Tipo de unidad.'); return; }
 
-// listener para abrir el archivo
-const viewBtn = tr.querySelector('.view-tarjeta');
-if (viewBtn) {
-  viewBtn.addEventListener('click', () => {
-    const url = viewBtn.getAttribute('data-url');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${tarjetaUrl ? `<span class="icon-btn view-tarjeta" title="Ver documento" data-url="${tarjetaUrl}">🔍</span>` : '—'}</td>
+    <td>${placas || ''}</td>
+    <td>${eco || ''}</td>
+    <td>${tipo || ''}</td>
+    <td>${vencePol || ''}</td>
+    <td>${aseg || ''}</td>
+    <td>${marca || ''}</td>
+    <td>${anio || ''}</td>
+    <td>${sct || ''}</td>
+  `;
+  tbodyUnidades.appendChild(tr);
+
+  // abrir documento con la lupa
+  tr.querySelector('.view-tarjeta')?.addEventListener('click', (e) => {
+    const url = e.currentTarget.getAttribute('data-url');
     if (url) window.open(url, '_blank');
   });
-}
 
-// ✅ limpiar y cerrar modal
-uTarjetaFileInput.value = '';
-uTarjetaName.value      = '';
-tarjetaArchivo          = null;
+  // limpiar y cerrar
+  uTarjetaFileInput.value = '';
+  uTarjetaName.value = '';
+  document.getElementById('uPlacas').value = '';
+  document.getElementById('uEco').value = '';
+  document.getElementById('uTipo').value = '';
+  document.getElementById('uVencePoliza').value = '';
+  document.getElementById('uAseguradora').value = '';
+  document.getElementById('uMarca').value = '';
+  document.getElementById('uAnio').value = '';
+  document.getElementById('uPermisoSCT').value = '';
+
+  const unidadModal = document.getElementById('unidadModal');
+  unidadModal.classList.add('hidden');
+  unidadModal.style.display = 'none';
+});
 
 // Cancelar (volver a la lista) ===
 document.getElementById('btnPermCancelar')?.addEventListener('click', () => {
@@ -1856,11 +1870,12 @@ document.getElementById('excelInput')?.addEventListener('change', async (e) => {
     alert('No fue posible leer el archivo. Verifica que sea .xlsx y tenga las hojas: Clientes, Documentacion y Tarifas.');
   }
       });
-  // Modal "Alta de Unidad Vehicular" =====
-(function(){
-  const btnAddUnit = document.querySelector('#permsMenu .add-unit');
+ // Abrir modal desde "+ Agregar Unidad"
+document.querySelector('#permsMenu .add-unit')?.addEventListener('click', () => {
   const unidadModal = document.getElementById('unidadModal');
-  const tablaUnidadesBody = document.querySelector('#tablaUnidades tbody');
+  unidadModal.classList.remove('hidden');
+  unidadModal.style.display = 'flex';
+});
       
 
   // Referencias a inputs
