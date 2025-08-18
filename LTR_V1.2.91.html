@@ -1120,11 +1120,9 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 </div>
 </div>
   
-  
-
-   
-// LOGIN
   <script>
+//LOGIN
+        
       const last = localStorage.getItem('sr_last_user');
       if (last) document.getElementById('usuario').value = last;
       document.getElementById('btnGuardar').onclick = () => {
@@ -1151,11 +1149,11 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
       document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
       document.getElementById(id).classList.remove('hidden');
     }  
-</script>    
-<script>  
-       window.addEventListener('DOMContentLoaded', () => {
-      /* Login */
-      // --- NAVEGACIÓN (Dashboard → Módulo Clientes)
+</script> 
+      //Dasboard
+
+<script> 
+    // --- NAVEGACIÓN (Dashboard → Módulo Clientes)
 document.getElementById('modClientes').onclick = () => {
   showSection('clientsModule');
   // Al entrar al módulo, mostramos la pantalla de inicio (dos tarjetas)
@@ -1169,6 +1167,22 @@ document.getElementById('modPerm').onclick = () => {
   renderTablaPerms();                     // pinta/actualiza la tabla
 };
 
+// Volver al dashboard desde el menú principal de Clientes ---
+
+document.getElementById('btnClientesBack')?.addEventListener('click', () => {
+  showSection('dashboard');
+});
+  const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
+    function showSection(id) {
+      document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+</script>
+<script>  
+       window.addEventListener('DOMContentLoaded', () => {
+      
+     
 // === “BD” local simple de permisionarios ===
 const srPermKey = 'sr_permisionarios';
 function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
@@ -1529,10 +1543,6 @@ document.getElementById('btnVerClientes')?.addEventListener('click', () => {
 });
 
       
-// Volver al dashboard desde el menú principal de Clientes ---
-document.getElementById('btnClientesBack')?.addEventListener('click', () => {
-  showSection('dashboard');
-});
 
          
 // Botones dentro de la ventana “Clientes”
