@@ -1123,8 +1123,9 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   
 
    
-// LOGIN
+
   <script>
+        // LOGIN y Menu Principal
       const last = localStorage.getItem('sr_last_user');
       if (last) document.getElementById('usuario').value = last;
       document.getElementById('btnGuardar').onclick = () => {
@@ -1151,9 +1152,8 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
       document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
       document.getElementById(id).classList.remove('hidden');
     }  
-</script>    
-<script>  
-       window.addEventListener('DOMContentLoaded', () => {
+        // Navegación principal
+         window.addEventListener('DOMContentLoaded', () => {
       /* Login */
       // --- NAVEGACIÓN (Dashboard → Módulo Clientes)
 document.getElementById('modClientes').onclick = () => {
@@ -1163,11 +1163,23 @@ document.getElementById('modClientes').onclick = () => {
   document.getElementById('clientsMenu')?.classList.add('hidden');
   document.getElementById('clientsList')?.classList.add('hidden');
 };
-  // === Navegación: Dashboard → Módulo Permisionarios ===
+
+};
+// Volver al dashboard desde el menú principal de Clientes ---
+document.getElementById('btnClientesBack')?.addEventListener('click', () => {
+  showSection('dashboard');
+});
+// === Volver al Dashboard desde Permisionarios ===
+document.getElementById('btnPermVolver')?.addEventListener('click', () => {
+  showSection('dashboard');
+});
+               
+</script>    
+<script>  
+        // === Navegación: Dashboard → Módulo Permisionarios ===
 document.getElementById('modPerm').onclick = () => {
   showSection('permModule');              // muestra el frame de Permisionarios
   renderTablaPerms();                     // pinta/actualiza la tabla
-};
 
 // === “BD” local simple de permisionarios ===
 const srPermKey = 'sr_permisionarios';
@@ -1215,10 +1227,7 @@ document.getElementById('searchPerm')?.addEventListener('input', (e) => {
   renderTablaPerms(e.target.value);
 });
 
-// === Volver al Dashboard desde Permisionarios ===
-document.getElementById('btnPermVolver')?.addEventListener('click', () => {
-  showSection('dashboard');
-});
+
 
 // === Eliminar Permisionario (reusa tu modal de confirmación) ===
 let deletePermId = null;
@@ -1529,10 +1538,7 @@ document.getElementById('btnVerClientes')?.addEventListener('click', () => {
 });
 
       
-// Volver al dashboard desde el menú principal de Clientes ---
-document.getElementById('btnClientesBack')?.addEventListener('click', () => {
-  showSection('dashboard');
-});
+
 
          
 // Botones dentro de la ventana “Clientes”
