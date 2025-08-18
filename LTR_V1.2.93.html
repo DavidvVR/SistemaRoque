@@ -1123,39 +1123,37 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   
 
    
-// LOGIN
-  <script>
-      const last = localStorage.getItem('sr_last_user');
-      if (last) document.getElementById('usuario').value = last;
-      document.getElementById('btnGuardar').onclick = () => {
-        localStorage.setItem('sr_last_user', document.getElementById('usuario').value);
-        alert('Usuario guardado');
-      };
-      document.getElementById('btnEntrar').onclick = () => {
-        const u = document.getElementById('usuario').value;
-        const p = document.getElementById('password').value;
-        if (usuarios.find(x => x.usuario === u && x.password === p)) showSection('dashboard');
-        else alert('Usuario o contraseña incorrectos');
-      };
-
-      document.querySelectorAll('.sub-tab').forEach(tab => {
-        tab.onclick = () => {
-          document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
-          document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
-          tab.classList.add('active');
-          document.getElementById(tab.dataset.content).classList.add('active');
-        };
-      }); 
-      const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
-      function showSection(id) {
-      document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
-    }  
-</script>    
-<script>  
-       window.addEventListener('DOMContentLoaded', () => {
-      /* Login */
-      // --- NAVEGACIÓN (Dashboard → Módulo Clientes)
+ <script>
+      // Login y menu principal
+const last = localStorage.getItem('sr_last_user');
+if (last) document.getElementById('usuario').value = last;
+document.getElementById('btnGuardar').onclick = () => {
+localStorage.setItem('sr_last_user', document.getElementById('usuario').value);
+alert('Usuario guardado');
+};
+document.getElementById('btnEntrar').onclick = () => {
+const u = document.getElementById('usuario').value;
+const p = document.getElementById('password').value;
+if (usuarios.find(x => x.usuario === u && x.password === p)) showSection('dashboard');
+else alert('Usuario o contraseña incorrectos');
+ }; 
+document.querySelectorAll('.sub-tab').forEach(tab => {
+tab.onclick = () => {
+document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+tab.classList.add('active');
+document.getElementById(tab.dataset.content).classList.add('active');
+};
+}); 
+const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
+function showSection(id) {
+document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
+}  
+ //Navegación Prinpal
+ window.addEventListener('DOMContentLoaded', () => {
+      
+// --- NAVEGACIÓN (Dashboard → Módulo Clientes)
 document.getElementById('modClientes').onclick = () => {
   showSection('clientsModule');
   // Al entrar al módulo, mostramos la pantalla de inicio (dos tarjetas)
@@ -1168,6 +1166,19 @@ document.getElementById('modPerm').onclick = () => {
   showSection('permModule');              // muestra el frame de Permisionarios
   renderTablaPerms();                     // pinta/actualiza la tabla
 };
+      // Volver al dashboard desde el menú principal de Clientes ---
+document.getElementById('btnClientesBack')?.addEventListener('click', () => {
+  showSection('dashboard');
+});
+// === Volver al Dashboard desde Permisionarios ===
+document.getElementById('btnPermVolver')?.addEventListener('click', () => {
+  showSection('dashboard');
+}); 
+ // (Agrega aquí otros botones del menú principal si existen)               
+</script>    
+    
+<script>  
+     
 
 // === “BD” local simple de permisionarios ===
 const srPermKey = 'sr_permisionarios';
