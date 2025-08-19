@@ -1885,7 +1885,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const permsMenu = document.getElementById('permsMenu');
   let editingPermId = null;
   const permInfoModal = document.getElementById('permInfoModal');
-  let editingPermId = null;
+  
 
   // === BD local de permisionarios
   function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
