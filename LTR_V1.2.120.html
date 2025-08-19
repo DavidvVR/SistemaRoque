@@ -1308,6 +1308,9 @@ excelInput?.addEventListener('change', (event) => {
         },
         tarifas: [] // Se llenará después
       });
+     document.getElementById('btnImportExcel')?.addEventListener('click', () => {
+  document.getElementById('excelInput')?.click();
+});     
     });
 
     // Mapear encabezados de Tarifas
