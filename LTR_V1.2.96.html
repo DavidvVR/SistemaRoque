@@ -169,14 +169,13 @@
 }
     #clientsModule.hidden {
   display:none;
-}
-.h
-.home-actions{
-  
-  margin-top:auto;
-  display:flex;
-  justify-content:flex-end;
-}
+    }
+    .home-actions{
+      margin-top:auto;
+      display:flex;
+      justify-content:flex-end;
+    }
+
   /* --- Lista de clientes (nueva ventana) --- */
 .clients-list .list-toolbar{
   display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:12px;
@@ -222,14 +221,20 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 .confirm-cliente .datos-cliente p {
   margin: 4px 0;
 }
-    
-  display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:12px;
-}
-.perms-list .list-actions{ display:flex; gap:8px; }
-.perms-list .search{ display:flex; gap:8px; align-items:center; }
-.perms-list .search input{
-  padding:8px; border:2px solid var(--input-border); border-radius:8px; min-width:220px;
-}
+ 
+    .perms-list .list-toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:12px;
+    }
+    .perms-list .list-actions{ display:flex; gap:8px; }
+    .perms-list .search{ display:flex; gap:8px; align-items:center; }
+    .perms-list .search input{
+      padding:8px; border:2px solid var(--input-border); border-radius:8px; min-width:220px;
+    }
   /* --- Botón + Nuevo Permisionario --- */
 .btn.primary { background:#efe9ff; border-color:#7c3aed; }
 
@@ -400,7 +405,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   @media (max-width:760px){
     .modal .modal-content{ width:96vw !important; padding:24px !important; }
   }
-      
+</style>      
 /* Modal de visualizar datos de ID del permisionario*/
 <style>
   .modal-card {
@@ -484,9 +489,6 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   @media (max-width: 600px) {
     .modal-card {padding:16px 6vw;}
   }
-</style>
-      
-      
 </style>
 </head>
 <body>
