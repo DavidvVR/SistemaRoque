@@ -1258,13 +1258,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
 //Codigo para importar excel 
-const btnImportExcel = document.getElementById('btnImportExcel');
-const excelInput = document.getElementById('excelInput');
-
-btnImportExcel?.addEventListener('click', () => {
-  excelInput.click();
-});
-
 excelInput?.addEventListener('change', (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -1314,10 +1307,10 @@ excelInput?.addEventListener('change', (event) => {
           tel: obj['Contacto Comercial (Tel)'] || ''
         },
         tarifas: [] // Se llenará después
-        });
       });
+    });
 
-     // Mapear encabezados de Tarifas
+    // Mapear encabezados de Tarifas
     const tarifasHeaders = tarifasJson[0];
     const tarifasData = tarifasJson.slice(1);
 
@@ -1325,9 +1318,8 @@ excelInput?.addEventListener('change', (event) => {
       const obj = {};
       tarifasHeaders.forEach((h, idx) => {
         obj[h] = row[idx] || '';
-      
       });
-     // Busca el cliente por RFC y agrega la tarifa
+      // Busca el cliente por RFC y agrega la tarifa
       const cliente = clientesArr.find(c => c.rfc === obj['RFC']);
       if (cliente) {
         cliente.tarifas = cliente.tarifas || [];
@@ -1344,7 +1336,7 @@ excelInput?.addEventListener('change', (event) => {
       }
     });
 
-      // Generar IDs automáticos tipo LTR-CL-01, LTR-CL-02...
+    // Generar IDs automáticos tipo LTR-CL-01, LTR-CL-02...
     const existing = getClientes();
     let nextId = existing.reduce((max, c) => {
       const match = /LTR-CL-(\d+)/.exec(c.id || '');
@@ -1361,14 +1353,15 @@ excelInput?.addEventListener('change', (event) => {
         existing.push(c);
         nextId++;
       }
-setClientes(existing)
+    });
+
+    // Establece clientes SOLO UNA VEZ, fuera del bucle
+    setClientes(existing);
     alert('Clientes y tarifas importados correctamente.');
     if (typeof renderTablaClientes === 'function') renderTablaClientes();
   };
   reader.readAsArrayBuffer(file);
-
 });
-
   // === Eliminar cliente
   const confirmDeleteModal = document.getElementById('confirmDeleteModal');
   const deleteConfirmYes = document.getElementById('deleteConfirmYes');
