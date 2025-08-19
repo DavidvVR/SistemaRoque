@@ -1125,6 +1125,11 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
    
  <script>
       // Login y menu principal
+const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
+function showSection(id) {
+document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
+ };     
 const last = localStorage.getItem('sr_last_user');
 if (last) document.getElementById('usuario').value = last;
 document.getElementById('btnGuardar').onclick = () => {
@@ -1144,12 +1149,7 @@ document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('activ
 tab.classList.add('active');
 document.getElementById(tab.dataset.content).classList.add('active');
 };
-}); 
-const usuarios = [{usuario:"David Vargas R.",password:"1234"}];
-function showSection(id) {
-document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
-document.getElementById(id).classList.remove('hidden');
-}  
+  
  //Navegación Prinpal
  window.addEventListener('DOMContentLoaded', () => {
       
