@@ -1193,6 +1193,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
  <script>
+            //aqui empieza el modulo de clientes
 window.addEventListener('DOMContentLoaded', () => {
   // === Referencias principales
   const clientsHome = document.getElementById('clientsHome');
@@ -1657,6 +1658,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
  <script>
+//Aqui empieza el modulo de permisionarios
 window.addEventListener('DOMContentLoaded', () => {
   // === Claves y referencias
   const srPermKey = 'sr_permisionarios';
@@ -1836,9 +1838,216 @@ window.addEventListener('DOMContentLoaded', () => {
     ]);
   }
 
-  // === Render inicial
+  // Modal +agegar unidad
   renderTablaPerms();
 });
+(function(){
+  const btnAddUnit = document.querySelector('#permsMenu .add-unit');
+  const unidadModal = document.getElementById('unidadModal');
+  const tablaUnidadesBody = document.querySelector('#tablaUnidades tbody');
+  const $ = (id) => document.getElementById(id);
+  const f = {
+    tarjeta: $('uTarjeta'),
+    placas: $('uPlacas'),
+    eco: $('uEco'),
+    tipo: $('uTipo'),
+    vencePoliza: $('uVencePoliza'),
+    aseguradora: $('uAseguradora'),
+    marca: $('uMarca'),
+    anio: $('uAnio'),
+    permiso: $('uPermisoSCT'),
+  };
+
+  let unidadEditingRow = null;
+
+  function limpiarFormUnidad(){
+    f.tarjeta.value = '';
+    f.placas.value = '';
+    f.eco.value = '';
+    f.tipo.value = '';
+    f.vencePoliza.value = '';
+    f.aseguradora.value = '';
+    f.marca.value = '';
+    f.anio.value = '';
+    f.permiso.value = '';
+  }
+
+  function mostrarUnidadModal(){
+    unidadModal.classList.remove('hidden');
+    unidadModal.style.display = 'flex';
+  }
+  function ocultarUnidadModal(){
+    unidadModal.classList.add('hidden');
+    unidadModal.style.display = 'none';
+  }
+
+  btnAddUnit?.addEventListener('click', () => {
+    unidadEditingRow = null;
+    limpiarFormUnidad();
+    unidadModal.querySelector('h3').textContent = 'Alta de Unidad Vehicular';
+    mostrarUnidadModal();
+  });
+
+  unidadModal.querySelector('.close')?.addEventListener('click', ocultarUnidadModal);
+  unidadModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultarUnidadModal);
+
+  unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+    const datos = {
+      tarjeta: (f.tarjeta.value || '').trim(),
+      placas: (f.placas.value || '').trim(),
+      eco: (f.eco.value || '').trim(),
+      tipo: f.tipo.value,
+      vencePoliza: f.vencePoliza.value,
+      aseguradora: (f.aseguradora.value || '').trim(),
+      marca: (f.marca.value || '').trim(),
+      anio: f.anio.value ? Number(f.anio.value) : '',
+      permiso: (f.permiso.value || '').trim(),
+    };
+
+    if(!datos.tarjeta || !datos.placas || !datos.tipo){
+      alert('Completa los campos obligatorios: Tarjeta, Placas y Tipo.');
+      return;
+    }
+
+    const venceLegible = datos.vencePoliza
+      ? new Date(datos.vencePoliza + 'T00:00:00').toLocaleDateString('es-MX')
+      : '';
+
+    if (unidadEditingRow) {
+      unidadEditingRow.cells[0].textContent = datos.tarjeta;
+      unidadEditingRow.cells[1].textContent = datos.placas;
+      unidadEditingRow.cells[2].textContent = datos.eco;
+      unidadEditingRow.cells[3].textContent = datos.tipo;
+      unidadEditingRow.cells[4].textContent = venceLegible;
+      unidadEditingRow.cells[5].textContent = datos.aseguradora;
+      unidadEditingRow.cells[6].textContent = datos.marca;
+      unidadEditingRow.cells[7].textContent = datos.anio || '';
+      unidadEditingRow.cells[8].textContent = datos.permiso;
+      unidadEditingRow.dataset.info = JSON.stringify(datos);
+    } else {
+      const tr = document.createElement('tr');
+      tr.dataset.info = JSON.stringify(datos);
+      tr.innerHTML = `
+        <td>${datos.tarjeta}</td>
+        <td>${datos.placas}</td>
+        <td>${datos.eco}</td>
+        <td>${datos.tipo}</td>
+        <td>${venceLegible}</td>
+        <td>${datos.aseguradora}</td>
+        <td>${datos.marca}</td>
+        <td>${datos.anio || ''}</td>
+        <td>${datos.permiso}</td>
+      `;
+      tablaUnidadesBody.appendChild(tr);
+    }
+
+    ocultarUnidadModal();
+    limpiarFormUnidad();
+    unidadEditingRow = null;
+  });
+
+  window.addEventListener('click', (e) => {
+    if (e.target === unidadModal) ocultarUnidadModal();
+  });
+
+  tablaUnidadesBody?.addEventListener('dblclick', (e) => {
+    const row = e.target.closest('tr');
+    if(!row) return;
+    try{
+      const datos = JSON.parse(row.dataset.info || '{}');
+      f.tarjeta.value = datos.tarjeta || '';
+      f.placas.value = datos.placas || '';
+      f.eco.value = datos.eco || '';
+      f.tipo.value = datos.tipo || '';
+      f.vencePoliza.value = datos.vencePoliza || '';
+      f.aseguradora.value = datos.aseguradora || '';
+      f.marca.value = datos.marca || '';
+      f.anio.value = datos.anio || '';
+      f.permiso.value = datos.permiso || '';
+      unidadEditingRow = row;
+      unidadModal.querySelector('h3').textContent = 'Editar Unidad Vehicular';
+      mostrarUnidadModal();
+    }catch{
+      alert('No fue posible cargar los datos de la unidad para edición.');
+    }
+  });
+})();
+
+  //Modal de +Agregar Operador
+(function(){
+  const btnAddOperator = document.querySelector('#permsMenu .add-operator');
+  const operadorModal = document.getElementById('operadorModal');
+  const tablaOperadoresBody = document.querySelector('#tablaOperadores tbody');
+
+  const $ = (id) => document.getElementById(id);
+  const f = {
+    nombre: $('opNombre'),
+    numero: $('opNumeroLicencia'),
+    licencia: $('opLicencia'),
+    vtoLic: $('opVtoLicencia'),
+    apto: $('opAptoMedico'),
+    vtoApto: $('opVtoApto'),
+    rfc: $('opRFC'),
+  };
+
+  function limpiar(){
+    Object.values(f).forEach(el => { if (el) el.value = ''; });
+  }
+
+  function mostrar(){
+    operadorModal.classList.remove('hidden');
+    operadorModal.style.display = 'flex';
+  }
+  function ocultar(){
+    operadorModal.classList.add('hidden');
+    operadorModal.style.display = 'none';
+  }
+
+  btnAddOperator?.addEventListener('click', () => {
+    limpiar();
+    mostrar();
+  });
+
+  operadorModal.querySelector('.close')?.addEventListener('click', ocultar);
+  operadorModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultar);
+
+  operadorModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+    const datos = {
+      nombre: f.nombre.value.trim(),
+      numero: f.numero.value.trim(),
+      licencia: f.licencia.value.trim(),
+      vtoLic: f.vtoLic.value,
+      apto: f.apto.value.trim(),
+      vtoApto: f.vtoApto.value,
+      rfc: f.rfc.value.trim(),
+    };
+
+    if(!datos.nombre){
+      alert('Ingrese el nombre del operador.');
+      return;
+    }
+
+    const vtoLicLegible = datos.vtoLic ? new Date(datos.vtoLic + 'T00:00:00').toLocaleDateString('es-MX') : '';
+    const vtoAptoLegible = datos.vtoApto ? new Date(datos.vtoApto + 'T00:00:00').toLocaleDateString('es-MX') : '';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${datos.nombre}</td>
+      <td>${datos.numero}</td>
+      <td>${datos.licencia}</td>
+      <td>${vtoLicLegible}</td>
+      <td>${datos.apto}</td>
+      <td>${vtoAptoLegible}</td>
+      <td>${datos.rfc}</td>
+    `;
+    tablaOperadoresBody.appendChild(tr);
+
+    ocultar();
+    limpiar();
+  });
+
+  window.addEventListener('click', (e) => { if (e.target === operadorModal) ocultar(); });
+})();     
 </script>     
      
 
