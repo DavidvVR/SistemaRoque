@@ -1031,6 +1031,8 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
           <th>Marca</th>
           <th>Año</th>
           <th>Permiso SCT</th>
+          <th>Acciones</th>     
+
           
           
           
@@ -2287,18 +2289,27 @@ document.querySelectorAll('.perm-view').forEach(btn => {
       unidadEditingRow.cells[8].textContent = datos.permiso;
       unidadEditingRow.dataset.info = JSON.stringify(datos);
     } else {
-      const tr = document.createElement('tr');
+     
+//tabla unidades 
+ const tr = document.createElement('tr');
       tr.dataset.info = JSON.stringify(datos);
       tr.innerHTML = `
-        <td>${datos.tarjeta}</td>
-        <td>${datos.placas}</td>
-        <td>${datos.eco}</td>
-        <td>${datos.tipo}</td>
-        <td>${venceLegible}</td>
-        <td>${datos.aseguradora}</td>
-        <td>${datos.marca}</td>
-        <td>${datos.anio || ''}</td>
-        <td>${datos.permiso}</td>
+       <td>
+    ${datos.tarjeta}
+    ${datos.tarjetaArchivo ? `<span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjetaArchivo}">🔍</span>` : ''}
+  </td>
+  <td>${datos.placas}</td>
+  <td>${datos.eco}</td>
+  <td>${datos.tipo}</td>
+  <td>${venceLegible}</td>
+  <td>${datos.aseguradora}</td>
+  <td>${datos.marca}</td>
+  <td>${datos.anio || ''}</td>
+  <td>${datos.permiso}</td>
+  <td>
+    <span class="icon-btn unidad-edit" title="Editar">✏️</span>
+    <span class="icon-btn unidad-delete" title="Eliminar">🗑️</span>
+  </td> 
       `;
       tablaUnidadesBody.appendChild(tr);
     }
@@ -2311,6 +2322,22 @@ document.querySelectorAll('.perm-view').forEach(btn => {
   window.addEventListener('click', (e) => {
     if (e.target === unidadModal) ocultarUnidadModal();
   });
+ tablaUnidadesBody.addEventListener('click', function(e){
+  const lupa = e.target.closest('.unidad-lupa');
+  const editar = e.target.closest('.unidad-edit');
+  const eliminar = e.target.closest('.unidad-delete');
+  const row = e.target.closest('tr');
+  if(lupa){
+    const url = lupa.dataset.url;
+    if(url) window.open(url, '_blank');
+  }
+  if(editar){
+    // Aquí pon el código para abrir el modal y editar la unidad
+  }
+  if(eliminar){
+    if(confirm('¿Eliminar unidad?')) row.remove();
+  }
+});     
 
   tablaUnidadesBody?.addEventListener('dblclick', (e) => {
     const row = e.target.closest('tr');
@@ -2347,6 +2374,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
     uTarjetaFile.addEventListener('change', () => {
       if(uTarjetaFile.files.length) {
+        datos.tarjetaArchivo = URL.createObjectURL(uTarjetaFile.files[0]);
+      }    
         uTarjetaName.value = uTarjetaFile.files[0].name;
         uTarjeta.value = uTarjetaFile.files[0].name    
       } else {
@@ -2583,20 +2612,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <!-- Detalle permisionario -->
 <div id="permInfoModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
-  <div class="modal-card">
-    <span id="permInfoCerrar" class="close">&times;</span>
-    <h2>Detalle del permisionario</h2>
-    <div class="modal-section">
-      <h3>Datos generales</h3>
-      <div class="modal-fields">
-        <p><label>ID:</label><span id="permInfoId"></span></p>
-        <p><label>Nombre:</label><span id="permInfoNombre"></span></p>
-        <p><label>RFC:</label><span id="permInfoRFC"></span></p>
-        <p><label>Estatus:</label><span id="permInfoEstatus"></span></p>
-        <p><label>Domicilio:</label><span id="permInfoContacto"></span></p>
-      </div>
-    </div>
-  </div>
+  <div class="modal-card"></div>
 </div>
       
 <!-- Guardar permisionario -->     
