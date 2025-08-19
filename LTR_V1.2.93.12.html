@@ -1112,10 +1112,33 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     </div>
   </div>
 
+ <!-- Guardar permisionario -->     
+ <div id="permSaveModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
+  <div class="modal-card" style="width:min(520px,92vw);background:#1e1e1e;color:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.5);overflow:hidden;">
+    <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px;">
+      <div style="font-size:28px;">🎉</div>
+      <h3 style="margin:0;font-size:20px;font-weight:700;">¡Felicidades, agregaste un nuevo permisionario!</h3>
+    </div>
+    <div style="padding:20px 24px;">
+      <p style="margin:0 0 12px 0;opacity:.9;">El registro se ha creado correctamente.</p>
+      <div style="margin-bottom:10px;">
+        <div id="permIDMostrado" style="color:#ff6b6b;font-weight:800;font-size:16px"></div>
+      </div>
+      <div id="permResumenGuardado" style="font-size:14px;opacity:.9;"></div>
+    </div>
+    <div style="padding:16px 24px;display:flex;gap:12px;justify-content:flex-end;background:rgba(255,255,255,.03);">
+      <button id="permModalCerrar" class="btn btn-primary" style="padding:10px 16px;border-radius:10px;border:none;cursor:pointer;">Aceptar</button>
+    </div>
+  </div>
+</div>
+
   <div class="actions-bar">
     <button id="btnPermCancelar" class="btn">Cancelar</button>
     <button id="btnPermVolverPostSave" class="btn ghost" style="display:none">Volver</button>
-    <button id="btnPermGuardar" class="btn" disabled>Guardar Permisionario</button>
+    <button id="btnPermGuardar" class="btn">Guardar Permisionario</button> 
+    <input id="permNombre" type="text" placeholder="Permisionario S.A. de C.V.">
+    <input id="permRFC" type="text" placeholder="XXXX010101XXX">
+    <input id="permContacto" type="text" placeholder="Domicilio">
   </div>
 </div>
 </div>
@@ -2073,7 +2096,8 @@ document.querySelectorAll('.perm-view').forEach(btn => {
   });
 
   window.addEventListener('click', (e) => { if (e.target === operadorModal) ocultar(); });
-//Modal Guardar permisionario 
+
+})(); 
 window.addEventListener('DOMContentLoaded', () => {
   const btnGuardar = document.getElementById('btnPermGuardar');
   const modal = document.getElementById('permSaveModal');
@@ -2101,7 +2125,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Hook adicional: sustituye handler para inyectar ID
+  // Mostramos el modal al guardar
   if(btnGuardar && modal){
     btnGuardar.addEventListener('click', (ev) => {
       if (typeof ev.preventDefault === 'function') ev.preventDefault();
@@ -2130,32 +2154,11 @@ window.addEventListener('DOMContentLoaded', () => {
       modal.style.display = 'none';
     }
   });
-});
-      
-})();     
+});       
 </script>     
      
 
-<!-- === V1.2.66 | Modal Felicidades Permisionario === -->
-<div id="permSaveModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
-  <div class="modal-card" style="width:min(520px,92vw);background:#1e1e1e;color:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.5);overflow:hidden;">
-    <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px;">
-      <div style="font-size:28px;">🎉</div>
-      <h3 style="margin:0;font-size:20px;font-weight:700;">¡Felicidades, agregaste un nuevo permisionario!</h3>
-    </div>
-    <div style="padding:20px 24px;">
-      <p style="margin:0 0 12px 0;opacity:.9;">El registro se ha creado correctamente.</p>
-      <div style="margin-bottom:10px;">
-           <div id="permIDMostrado" style="color:#ff6b6b;font-weight:800;font-size:16px"></div>
-         </div>
-         <div id="permResumenGuardado" style="font-size:14px;opacity:.9;"></div>
-    </div>
-    <div style="padding:16px 24px;display:flex;gap:12px;justify-content:flex-end;background:rgba(255,255,255,.03);">
-      <button id="permModalCerrar" class="btn btn-primary" style="padding:10px 16px;border-radius:10px;border:none;cursor:pointer;">Aceptar</button>
-    </div>
-  </div>
-</div>
-<!-- === /Modal Felicidades Permisionario === -->
+
 
 <!-- === V1.2.67 | Modal Felicidades Cliente === -->
 <div id="clienteSaveModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
