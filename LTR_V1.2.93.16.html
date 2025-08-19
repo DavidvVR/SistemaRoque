@@ -465,6 +465,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     <div class="dashboard">
       <div class="module" id="modClientes"><div class="module-icon">📋</div><div class="module-label">Clientes</div></div>
       <div class="module" id="modPerm"><div class="module-icon">🚚</div><div class="module-label">Permisionarios</div></div>
+       <div class="module" id="modPerm"><div class="module-icon">🚚</div><div class="module-label">LTR</div></div>    
       <div class="module" id="modAsign"><div class="module-icon">📅</div><div class="module-label">Asignación</div></div>
       <div class="module" id="modMonit"><div class="module-icon">📡</div><div class="module-label">Monitoreo</div></div>
       <div class="module" id="modCoord"><div class="module-icon">🔧</div><div class="module-label">Coordinación</div></div>
@@ -472,7 +473,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
       <div class="module" id="modLiq"><div class="module-icon">📊</div><div class="module-label">Liquidación</div></div>
       <div class="module" id="modMant"><div class="module-icon">🛠️</div><div class="module-label">Mantenimiento</div></div>
       <div class="module" id="modAdmin"><div class="module-icon">🗄️</div><div class="module-label">Administración</div></div>
-      <div class="module" id="modDocs"><div class="module-icon">📄</div><div class="module-label">Documentación</div></div>
+      
     </div>
   </div>
 
@@ -1106,6 +1107,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
           <div class="modal-buttons">
             <button type="button" class="btn-cancelar">Cancelar</button>
             <button type="button" class="btn-guardar">Guardar</button>
+            <button id="btnPermGuardar" class="btn">Guardar Permisionario</button>    
           </div>
         </div>
       </div>     
@@ -2154,7 +2156,7 @@ window.addEventListener('DOMContentLoaded', () => {
   <div class="actions-bar">
     <button id="btnPermCancelar" class="btn">Cancelar</button>
     <button id="btnPermVolverPostSave" class="btn ghost" style="display:none">Volver</button>
-    <button id="btnPermGuardar" class="btn">Guardar Permisionario</button> 
+     
 
 
 <!-- === V1.2.67 | Modal Felicidades Cliente === -->
