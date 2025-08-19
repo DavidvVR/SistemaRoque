@@ -1317,44 +1317,44 @@ excelInput?.addEventListener('change', (event) => {
         });
       });
 
-      // Mapear encabezados de Tarifas
-      const tarifasHeaders = tarifasJson[0];
-      const tarifasData = tarifasJson.slice(1);
+     // Mapear encabezados de Tarifas
+    const tarifasHeaders = tarifasJson[0];
+    const tarifasData = tarifasJson.slice(1);
 
-      tarifasData.forEach(row => {
-        const obj = {};
-        tarifasHeaders.forEach((h, idx) => {
-          obj[h] = row[idx] || '';
-        });
-        // Busca el cliente por RFC y agrega la tarifa
-        const cliente = clientesArr.find(c => c.rfc === obj['RFC']);
-        if (cliente) {
-          cliente.tarifas = cliente.tarifas || [];
-          cliente.tarifas.push({
-            estadoOrigen: obj['Estado Origen'] || '',
-            municipioOrigen: obj['Municipio Origen'] || '',
-            estadoDestino: obj['Estado Destino'] || '',
-            municipioDestino: obj['Municipio Destino'] || '',
-            tipoUnidad: obj['Tipo Unidad'] || '',
-            diasCredito: obj['Dias Credito'] || '',
-            kmRecorrer: obj['Km Recorrer'] || '',
-            tarifa: obj['Tarifa'] || ''
-          });
-        }
+    tarifasData.forEach(row => {
+      const obj = {};
+      tarifasHeaders.forEach((h, idx) => {
+        obj[h] = row[idx] || '';
+      
       });
+     // Busca el cliente por RFC y agrega la tarifa
+      const cliente = clientesArr.find(c => c.rfc === obj['RFC']);
+      if (cliente) {
+        cliente.tarifas = cliente.tarifas || [];
+        cliente.tarifas.push({
+          estadoOrigen: obj['Estado Origen'] || '',
+          municipioOrigen: obj['Municipio Origen'] || '',
+          estadoDestino: obj['Estado Destino'] || '',
+          municipioDestino: obj['Municipio Destino'] || '',
+          tipoUnidad: obj['Tipo Unidad'] || '',
+          diasCredito: obj['Dias Credito'] || '',
+          kmRecorrer: obj['Km Recorrer'] || '',
+          tarifa: obj['Tarifa'] || ''
+        });
+      }
+    });
 
       // Generar IDs automáticos tipo LTR-CL-01, LTR-CL-02...
-      clientesArr.forEach((c, idx) => {
-        c.id = 'LTR-CL-' + String(idx+1).padStart(2, '0');
-      });
-
+    clientesArr.forEach((c, idx) => {
+      c.id = 'LTR-CL-' + String(idx+1).padStart(2, '0');
+    });
       // Guarda en el localStorage y refresca la tabla
-      localStorage.setItem(srStoreKey, JSON.stringify(clientesArr));
-      alert('Clientes y tarifas importados correctamente.');
-      if (typeof renderTablaClientes === 'function') renderTablaClientes();
-    };
-    reader.readAsArrayBuffer(file);
-  });
+    localStorage.setItem(srStoreKey, JSON.stringify(clientesArr));
+    alert('Clientes y tarifas importados correctamente.');
+    if (typeof renderTablaClientes === 'function') renderTablaClientes();
+  };
+  reader.readAsArrayBuffer(file);
+
 });
 
   // === Eliminar cliente
