@@ -1889,19 +1889,109 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // === BD local de permisionarios
   function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
+  // MIGRACIÓN AUTOMÁTICA DE LA ESTRUCTURA DE PERMISIONARIOS
+function migratePermsStorage() {
+  const perms = getPerms();
+  let changed = false;
+  perms.forEach(p => {
+    if (!p.documentos) { p.documentos = [
+      { nombre: "Acta Constitutiva", estatus: false, archivo: null },
+      { nombre: "Poder Rep. Legal", estatus: false, archivo: null },
+      { nombre: "Comprobante de Domicilio", estatus: false, archivo: null },
+      { nombre: "Constancia de Situación Fiscal", estatus: false, archivo: null },
+      { nombre: "INE Rep. Legal", estatus: false, archivo: null },
+      { nombre: "Contrato", estatus: false, archivo: null }
+    ]; changed = true; }
+    if (!p.unidades) { p.unidades = []; changed = true; }
+    if (!p.operadores) { p.operadores = []; changed = true; }
+  });
+  if (changed) setPerms(perms);
+}
+window.addEventListener('DOMContentLoaded', migratePermsStorage);
+    
   function setPerms(arr){ localStorage.setItem(srPermKey, JSON.stringify(arr)); }
 
-   function openPermDetalle(id){
-    const perm = getPerms().find(p => p.id === id);
-    if(!perm || !permInfoModal) return;
-    permInfoModal.querySelector('#permInfoId').textContent = perm.id || '';
-    permInfoModal.querySelector('#permInfoNombre').textContent = perm.nombre || '';
-    permInfoModal.querySelector('#permInfoRFC').textContent = perm.rfc || '';
-    permInfoModal.querySelector('#permInfoEstatus').textContent = perm.estatus || '';
-    permInfoModal.querySelector('#permInfoContacto').textContent = perm.contacto || '';
-    permInfoModal.classList.remove('hidden');
-    permInfoModal.style.display = 'flex';
-  }
+  function openPermDetalle(id){
+  const perm = getPerms().find(p => p.id === id);
+  if(!perm || !permInfoModal) return;
+  let html = `
+    <div class="modal-section">
+      <h3>Datos generales</h3>
+      <div class="modal-fields">
+        <p><label>ID:</label><span>${perm.id || ''}</span></p>
+        <p><label>Nombre:</label><span>${perm.nombre || ''}</span></p>
+        <p><label>RFC:</label><span>${perm.rfc || ''}</span></p>
+        <p><label>Estatus:</label><span>${perm.estatus || ''}</span></p>
+        <p><label>Domicilio:</label><span>${perm.contacto || ''}</span></p>
+      </div>
+    </div>
+    <div class="modal-section">
+      <h3>Documentos</h3>
+      <table class="modal-table"><thead>
+        <tr><th>Documento</th><th>Estatus</th><th>Ver</th></tr>
+      </thead><tbody>
+        ${perm.documentos?.map((d,i) => `
+          <tr>
+            <td>${d.nombre}</td>
+            <td>${d.estatus ? '✅ Sí' : '❌ No'}</td>
+            <td>${d.archivo ? `<span class="icon-btn" onclick="window.open('${d.archivo}','_blank')">🔍</span>` : '-'}</td>
+          </tr>`).join('')}
+      </tbody></table>
+    </div>
+    <div class="modal-section">
+      <h3>Unidades</h3>
+      <table class="modal-table"><thead>
+        <tr>
+          <th>Tarjeta de Circulación</th><th>Placas</th><th>Eco</th><th>Tipo</th>
+          <th>Vencimiento Poliza</th><th>Aseguradora</th><th>Marca</th><th>Año</th><th>Permiso SCT</th>
+        </tr>
+      </thead><tbody>
+        ${(perm.unidades||[]).map(u => `
+          <tr>
+            <td>${u.tarjeta||''}</td>
+            <td>${u.placas||''}</td>
+            <td>${u.eco||''}</td>
+            <td>${u.tipo||''}</td>
+            <td>${u.vencePoliza ? new Date(u.vencePoliza).toLocaleDateString('es-MX') : ''}</td>
+            <td>${u.aseguradora||''}</td>
+            <td>${u.marca||''}</td>
+            <td>${u.anio||''}</td>
+            <td>${u.permiso||''}</td>
+          </tr>`).join('')}
+        ${(!perm.unidades || !perm.unidades.length)?'<tr><td colspan="9">Sin unidades registradas</td></tr>':''}
+      </tbody></table>
+    </div>
+    <div class="modal-section">
+      <h3>Operadores</h3>
+      <table class="modal-table"><thead>
+        <tr>
+          <th>Nombre</th><th>Número de Licencia</th><th>Licencia</th>
+          <th>Vto de Licencia</th><th>Apto Médico</th><th>Vto de apto.</th><th>RFC</th>
+        </tr>
+      </thead><tbody>
+        ${(perm.operadores||[]).map(o => `
+          <tr>
+            <td>${o.nombre||''}</td>
+            <td>${o.numero||''}</td>
+            <td>${o.licencia||''}</td>
+            <td>${o.vtoLic||''}</td>
+            <td>${o.apto||''}</td>
+            <td>${o.vtoApto||''}</td>
+            <td>${o.rfc||''}</td>
+          </tr>`).join('')}
+        ${(!perm.operadores || !perm.operadores.length)?'<tr><td colspan="7">Sin operadores registrados</td></tr>':''}
+      </tbody></table>
+    </div>
+  `;
+  permInfoModal.querySelector('.modal-card').innerHTML = `
+    <span id="permInfoCerrar" class="close">&times;</span>
+    <h2>Detalle del permisionario</h2>
+    ${html}
+  `;
+  permInfoModal.classList.remove('hidden');
+  permInfoModal.style.display = 'flex';
+  permInfoModal.querySelector('#permInfoCerrar').onclick = closePermDetalle;
+}
 
   function closePermDetalle(){
     if(!permInfoModal) return;
@@ -2363,7 +2453,77 @@ window.addEventListener('DOMContentLoaded', () => {
 
 })(); 
 window.addEventListener('DOMContentLoaded', () => {
-  const btnGuardar = document.getElementById('btnPermGuardar');
+  //aqui esta para guardar lainformacioón                  
+  const btnGuardar =
+  document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
+  const nombre   = document.getElementById('permNombre').value.trim();
+  const rfc      = document.getElementById('permRFC').value.trim();
+  const estatus  = document.getElementById('permEstatus').value;
+  const contacto = document.getElementById('permContacto').value.trim();
+
+  // Documentos
+  const docNames = [
+    "Acta Constitutiva", "Poder Rep. Legal", "Comprobante de Domicilio",
+    "Constancia de Situación Fiscal", "INE Rep. Legal", "Contrato"
+  ];
+  const documentos = docNames.map((nombre, idx) => {
+    const st = document.getElementById(`permStatus${idx+1}`);
+    const inp = document.getElementById(`permFile${idx+1}`);
+    let archivo = null;
+    if (inp && inp.files && inp.files.length) {
+      // Guardar archivo como URL temporal (solo para ver)
+      archivo = URL.createObjectURL(inp.files[0]);
+    }
+    return {
+      nombre,
+      estatus: st?.classList.contains('status-yes') || false,
+      archivo
+    };
+  });
+
+  // Unidades
+  const unidadesBody = document.querySelector('#tablaUnidades tbody');
+  const unidades = Array.from(unidadesBody?.children || []).map(tr => {
+    try { return JSON.parse(tr.dataset.info || '{}'); } catch { return {}; }
+  });
+
+  // Operadores
+  const operadoresBody = document.querySelector('#tablaOperadores tbody');
+  const operadores = Array.from(operadoresBody?.children || []).map(tr => {
+    const tds = tr.querySelectorAll('td');
+    return {
+      nombre: tds[0]?.textContent || '',
+      numero: tds[1]?.textContent || '',
+      licencia: tds[2]?.textContent || '',
+      vtoLic: tds[3]?.textContent || '',
+      apto: tds[4]?.textContent || '',
+      vtoApto: tds[5]?.textContent || '',
+      rfc: tds[6]?.textContent || ''
+    };
+  });
+
+  if(!nombre || !rfc){
+    alert('Por favor, completa al menos Nombre/Razón social y RFC.');
+    return;
+  }
+
+  const arr = getPerms();
+  let id = editingPermId;
+
+  if(editingPermId){
+    const idx = arr.findIndex(p => p.id === editingPermId);
+    if(idx >= 0) arr[idx] = { id: editingPermId, nombre, rfc, estatus, contacto, documentos, unidades, operadores };
+  } else {
+    id = generarSiguienteIdPerm(arr);
+    arr.push({ id, nombre, rfc, estatus, contacto, documentos, unidades, operadores });
+  }
+  setPerms(arr);
+
+  permsMenu.classList.add('hidden');
+  permsList.classList.remove('hidden');
+  renderTablaPerms();
+  editingPermId = null;
+});
   const modal = document.getElementById('permSaveModal');
   const btnCerrar = document.getElementById('permModalCerrar');
   const resumen = document.getElementById('permResumenGuardado');
