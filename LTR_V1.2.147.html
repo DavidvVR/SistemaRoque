@@ -2259,6 +2259,10 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
   let archivoURL = '';
   if (archivoInput && archivoInput.files.length) {
     archivoURL = URL.createObjectURL(archivoInput.files[0]);
+         } else if (unidadEditingRow) {
+    const prev = JSON.parse(unidadEditingRow.dataset.info || '{}');
+    archivoURL = prev.tarjeta || '';
+  }
   }
 
   const datos = {
@@ -2277,25 +2281,37 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
     ? new Date(datos.vencePoliza).toLocaleDateString('es-MX')
     : '';
 
-  const tr = document.createElement('tr');
-  tr.dataset.info = JSON.stringify(datos);
-  tr.innerHTML = `
-    <td><span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span></td>
-    <td>${datos.placas}</td>
-    <td>${datos.eco}</td>
-    <td>${datos.tipo}</td>
-    <td>${venceLegible}</td>
-    <td>${datos.aseguradora}</td>
-    <td>${datos.marca}</td>
-    <td>${datos.anio || ''}</td>
-    <td>${datos.permiso}</td>
-    <td class="actions">
-    <span class="icon-btn unidad-edit" title="Editar">✏️</span>
-    <span class="icon-btn unidad-delete" title="Eliminar">🗑️</span>
-  </td>
-    
-  `;
-  tablaUnidadesBody.appendChild(tr);
+  if (unidadEditingRow) {
+    unidadEditingRow.dataset.info = JSON.stringify(datos);
+    unidadEditingRow.querySelector('.unidad-lupa').dataset.url = datos.tarjeta;
+    unidadEditingRow.cells[1].textContent = datos.placas;
+    unidadEditingRow.cells[2].textContent = datos.eco;
+    unidadEditingRow.cells[3].textContent = datos.tipo;
+    unidadEditingRow.cells[4].textContent = venceLegible;
+    unidadEditingRow.cells[5].textContent = datos.aseguradora;
+    unidadEditingRow.cells[6].textContent = datos.marca;
+    unidadEditingRow.cells[7].textContent = datos.anio || '';
+    unidadEditingRow.cells[8].textContent = datos.permiso;
+  } else {
+    const tr = document.createElement('tr');
+    tr.dataset.info = JSON.stringify(datos);
+    tr.innerHTML = `
+      <td><span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span></td>
+      <td>${datos.placas}</td>
+      <td>${datos.eco}</td>
+      <td>${datos.tipo}</td>
+      <td>${venceLegible}</td>
+      <td>${datos.aseguradora}</td>
+      <td>${datos.marca}</td>
+      <td>${datos.anio || ''}</td>
+      <td>${datos.permiso}</td>
+      <td class="actions">
+        <span class="icon-btn unidad-edit" title="Editar">✏️</span>
+        <span class="icon-btn unidad-delete" title="Eliminar">🗑️</span>
+      </td>
+    `;
+    tablaUnidadesBody.appendChild(tr);
+  }
 
   ocultarUnidadModal();
   limpiarFormUnidad();
@@ -2308,16 +2324,43 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
   });
 
  tablaUnidadesBody.addEventListener('click', function(e) {
-  const btn = e.target.closest('.unidad-lupa');
-  if (!btn) return;
-  const url = btn.dataset.url;
-  if (url) {
-    window.open(url, '_blank');
-  } else {
-    alert('No hay archivo adjunto');
+const lupa = e.target.closest('.unidad-lupa');
+  if (lupa) {
+    const url = lupa.dataset.url;
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      alert('No hay archivo adjunto');
+    }
+    return;
   }
-}); 
-  
+
+  const edit = e.target.closest('.unidad-edit');
+  if (edit) {
+    const tr = edit.closest('tr');
+    const datos = JSON.parse(tr.dataset.info || '{}');
+    f.tarjeta.value = datos.tarjeta || '';
+    f.placas.value = datos.placas || '';
+    f.eco.value = datos.eco || '';
+    f.tipo.value = datos.tipo || '';
+    f.vencePoliza.value = datos.vencePoliza || '';
+    f.aseguradora.value = datos.aseguradora || '';
+    f.marca.value = datos.marca || '';
+    f.anio.value = datos.anio || '';
+    f.permiso.value = datos.permiso || '';
+    unidadEditingRow = tr;
+    unidadModal.querySelector('h3').textContent = 'Editar Unidad Vehicular';
+    mostrarUnidadModal();
+    return;
+  }
+           const del = e.target.closest('.unidad-delete');
+  if (del) {
+    const tr = del.closest('tr');
+    if (confirm('¿Desea eliminar esta unidad?')) {
+      tr.remove();
+    }
+  }
+});                         
 })();
 //Boton de adjuntar tarjeta de circulación
 window.addEventListener('DOMContentLoaded', () => {
