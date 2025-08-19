@@ -2360,6 +2360,7 @@ const datos = {
       f.marca.value = datos.marca || '';
       f.anio.value = datos.anio || '';
       f.permiso.value = datos.permiso || '';
+       // Guarda referencia a la fila que se está editando
       unidadEditingRow = tr;
       unidadModal.querySelector('h3').textContent = 'Editar Unidad Vehicular';
       mostrarUnidadModal();
@@ -2376,39 +2377,13 @@ const datos = {
   unidadEditingRow = null;
       
 });
-// Evento para editar
-tr.querySelector('.unidad-edit').addEventListener('click', () => {
-  // Cargar datos en el modal
-  const datos = JSON.parse(tr.dataset.info || '{}');
-  f.tarjeta.value = datos.tarjeta || '';
-  f.placas.value = datos.placas || '';
-  f.eco.value = datos.eco || '';
-  f.tipo.value = datos.tipo || '';
-  f.vencePoliza.value = datos.vencePoliza || '';
-  f.aseguradora.value = datos.aseguradora || '';
-  f.marca.value = datos.marca || '';
-  f.anio.value = datos.anio || '';
-  f.permiso.value = datos.permiso || '';
-  
-  // Guarda referencia a la fila que se está editando
-  unidadEditingRow = tr;
-  unidadModal.querySelector('h3').textContent = 'Editar Unidad Vehicular';
-  mostrarUnidadModal();
-});
+
 
 
 
       
-// Evento para eliminar
-tr.querySelector('.unidad-delete').addEventListener('click', () => {
-  if(confirm('¿Desea eliminar esta unidad?')) {
-    tr.remove();
-  }
-});
-  ocultarUnidadModal();
-  limpiarFormUnidad();
-  unidadEditingRow = null;
-});
+
+
   
 
   window.addEventListener('click', (e) => {
