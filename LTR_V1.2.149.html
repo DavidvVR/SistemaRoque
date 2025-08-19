@@ -2233,6 +2233,14 @@ document.querySelectorAll('.perm-view').forEach(btn => {
     f.marca.value = '';
     f.anio.value = '';
     f.permiso.value = '';
+    const tarFile = document.getElementById('uTarjetaFile');
+    const tarName = document.getElementById('uTarjetaName');
+    const polFile = document.getElementById('uPolizaFile');
+    const polName = document.getElementById('uPolizaName');
+    if (tarFile) tarFile.value = '';
+    if (tarName) tarName.value = '';
+    if (polFile) polFile.value = '';
+    if (polName) polName.value = '';
   }
 
   function mostrarUnidadModal(){
@@ -2264,6 +2272,14 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
     archivoURL = prev.tarjeta || '';
   }
   
+  const polizaInput = document.getElementById('uPolizaFile');
+  let polizaURL = '';
+  if (polizaInput && polizaInput.files.length) {
+    polizaURL = URL.createObjectURL(polizaInput.files[0]);
+  } else if (unidadEditingRow) {
+    const prev = JSON.parse(unidadEditingRow.dataset.info || '{}');
+    polizaURL = prev.poliza || '';
+  }
 
   const datos = {
     tarjeta: archivoURL,
@@ -2272,6 +2288,7 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
     tipo: f.tipo.value,
     vencePoliza: f.vencePoliza.value,
     aseguradora: (f.aseguradora.value || '').trim(),
+    poliza: polizaURL,    
     marca: (f.marca.value || '').trim(),
     anio: f.anio.value ? Number(f.anio.value) : '',
     permiso: (f.permiso.value || '').trim(),
@@ -2288,7 +2305,7 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
     unidadEditingRow.cells[2].textContent = datos.eco;
     unidadEditingRow.cells[3].textContent = datos.tipo;
     unidadEditingRow.cells[4].textContent = venceLegible;
-    unidadEditingRow.cells[5].textContent = datos.aseguradora;
+    unidadEditingRow.cells[5].innerHTML = `${datos.aseguradora} <span class="icon-btn poliza-lupa" title="Ver póliza" data-url="${datos.poliza}">🔍</span>`;
     unidadEditingRow.cells[6].textContent = datos.marca;
     unidadEditingRow.cells[7].textContent = datos.anio || '';
     unidadEditingRow.cells[8].textContent = datos.permiso;
@@ -2301,7 +2318,7 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
       <td>${datos.eco}</td>
       <td>${datos.tipo}</td>
       <td>${venceLegible}</td>
-      <td>${datos.aseguradora}</td>
+     <td>${datos.aseguradora} <span class="icon-btn poliza-lupa" title="Ver póliza" data-url="${datos.poliza}">🔍</span></td>
       <td>${datos.marca}</td>
       <td>${datos.anio || ''}</td>
       <td>${datos.permiso}</td>
@@ -2324,9 +2341,20 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
   });
 
  tablaUnidadesBody.addEventListener('click', function(e) {
-const lupa = e.target.closest('.unidad-lupa');
-  if (lupa) {
-    const url = lupa.dataset.url;
+const tarLupa = e.target.closest('.unidad-lupa');
+  if (tarLupa) {
+    const url = tarLupa.dataset.url;
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      alert('No hay archivo adjunto');
+    }
+    return;
+  }
+
+  const polLupa = e.target.closest('.poliza-lupa');
+  if (polLupa) {
+    const url = polLupa.dataset.url;
     if (url) {
       window.open(url, '_blank');
     } else {
@@ -2348,6 +2376,14 @@ const lupa = e.target.closest('.unidad-lupa');
     f.marca.value = datos.marca || '';
     f.anio.value = datos.anio || '';
     f.permiso.value = datos.permiso || '';
+    const polName = document.getElementById('uPolizaName');
+    const polFile = document.getElementById('uPolizaFile');
+    const tarName = document.getElementById('uTarjetaName');
+    const tarFile = document.getElementById('uTarjetaFile');
+    if (polName) polName.value = '';
+    if (polFile) polFile.value = '';
+    if (tarName) tarName.value = '';
+    if (tarFile) tarFile.value = '';    
     unidadEditingRow = tr;
     unidadModal.querySelector('h3').textContent = 'Editar Unidad Vehicular';
     mostrarUnidadModal();
