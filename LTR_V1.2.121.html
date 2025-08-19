@@ -1256,7 +1256,9 @@ window.addEventListener('DOMContentLoaded', () => {
       link.addEventListener('click', () => mostrarDetalleCliente(link.dataset.id));
     });
   }
-
+ document.getElementById('btnImportExcel')?.addEventListener('click', () => {
+  document.getElementById('excelInput')?.click();
+});     
 //Codigo para importar excel 
 excelInput?.addEventListener('change', (event) => {
   const file = event.target.files[0];
@@ -1308,9 +1310,7 @@ excelInput?.addEventListener('change', (event) => {
         },
         tarifas: [] // Se llenará después
       });
-     document.getElementById('btnImportExcel')?.addEventListener('click', () => {
-  document.getElementById('excelInput')?.click();
-});     
+    
     });
 
     // Mapear encabezados de Tarifas
