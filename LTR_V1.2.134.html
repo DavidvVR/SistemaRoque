@@ -2374,23 +2374,19 @@ window.addEventListener('DOMContentLoaded', () => {
   const btnUTarjetaPick = document.getElementById('btnUTarjetaPick');
   const uTarjetaFile = document.getElementById('uTarjetaFile');
   const uTarjetaName = document.getElementById('uTarjetaName');
+   btnUTarjetaPick?.addEventListener('click', () => {
+    uTarjetaFile?.click();
+  });
 
-  if(btnUTarjetaPick && uTarjetaFile && uTarjetaName) {
-    btnUTarjetaPick.addEventListener('click', () => {
-      uTarjetaFile.click();
-    });
-
-    uTarjetaFile.addEventListener('change', () => {
-      if(uTarjetaFile.files.length) {
-        datos.tarjetaArchivo = URL.createObjectURL(uTarjetaFile.files[0]);
-      }    
-        uTarjetaName.value = uTarjetaFile.files[0].name;
-        uTarjeta.value = uTarjetaFile.files[0].name    
-      } else {
-        uTarjetaName.value = '';
-      }
-    });
-  }
+  uTarjetaFile?.addEventListener('change', () => {
+    if (uTarjetaFile.files.length) {
+      uTarjetaName.value = uTarjetaFile.files[0].name;
+    } else {
+      uTarjetaName.value = '';
+    }
+  });
+ 
+    
 });
 //Bóton de adjuntar póliza    
  window.addEventListener('DOMContentLoaded', () => {
