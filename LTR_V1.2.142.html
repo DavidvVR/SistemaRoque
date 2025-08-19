@@ -2279,7 +2279,12 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
     permiso: (f.permiso.value || '').trim(),
   };
 
-if(unidadEditingRow) {
+      
+  const venceLegible = datos.vencePoliza
+    ? new Date(datos.vencePoliza).toLocaleDateString('es-MX')
+    : '';
+
+   if(unidadEditingRow) {
     // Si se está editando, actualiza la fila
     unidadEditingRow.dataset.info = JSON.stringify(datos);
     unidadEditingRow.cells[0].innerHTML = `<span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span>`;
@@ -2365,31 +2370,8 @@ if(unidadEditingRow) {
   ocultarUnidadModal();
   limpiarFormUnidad();
   unidadEditingRow = null;
-});
       
-  const venceLegible = datos.vencePoliza
-    ? new Date(datos.vencePoliza).toLocaleDateString('es-MX')
-    : '';
-
-  const tr = document.createElement('tr');
-  tr.dataset.info = JSON.stringify(datos);
-  tr.innerHTML = `
-    <td><span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span></td>
-    <td>${datos.placas}</td>
-    <td>${datos.eco}</td>
-    <td>${datos.tipo}</td>
-    <td>${venceLegible}</td>
-    <td>${datos.aseguradora}</td>
-    <td>${datos.marca}</td>
-    <td>${datos.anio || ''}</td>
-    <td>${datos.permiso}</td>
-    <td class="actions">
-    <span class="icon-btn unidad-edit" title="Editar">✏️</span>
-    <span class="icon-btn unidad-delete" title="Eliminar">🗑️</span>
-  </td>
-    
-  `;
-  tablaUnidadesBody.appendChild(tr);
+});
 // Evento para editar
 tr.querySelector('.unidad-edit').addEventListener('click', () => {
   // Cargar datos en el modal
@@ -2410,6 +2392,9 @@ tr.querySelector('.unidad-edit').addEventListener('click', () => {
   mostrarUnidadModal();
 });
 
+
+
+      
 // Evento para eliminar
 tr.querySelector('.unidad-delete').addEventListener('click', () => {
   if(confirm('¿Desea eliminar esta unidad?')) {
