@@ -1125,7 +1125,8 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
  </div>     
 </div>    
       
-
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+      
         
 
   
@@ -1253,6 +1254,108 @@ window.addEventListener('DOMContentLoaded', () => {
       link.addEventListener('click', () => mostrarDetalleCliente(link.dataset.id));
     });
   }
+
+//Codigo para importar excel 
+window.addEventListener('DOMContentLoaded', () => {
+  const btnImportExcel = document.getElementById('btnImportExcel');
+  const excelInput = document.getElementById('excelInput');
+  const srStoreKey = 'sr_clientes';
+
+  btnImportExcel?.addEventListener('click', () => {
+    excelInput.click();
+  });
+
+  excelInput?.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, {type: 'array'});
+
+      // Procesar Hoja Clientes
+      const clientesSheet = workbook.Sheets['Clientes'];
+      const clientesJson = XLSX.utils.sheet_to_json(clientesSheet, {header:1});
+      // Procesar Hoja Tarifas
+      const tarifasSheet = workbook.Sheets['Tarifas'];
+      const tarifasJson = XLSX.utils.sheet_to_json(tarifasSheet, {header:1});
+
+      // Mapear encabezados de Clientes
+      const clientesHeaders = clientesJson[0];
+      const clientesData = clientesJson.slice(1);
+      let clientesArr = [];
+
+      clientesData.forEach(row => {
+        // Empareja cada encabezado con su valor
+        const obj = {};
+        clientesHeaders.forEach((h, idx) => {
+          obj[h] = row[idx] || '';
+        });
+        clientesArr.push({
+          id: '', // Se puede generar después
+          nombre: obj['Nombre / Razón Social'] || '',
+          rfc: obj['RFC'] || '',
+          estatus: obj['Estatus'] || '',
+          domicilio: obj['Domicilio'] || '',
+          operaciones: {
+            nombre: obj['Contacto Operaciones (Nombre)'] || '',
+            email: obj['Contacto Operaciones (Email)'] || '',
+            tel: obj['Contacto Operaciones (Tel)'] || ''
+          },
+          administracion: {
+            nombre: obj['Contacto Administración (Nombre)'] || '',
+            email: obj['Contacto Administración (Email)'] || '',
+            tel: obj['Contacto Administración (Tel)'] || ''
+          },
+          comercial: {
+            nombre: obj['Contacto Comercial (Nombre)'] || '',
+            email: obj['Contacto Comercial (Email)'] || '',
+            tel: obj['Contacto Comercial (Tel)'] || ''
+          },
+          tarifas: [] // Se llenará después
+        });
+      });
+
+      // Mapear encabezados de Tarifas
+      const tarifasHeaders = tarifasJson[0];
+      const tarifasData = tarifasJson.slice(1);
+
+      tarifasData.forEach(row => {
+        const obj = {};
+        tarifasHeaders.forEach((h, idx) => {
+          obj[h] = row[idx] || '';
+        });
+        // Busca el cliente por RFC y agrega la tarifa
+        const cliente = clientesArr.find(c => c.rfc === obj['RFC']);
+        if (cliente) {
+          cliente.tarifas = cliente.tarifas || [];
+          cliente.tarifas.push({
+            estadoOrigen: obj['Estado Origen'] || '',
+            municipioOrigen: obj['Municipio Origen'] || '',
+            estadoDestino: obj['Estado Destino'] || '',
+            municipioDestino: obj['Municipio Destino'] || '',
+            tipoUnidad: obj['Tipo Unidad'] || '',
+            diasCredito: obj['Dias Credito'] || '',
+            kmRecorrer: obj['Km Recorrer'] || '',
+            tarifa: obj['Tarifa'] || ''
+          });
+        }
+      });
+
+      // Generar IDs automáticos tipo LTR-CL-01, LTR-CL-02...
+      clientesArr.forEach((c, idx) => {
+        c.id = 'LTR-CL-' + String(idx+1).padStart(2, '0');
+      });
+
+      // Guarda en el localStorage y refresca la tabla
+      localStorage.setItem(srStoreKey, JSON.stringify(clientesArr));
+      alert('Clientes y tarifas importados correctamente.');
+      if (typeof renderTablaClientes === 'function') renderTablaClientes();
+    };
+    reader.readAsArrayBuffer(file);
+  });
+});
 
   // === Eliminar cliente
   const confirmDeleteModal = document.getElementById('confirmDeleteModal');
