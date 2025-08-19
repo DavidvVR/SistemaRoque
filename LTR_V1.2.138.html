@@ -2411,9 +2411,9 @@ window.addEventListener('DOMContentLoaded', () => {
       rfc: f.rfc.value.trim(),
     };
 
-    if(!datos.nombre){
-      alert('Ingrese el nombre del operador.');
-      return;
+    if(!datos.tarjeta || !datos.placas || !datos.tipo){
+  alert('Completa los campos obligatorios: Tarjeta, Placas y Tipo.');
+  return;
     }
 
     const vtoLicLegible = datos.vtoLic ? new Date(datos.vtoLic + 'T00:00:00').toLocaleDateString('es-MX') : '';
