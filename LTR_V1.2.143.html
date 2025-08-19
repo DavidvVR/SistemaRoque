@@ -2262,30 +2262,28 @@ document.querySelectorAll('.perm-view').forEach(btn => {
 
 unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
   const archivoInput = document.getElementById('uTarjetaFile');
-  let archivoURL = '';
+  let unidadEditingRow = null;
   if (archivoInput && archivoInput.files.length) {
     archivoURL = URL.createObjectURL(archivoInput.files[0]);
   }
-
-  const datos = {
-    tarjeta: archivoURL,
-    placas: (f.placas.value || '').trim(),
-    eco: (f.eco.value || '').trim(),
+const datos = {
+    tarjeta: f.tarjeta.value,
+    placas: f.placas.value,
+    eco: f.eco.value,
     tipo: f.tipo.value,
     vencePoliza: f.vencePoliza.value,
-    aseguradora: (f.aseguradora.value || '').trim(),
-    marca: (f.marca.value || '').trim(),
-    anio: f.anio.value ? Number(f.anio.value) : '',
-    permiso: (f.permiso.value || '').trim(),
+    aseguradora: f.aseguradora.value,
+    marca: f.marca.value,
+    anio: f.anio.value,
+    permiso: f.permiso.value
   };
-
+ 
       
   const venceLegible = datos.vencePoliza
     ? new Date(datos.vencePoliza).toLocaleDateString('es-MX')
     : '';
-
-   if(unidadEditingRow) {
-    // Si se está editando, actualiza la fila
+// Si se está editando, actualiza la fila
+ if (unidadEditingRow) {
     unidadEditingRow.dataset.info = JSON.stringify(datos);
     unidadEditingRow.cells[0].innerHTML = `<span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span>`;
     unidadEditingRow.cells[1].textContent = datos.placas;
@@ -2294,13 +2292,14 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
     unidadEditingRow.cells[4].textContent = venceLegible;
     unidadEditingRow.cells[5].textContent = datos.aseguradora;
     unidadEditingRow.cells[6].textContent = datos.marca;
-    unidadEditingRow.cells[7].textContent = datos.anio || '';
+    unidadEditingRow.cells[7].textContent = datos.anio;
     unidadEditingRow.cells[8].textContent = datos.permiso;
-    // No olvides volver a colocar los iconos de editar/eliminar si los reemplazas
     unidadEditingRow.cells[9].innerHTML = `
       <span class="icon-btn unidad-edit" title="Editar">✏️</span>
       <span class="icon-btn unidad-delete" title="Eliminar">🗑️</span>
     `;
+      
+   
     // Re-asignar eventos
     unidadEditingRow.querySelector('.unidad-edit').addEventListener('click', () => {
       // Llama de nuevo la edición
@@ -2323,7 +2322,12 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
         unidadEditingRow.remove();
       }
     });
-  } else {
+  }
+ ocultarUnidadModal();
+  limpiarFormUnidad();
+  unidadEditingRow = null;
+});
+ else {
     // Si es nueva, crea la fila normalmente
     const tr = document.createElement('tr');
     tr.dataset.info = JSON.stringify(datos);
