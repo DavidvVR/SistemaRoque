@@ -1288,6 +1288,10 @@ window.addEventListener('DOMContentLoaded', () => {
   };
   document.getElementById('modPerm').onclick = () => {
     showSection('permModule');
+    const list = document.getElementById('permsList');
+    const menu = document.getElementById('permsMenu');
+    if (list) list.classList.remove('hidden');
+    if (menu) menu.classList.add('hidden');
     if (typeof renderTablaPerms === 'function') renderTablaPerms();
   };
   document.getElementById('btnClientesBack')?.addEventListener('click', () => {
@@ -1909,7 +1913,7 @@ function migratePermsStorage() {
   });
   if (changed) setPerms(perms);
 }
-window.addEventListener('DOMContentLoaded', migratePermsStorage);
+migratePermsStorage();
     
   function setPerms(arr){ localStorage.setItem(srPermKey, JSON.stringify(arr)); }
 
@@ -2089,15 +2093,18 @@ window.addEventListener('DOMContentLoaded', migratePermsStorage);
   }
 
   // === Botón "Nuevo Permisionario"
- document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
-    editingPermId = null;
-    limpiarFormularioPerm();
-    permsMenu.querySelector('h3').textContent = 'Nuevo Permisionario';
-    permsMenu.classList.remove('hidden');
-    permsList.classList.add('hidden');
-    document.querySelector('#permsMenu .subtab[data-target="perm-datos"]')?.click();
-
-  });
+const btnPermNuevo = document.getElementById('btnPermNuevo');
+  if (btnPermNuevo) {
+    btnPermNuevo.addEventListener('click', () => {
+      editingPermId = null;
+      limpiarFormularioPerm();
+      permsMenu.querySelector('h3').textContent = 'Nuevo Permisionario';
+      permsMenu.classList.remove('hidden');
+      permsList.classList.add('hidden');
+      const firstTab = document.querySelector('#permsMenu .subtab[data-target="perm-datos"]');
+      if (firstTab) firstTab.click();
+    });
+  }
 
   // === Volver al dashboard desde permisionarios
   document.getElementById('btnPermVolver')?.addEventListener('click', () => {
