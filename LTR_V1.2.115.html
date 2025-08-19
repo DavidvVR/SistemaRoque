@@ -1202,7 +1202,9 @@ window.addEventListener('DOMContentLoaded', () => {
  </script>   
 
 
- <script>
+
+      
+<script>
             //aqui empieza el modulo de clientes
 window.addEventListener('DOMContentLoaded', () => {
   // === Referencias principales
@@ -1256,64 +1258,62 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
 //Codigo para importar excel 
-window.addEventListener('DOMContentLoaded', () => {
-  const btnImportExcel = document.getElementById('btnImportExcel');
-  const excelInput = document.getElementById('excelInput');
-  const srStoreKey = 'sr_clientes';
+const btnImportExcel = document.getElementById('btnImportExcel');
+const excelInput = document.getElementById('excelInput');
 
-  btnImportExcel?.addEventListener('click', () => {
-    excelInput.click();
-  });
+btnImportExcel?.addEventListener('click', () => {
+  excelInput.click();
+});
 
-  excelInput?.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+excelInput?.addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, {type: 'array'});
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, {type: 'array'});
 
-      // Procesar Hoja Clientes
-      const clientesSheet = workbook.Sheets['Clientes'];
-      const clientesJson = XLSX.utils.sheet_to_json(clientesSheet, {header:1});
-      // Procesar Hoja Tarifas
-      const tarifasSheet = workbook.Sheets['Tarifas'];
-      const tarifasJson = XLSX.utils.sheet_to_json(tarifasSheet, {header:1});
+    // Procesar Hoja Clientes
+    const clientesSheet = workbook.Sheets['Clientes'];
+    const clientesJson = XLSX.utils.sheet_to_json(clientesSheet, {header:1});
+    // Procesar Hoja Tarifas
+    const tarifasSheet = workbook.Sheets['Tarifas'];
+    const tarifasJson = XLSX.utils.sheet_to_json(tarifasSheet, {header:1});
 
-      // Mapear encabezados de Clientes
-      const clientesHeaders = clientesJson[0];
-      const clientesData = clientesJson.slice(1);
-      let clientesArr = [];
+    // Mapear encabezados de Clientes
+    const clientesHeaders = clientesJson[0];
+    const clientesData = clientesJson.slice(1);
+    let clientesArr = [];
 
-      clientesData.forEach(row => {
-        // Empareja cada encabezado con su valor
-        const obj = {};
-        clientesHeaders.forEach((h, idx) => {
-          obj[h] = row[idx] || '';
-        });
-        clientesArr.push({
-          id: '', // Se puede generar después
-          nombre: obj['Nombre / Razón Social'] || '',
-          rfc: obj['RFC'] || '',
-          estatus: obj['Estatus'] || '',
-          domicilio: obj['Domicilio'] || '',
-          operaciones: {
-            nombre: obj['Contacto Operaciones (Nombre)'] || '',
-            email: obj['Contacto Operaciones (Email)'] || '',
-            tel: obj['Contacto Operaciones (Tel)'] || ''
-          },
-          administracion: {
-            nombre: obj['Contacto Administración (Nombre)'] || '',
-            email: obj['Contacto Administración (Email)'] || '',
-            tel: obj['Contacto Administración (Tel)'] || ''
-          },
-          comercial: {
-            nombre: obj['Contacto Comercial (Nombre)'] || '',
-            email: obj['Contacto Comercial (Email)'] || '',
-            tel: obj['Contacto Comercial (Tel)'] || ''
-          },
-          tarifas: [] // Se llenará después
+    clientesData.forEach(row => {
+      // Empareja cada encabezado con su valor
+      const obj = {};
+      clientesHeaders.forEach((h, idx) => {
+        obj[h] = row[idx] || '';
+      });
+      clientesArr.push({
+        id: '', // Se puede generar después
+        nombre: obj['Nombre / Razón Social'] || '',
+        rfc: obj['RFC'] || '',
+        estatus: obj['Estatus'] || '',
+        domicilio: obj['Domicilio'] || '',
+        operaciones: {
+          nombre: obj['Contacto Operaciones (Nombre)'] || '',
+          email: obj['Contacto Operaciones (Email)'] || '',
+          tel: obj['Contacto Operaciones (Tel)'] || ''
+        },
+        administracion: {
+          nombre: obj['Contacto Administración (Nombre)'] || '',
+          email: obj['Contacto Administración (Email)'] || '',
+          tel: obj['Contacto Administración (Tel)'] || ''
+        },
+        comercial: {
+          nombre: obj['Contacto Comercial (Nombre)'] || '',
+          email: obj['Contacto Comercial (Email)'] || '',
+          tel: obj['Contacto Comercial (Tel)'] || ''
+        },
+        tarifas: [] // Se llenará después
         });
       });
 
