@@ -2521,9 +2521,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 })(); 
 window.addEventListener('DOMContentLoaded', () => {
-  //aqui esta para guardar lainformacioón                  
-  const btnGuardar =
-  document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
+  // Guardar la información del permisionario
+  const btnGuardar = document.getElementById('btnPermGuardar');
+  btnGuardar?.addEventListener('click', () => {
   const nombre   = document.getElementById('permNombre').value.trim();
   const rfc      = document.getElementById('permRFC').value.trim();
   const estatus  = document.getElementById('permEstatus').value;
@@ -2616,13 +2616,6 @@ window.addEventListener('DOMContentLoaded', () => {
         </div>`;
     }
   }
-  tr.querySelector('.unidad-edit').addEventListener('click', () => {
-  // Aquí puedes cargar los datos en el modal para editar la unidad
-  cargarUnidadParaEditar(tr);
-});
-tr.querySelector('.unidad-delete').addEventListener('click', () => {
-  tr.remove();
-});    
 
   // Mostramos el modal al guardar
   if(btnGuardar && modal){
