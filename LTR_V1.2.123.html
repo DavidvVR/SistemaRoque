@@ -2073,6 +2073,9 @@ window.addEventListener('DOMContentLoaded', () => {
       document.getElementById(tgt).classList.add('active');
     });
   });
+  document.getElementById('permInfoCerrar')?.addEventListener('click', closePermDetalle);
+  permInfoModal?.addEventListener('click', (e) => { if(e.target === permInfoModal) closePermDetalle(); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closePermDetalle(); });    
 
   // === Inicializar tabla si está vacía (opcional demo)
   if(getPerms().length === 0){
@@ -2416,7 +2419,25 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 });       
 </script>     
-     
+
+<!-- Detalle permisionario -->
+<div id="permInfoModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
+  <div class="modal-card">
+    <span id="permInfoCerrar" class="close">&times;</span>
+    <h2>Detalle del permisionario</h2>
+    <div class="modal-section">
+      <h3>Datos generales</h3>
+      <div class="modal-fields">
+        <p><label>ID:</label><span id="permInfoId"></span></p>
+        <p><label>Nombre:</label><span id="permInfoNombre"></span></p>
+        <p><label>RFC:</label><span id="permInfoRFC"></span></p>
+        <p><label>Estatus:</label><span id="permInfoEstatus"></span></p>
+        <p><label>Domicilio:</label><span id="permInfoContacto"></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+      
 <!-- Guardar permisionario -->     
  <div id="permSaveModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
   <div class="modal-card" style="width:min(520px,92vw);background:#1e1e1e;color:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.5);overflow:hidden;">
@@ -2438,23 +2459,5 @@ window.addEventListener('DOMContentLoaded', () => {
 </div>
 
   
-
-<!-- === V1.2.67 | Modal Felicidades Cliente === -->
-<div id="clienteSaveModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
-  <div class="modal-card" style="width:min(560px,92vw);background:#1e1e1e;color:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.5);overflow:hidden;">
-    <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px;">
-      <div style="font-size:28px;">🎉</div>
-      <h3 style="margin:0;font-size:20px;font-weight:700;">¡Felicidades, agregaste un nuevo cliente!</h3>
-    </div>
-    <div style="padding:20px 24px;">
-      <div id="clienteIDMostrado" style="color:#ff6b6b;font-weight:800;font-size:18px;margin-bottom:10px;"></div>
-      <div id="clienteResumenGuardado" style="font-size:14px;opacity:.9;"></div>
-    </div>
-    <div style="padding:16px 24px;display:flex;gap:12px;justify-content:flex-end;background:rgba(255,255,255,.03);">
-      <button id="clienteModalCerrar" class="btn btn-primary" style="padding:10px 16px;border-radius:10px;border:none;cursor:pointer;">Aceptar</button>
-    </div>
-  </div>
-</div>
-<!-- === /Modal Felicidades Cliente === -->
 </body>
 </html>
