@@ -1183,8 +1183,14 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 
           <div class="form-row">
             <div class="form-group">
-              <label for="opLicencia">Licencia</label>
-              <input id="opLicencia" type="text">
+             <label for="opLicenciaName">Licencia</label>
+              <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+                <button type="button" id="btnOpLicenciaPick" class="icon-btn" title="Adjuntar licencia">📁</button>
+                <input id="opLicenciaFile" type="file" accept="application/pdf,image/*" style="display:none">
+                <input id="opLicenciaName" type="text" placeholder="Selecciona un archivo…" readonly>
+                <input id="opLicencia" type="hidden" value="">
+                <div class="field-error" data-for="opLicenciaName"></div>
+              </div> 
             </div>
             <div class="form-group">
               <label for="opVtoLicencia">Vto de Licencia</label>
@@ -1194,8 +1200,14 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 
           <div class="form-row">
             <div class="form-group">
-              <label for="opAptoMedico">Apto Médico</label>
-              <input id="opAptoMedico" type="text">
+            <label for="opAptoName">Apto Médico</label>
+              <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+                <button type="button" id="btnOpAptoPick" class="icon-btn" title="Adjuntar apto médico">📁</button>
+                <input id="opAptoFile" type="file" accept="application/pdf,image/*" style="display:none">
+                <input id="opAptoName" type="text" placeholder="Selecciona un archivo…" readonly>
+                <input id="opAptoMedico" type="hidden" value="">
+                <div class="field-error" data-for="opAptoName"></div>
+              </div>
             </div>
             <div class="form-group">
               <label for="opVtoApto">Vto apto</label>
@@ -2438,7 +2450,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-});   
+
 
   //Modal de +Agregar Operador
 (function(){
@@ -2451,8 +2463,12 @@ window.addEventListener('DOMContentLoaded', () => {
     nombre: $('opNombre'),
     numero: $('opNumeroLicencia'),
     licencia: $('opLicencia'),
+    licenciaName: $('opLicenciaName'),
+    licenciaFile: $('opLicenciaFile'),
     vtoLic: $('opVtoLicencia'),
     apto: $('opAptoMedico'),
+   aptoName: $('opAptoName'),
+    aptoFile: $('opAptoFile'),
     vtoApto: $('opVtoApto'),
     rfc: $('opRFC'),
   };
@@ -2474,6 +2490,54 @@ window.addEventListener('DOMContentLoaded', () => {
     limpiar();
     mostrar();
   });
+
+//Botón de adjuntar licencia (operador)
+window.addEventListener('DOMContentLoaded', () => {
+  const btnOpLicenciaPick = document.getElementById('btnOpLicenciaPick');
+  const opLicenciaFile = document.getElementById('opLicenciaFile');
+  const opLicenciaName = document.getElementById('opLicenciaName');
+  const opLicencia = document.getElementById('opLicencia');
+
+  if(btnOpLicenciaPick && opLicenciaFile && opLicenciaName && opLicencia) {
+    btnOpLicenciaPick.addEventListener('click', () => {
+      opLicenciaFile.click();
+    });
+
+    opLicenciaFile.addEventListener('change', () => {
+      if(opLicenciaFile.files.length) {
+        opLicenciaName.value = opLicenciaFile.files[0].name;
+        opLicencia.value = opLicenciaFile.files[0].name;
+      } else {
+        opLicenciaName.value = '';
+        opLicencia.value = '';
+      }
+    });
+  }
+});
+
+//Botón de adjuntar apto médico (operador)
+window.addEventListener('DOMContentLoaded', () => {
+  const btnOpAptoPick = document.getElementById('btnOpAptoPick');
+  const opAptoFile = document.getElementById('opAptoFile');
+  const opAptoName = document.getElementById('opAptoName');
+  const opAptoMedico = document.getElementById('opAptoMedico');
+
+  if(btnOpAptoPick && opAptoFile && opAptoName && opAptoMedico) {
+    btnOpAptoPick.addEventListener('click', () => {
+      opAptoFile.click();
+    });
+
+    opAptoFile.addEventListener('change', () => {
+      if(opAptoFile.files.length) {
+        opAptoName.value = opAptoFile.files[0].name;
+        opAptoMedico.value = opAptoFile.files[0].name;
+      } else {
+        opAptoName.value = '';
+        opAptoMedico.value = '';
+      }
+    });
+  }
+});      
 
   operadorModal.querySelector('.close')?.addEventListener('click', ocultar);
   operadorModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultar);
