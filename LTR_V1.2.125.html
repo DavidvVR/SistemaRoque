@@ -2258,6 +2258,7 @@ window.addEventListener('DOMContentLoaded', () => {
     uTarjetaFile.addEventListener('change', () => {
       if(uTarjetaFile.files.length) {
         uTarjetaName.value = uTarjetaFile.files[0].name;
+        uTarjeta.value = uTarjetaFile.files[0].name    
       } else {
         uTarjetaName.value = '';
       }
