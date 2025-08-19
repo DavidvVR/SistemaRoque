@@ -2122,7 +2122,28 @@ document.querySelectorAll('.perm-view').forEach(btn => {
     }
   });
 })();
-    window.addEventListener('DOMContentLoaded', () => {
+//Boton de adjuntar tarjeta de circulación
+window.addEventListener('DOMContentLoaded', () => {
+  const btnUTarjetaPick = document.getElementById('btnUTarjetaPick');
+  const uTarjetaFile = document.getElementById('uTarjetaFile');
+  const uTarjetaName = document.getElementById('uTarjetaName');
+
+  if(btnUTarjetaPick && uTarjetaFile && uTarjetaName) {
+    btnUTarjetaPick.addEventListener('click', () => {
+      uTarjetaFile.click();
+    });
+
+    uTarjetaFile.addEventListener('change', () => {
+      if(uTarjetaFile.files.length) {
+        uTarjetaName.value = uTarjetaFile.files[0].name;
+      } else {
+        uTarjetaName.value = '';
+      }
+    });
+  }
+});
+//Bóton de adjuntar póliza    
+ window.addEventListener('DOMContentLoaded', () => {
   const btnUPolizaPick = document.getElementById('btnUPolizaPick');
   const uPolizaFile = document.getElementById('uPolizaFile');
   const uPolizaName = document.getElementById('uPolizaName');
