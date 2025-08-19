@@ -400,6 +400,93 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   @media (max-width:760px){
     .modal .modal-content{ width:96vw !important; padding:24px !important; }
   }
+      
+/* Modal de visualizar datos de ID del permisionario*/
+<style>
+  .modal-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 14px 30px rgba(0,0,0,.13);
+    padding: 32px 30px;
+    max-width: 650px;
+    width: 96vw;
+    color: #1e1e1e;
+    position: relative;
+  }
+  .modal-card h2 {
+    font-size: 1.38rem;
+    margin-bottom: 18px;
+    color: #1f7a4f;
+    font-weight: 700;
+    text-align: left;
+  }
+  .modal-section {
+    margin-bottom: 26px;
+  }
+  .modal-section h3 {
+    font-size: 1.05rem;
+    color: #22a06b;
+    margin-bottom: 8px;
+    font-weight: 600;
+    border-bottom: 1px solid #e9f7f1;
+    padding-bottom: 3px;
+  }
+  .modal-fields p {
+    margin: 3px 0 8px 0;
+    font-size: 1rem;
+    display: flex;
+    gap: 12px;
+  }
+  .modal-fields label {
+    font-weight: 600;
+    color: #334155;
+    min-width: 120px;
+    display: inline-block;
+  }
+  .doc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .doc-list li {
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: .97rem;
+  }
+  .doc-list .status-yes { color: #1f7a4f; font-weight:700;}
+  .doc-list .status-no { color: #c0392b; font-weight:700;}
+  .modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 6px;
+    font-size: .97rem;
+  }
+  .modal-table th, .modal-table td {
+    padding: 8px 7px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+  }
+  .modal-table th {
+    background: #e9f7f1;
+    color: #1f7a4f;
+    font-weight: 600;
+  }
+  .modal-comments {
+    background: #f3fbf7;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 1rem;
+    color: #334155;
+    margin: 0;
+  }
+  @media (max-width: 600px) {
+    .modal-card {padding:16px 6vw;}
+  }
+</style>
+      
+      
 </style>
 </head>
 <body>
@@ -1626,43 +1713,76 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   // === Mostrar detalle cliente
-  function mostrarDetalleCliente(id){
-    const cliente = getClientes().find(c => c.id === id);
-    if(!cliente) return;
-    const cont = document.getElementById('detalleClienteContenido');
-    const docList = (cliente.docs || []).map(d => `<li>${d.nombre}: ${d.estatus ? 'Sí' : 'No'}</li>`).join('');
-    const tarifasTabla = (cliente.tarifas && cliente.tarifas.length)
-      ? `<table class="doc-table"><thead><tr><th>Origen - Destino</th><th>Tipo de Unidad</th><th>Tarifa</th><th>Días de Crédito</th><th>Km</th></tr></thead><tbody>${cliente.tarifas.map(t => `<tr><td>${t.estadoOrigen} - ${t.estadoDestino}</td><td>${t.tipoUnidad}</td><td>${Number(t.tarifa).toLocaleString('es-MX',{style:'currency',currency:'MXN'})}</td><td>${t.diasCredito}</td><td>${t.kmRecorrer}</td></tr>`).join('')}</tbody></table>`
-      : '<p>Sin tarifas registradas</p>';
-    cont.innerHTML = `
-      <h3 class="section-title">Datos Generales</h3>
-      <p><strong>Nombre/Razón Social:</strong> ${cliente.nombre || ''}</p>
-      <p><strong>RFC:</strong> ${cliente.rfc || ''}</p>
-      <p><strong>Estatus:</strong> ${cliente.estatus || ''}</p>
-      <p><strong>Domicilio:</strong> ${cliente.domicilio || ''}</p>
-      <h3 class="section-title">Tarifas</h3>
-      ${tarifasTabla}
-      <h3 class="section-title">Documentación</h3>
-      <ul>${docList}</ul>
-      <h3 class="section-title">Comentarios</h3>
-      <p>${cliente.comentario || ''}</p>
-    `;
-    const modal = document.getElementById('detalleClienteModal');
-    modal.classList.remove('hidden');
-    modal.style.display = 'flex';
-  }
-  const detalleModal = document.getElementById('detalleClienteModal');
-  detalleModal.querySelector('.close').addEventListener('click', () => {
-    detalleModal.classList.add('hidden');
-    detalleModal.style.display = 'none';
+function mostrarDetalleCliente(id){
+  const cliente = getClientes().find(c => c.id === id);
+  if(!cliente) return;
+  const cont = document.getElementById('detalleClienteContenido');
+  const docList = (cliente.docs || []).map(d => 
+    `<li>
+      <span class="${d.estatus ? 'status-yes' : 'status-no'}">${d.estatus ? '✅' : '❌'}</span>
+      <span>${d.nombre}</span>
+    </li>`
+  ).join('');
+  const tarifasTabla = (cliente.tarifas && cliente.tarifas.length)
+    ? `<table class="modal-table">
+        <thead>
+          <tr>
+            <th>Origen - Destino</th>
+            <th>Tipo de Unidad</th>
+            <th>Tarifa</th>
+            <th>Días de Crédito</th>
+            <th>Km</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${cliente.tarifas.map(t => `
+            <tr>
+              <td>${t.estadoOrigen || ''} - ${t.estadoDestino || ''}</td>
+              <td>${t.tipoUnidad || ''}</td>
+              <td>${Number(t.tarifa).toLocaleString('es-MX',{style:'currency',currency:'MXN'})}</td>
+              <td>${t.diasCredito || '-'}</td>
+              <td>${t.kmRecorrer || '-'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`
+    : '<p style="color:#c0392b;">Sin tarifas registradas</p>';
+  // MODAL CARD
+  cont.innerHTML = `
+    <div class="modal-card">
+      <span class="close" title="Cerrar" style="position:absolute;top:18px;right:22px;font-size:1.7rem;cursor:pointer;">&times;</span>
+      <h2>Detalle del Cliente ${cliente.id ? `<span style="color:#ff6b6b;">${cliente.id}</span>` : ''}</h2>
+      <div class="modal-section">
+        <h3>Datos Generales</h3>
+        <div class="modal-fields">
+          <p><label>Nombre/Razón Social:</label> <span>${cliente.nombre || '-'}</span></p>
+          <p><label>RFC:</label> <span>${cliente.rfc || '-'}</span></p>
+          <p><label>Estatus:</label> <span>${cliente.estatus || '-'}</span></p>
+          <p><label>Domicilio:</label> <span>${cliente.domicilio || '-'}</span></p>
+        </div>
+      </div>
+      <div class="modal-section">
+        <h3>Documentación</h3>
+        <ul class="doc-list">${docList}</ul>
+      </div>
+      <div class="modal-section">
+        <h3>Tarifas</h3>
+        ${tarifasTabla}
+      </div>
+      <div class="modal-section">
+        <h3>Comentarios</h3>
+        <div class="modal-comments">${cliente.comentario || '<em>Sin comentarios</em>'}</div>
+      </div>
+    </div>
+  `;
+  const modal = document.getElementById('detalleClienteModal');
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+  cont.querySelector('.close').addEventListener('click', () => {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
   });
-  window.addEventListener('click', (e) => {
-    if (e.target === detalleModal) {
-      detalleModal.classList.add('hidden');
-      detalleModal.style.display = 'none';
-    }
-  });
-});
+}
 </script>
 
 
