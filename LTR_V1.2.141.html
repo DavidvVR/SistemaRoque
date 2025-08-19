@@ -1535,7 +1535,13 @@ excelInput?.addEventListener('change', (event) => {
         const cTarifa = Number(t.tarifa).toLocaleString('es-MX', {style:'currency', currency:'MXN'});
         const cCred  = t.diasCredito || 0;
         const cKm    = t.kmRecorrer || 0;
-        tr.innerHTML = `<td>${cOrigenDestino}</td><td>${cTipo}</td><td>${cTarifa}</td><td>${cCred}</td><td>${cKm}</td><td><span class="icon-btn edit-tarifa" title="Editar">✏️</span></td>`;
+        tr.innerHTML = `
+        <td>${cOrigenDestino}</td>
+        <td>${cTipo}</td>
+        <td>${cTarifa}</td>
+        <td>${cCred}</td>
+        <td>${cKm}</td>
+        <td><span class="icon-btn edit-tarifa" title="Editar">✏️</span></td>`;
         tarifasBody.appendChild(tr);
       });
     }
@@ -2273,6 +2279,94 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
     permiso: (f.permiso.value || '').trim(),
   };
 
+if(unidadEditingRow) {
+    // Si se está editando, actualiza la fila
+    unidadEditingRow.dataset.info = JSON.stringify(datos);
+    unidadEditingRow.cells[0].innerHTML = `<span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span>`;
+    unidadEditingRow.cells[1].textContent = datos.placas;
+    unidadEditingRow.cells[2].textContent = datos.eco;
+    unidadEditingRow.cells[3].textContent = datos.tipo;
+    unidadEditingRow.cells[4].textContent = venceLegible;
+    unidadEditingRow.cells[5].textContent = datos.aseguradora;
+    unidadEditingRow.cells[6].textContent = datos.marca;
+    unidadEditingRow.cells[7].textContent = datos.anio || '';
+    unidadEditingRow.cells[8].textContent = datos.permiso;
+    // No olvides volver a colocar los iconos de editar/eliminar si los reemplazas
+    unidadEditingRow.cells[9].innerHTML = `
+      <span class="icon-btn unidad-edit" title="Editar">✏️</span>
+      <span class="icon-btn unidad-delete" title="Eliminar">🗑️</span>
+    `;
+    // Re-asignar eventos
+    unidadEditingRow.querySelector('.unidad-edit').addEventListener('click', () => {
+      // Llama de nuevo la edición
+      const datos = JSON.parse(unidadEditingRow.dataset.info || '{}');
+      f.tarjeta.value = datos.tarjeta || '';
+      f.placas.value = datos.placas || '';
+      f.eco.value = datos.eco || '';
+      f.tipo.value = datos.tipo || '';
+      f.vencePoliza.value = datos.vencePoliza || '';
+      f.aseguradora.value = datos.aseguradora || '';
+      f.marca.value = datos.marca || '';
+      f.anio.value = datos.anio || '';
+      f.permiso.value = datos.permiso || '';
+      unidadEditingRow = unidadEditingRow;
+      unidadModal.querySelector('h3').textContent = 'Editar Unidad Vehicular';
+      mostrarUnidadModal();
+    });
+    unidadEditingRow.querySelector('.unidad-delete').addEventListener('click', () => {
+      if(confirm('¿Desea eliminar esta unidad?')) {
+        unidadEditingRow.remove();
+      }
+    });
+  } else {
+    // Si es nueva, crea la fila normalmente
+    const tr = document.createElement('tr');
+    tr.dataset.info = JSON.stringify(datos);
+    tr.innerHTML = `
+      <td><span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span></td>
+      <td>${datos.placas}</td>
+      <td>${datos.eco}</td>
+      <td>${datos.tipo}</td>
+      <td>${venceLegible}</td>
+      <td>${datos.aseguradora}</td>
+      <td>${datos.marca}</td>
+      <td>${datos.anio || ''}</td>
+      <td>${datos.permiso}</td>
+      <td class="actions">
+        <span class="icon-btn unidad-edit" title="Editar">✏️</span>
+        <span class="icon-btn unidad-delete" title="Eliminar">🗑️</span>
+      </td>
+    `;
+    tablaUnidadesBody.appendChild(tr);
+
+    // Asigna eventos igual que arriba
+    tr.querySelector('.unidad-edit').addEventListener('click', () => {
+      const datos = JSON.parse(tr.dataset.info || '{}');
+      f.tarjeta.value = datos.tarjeta || '';
+      f.placas.value = datos.placas || '';
+      f.eco.value = datos.eco || '';
+      f.tipo.value = datos.tipo || '';
+      f.vencePoliza.value = datos.vencePoliza || '';
+      f.aseguradora.value = datos.aseguradora || '';
+      f.marca.value = datos.marca || '';
+      f.anio.value = datos.anio || '';
+      f.permiso.value = datos.permiso || '';
+      unidadEditingRow = tr;
+      unidadModal.querySelector('h3').textContent = 'Editar Unidad Vehicular';
+      mostrarUnidadModal();
+    });
+    tr.querySelector('.unidad-delete').addEventListener('click', () => {
+      if(confirm('¿Desea eliminar esta unidad?')) {
+        tr.remove();
+      }
+    });
+  }
+
+  ocultarUnidadModal();
+  limpiarFormUnidad();
+  unidadEditingRow = null;
+});
+      
   const venceLegible = datos.vencePoliza
     ? new Date(datos.vencePoliza).toLocaleDateString('es-MX')
     : '';
@@ -2296,7 +2390,32 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
     
   `;
   tablaUnidadesBody.appendChild(tr);
+// Evento para editar
+tr.querySelector('.unidad-edit').addEventListener('click', () => {
+  // Cargar datos en el modal
+  const datos = JSON.parse(tr.dataset.info || '{}');
+  f.tarjeta.value = datos.tarjeta || '';
+  f.placas.value = datos.placas || '';
+  f.eco.value = datos.eco || '';
+  f.tipo.value = datos.tipo || '';
+  f.vencePoliza.value = datos.vencePoliza || '';
+  f.aseguradora.value = datos.aseguradora || '';
+  f.marca.value = datos.marca || '';
+  f.anio.value = datos.anio || '';
+  f.permiso.value = datos.permiso || '';
+  
+  // Guarda referencia a la fila que se está editando
+  unidadEditingRow = tr;
+  unidadModal.querySelector('h3').textContent = 'Editar Unidad Vehicular';
+  mostrarUnidadModal();
+});
 
+// Evento para eliminar
+tr.querySelector('.unidad-delete').addEventListener('click', () => {
+  if(confirm('¿Desea eliminar esta unidad?')) {
+    tr.remove();
+  }
+});
   ocultarUnidadModal();
   limpiarFormUnidad();
   unidadEditingRow = null;
