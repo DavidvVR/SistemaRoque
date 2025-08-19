@@ -2073,6 +2073,65 @@ document.querySelectorAll('.perm-view').forEach(btn => {
   });
 
   window.addEventListener('click', (e) => { if (e.target === operadorModal) ocultar(); });
+//Modal Guardar permisionario 
+window.addEventListener('DOMContentLoaded', () => {
+  const btnGuardar = document.getElementById('btnPermGuardar');
+  const modal = document.getElementById('permSaveModal');
+  const btnCerrar = document.getElementById('permModalCerrar');
+  const resumen = document.getElementById('permResumenGuardado');
+  const idLabel = document.getElementById('permIDMostrado');
+
+  function nextPermId(){
+    const n = parseInt(localStorage.getItem('permCounter') || '0', 10) + 1;
+    localStorage.setItem('permCounter', String(n));
+    return 'LTR-PR-' + String(n).padStart(2,'0');
+  }
+
+  function buildPermResumen(){
+    const nombre = document.getElementById('permNombre')?.value?.trim() || '';
+    const rfc = document.getElementById('permRFC')?.value?.trim() || '';
+    const domicilio = document.getElementById('permContacto')?.value?.trim() || '';
+    if(resumen){
+      resumen.innerHTML = `
+        <div style="display:grid;gap:6px;">
+          <div><strong>Permisionario:</strong> ${nombre || '-'}</div>
+          <div><strong>RFC:</strong> ${rfc || '-'}</div>
+          <div><strong>Domicilio:</strong> ${domicilio || '-'}</div>
+        </div>`;
+    }
+  }
+
+  // Hook adicional: sustituye handler para inyectar ID
+  if(btnGuardar && modal){
+    btnGuardar.addEventListener('click', (ev) => {
+      if (typeof ev.preventDefault === 'function') ev.preventDefault();
+      if (btnGuardar.disabled) return;
+      const genId = nextPermId();
+      if(idLabel) idLabel.textContent = genId;
+      buildPermResumen();
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+    });
+  }
+
+  btnCerrar?.addEventListener('click', () => {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  });
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+    }
+  });
+});
+      
 })();     
 </script>     
      
