@@ -1837,6 +1837,32 @@ window.addEventListener('DOMContentLoaded', () => {
       { id: 'LTR-PR-01', nombre: 'Permisionario Demo S.A. de C.V.', rfc: 'PDE010101AB1', estatus: 'Activo', contacto: 'Av. Ejemplo 123' }
     ]);
   }
+//Pestaña de documentación 
+      document.querySelectorAll('.perm-folder').forEach(btn => {
+  btn.onclick = () => {
+    const row = btn.dataset.row;
+    const inp = document.getElementById('permFile' + row);
+    inp.click();
+    inp.onchange = () => {
+      const st = document.getElementById('permStatus' + row);
+      st.textContent = '✅ Sí';
+      st.classList.remove('status-no');
+      st.classList.add('status-yes');
+    };
+  };
+});
+document.querySelectorAll('.perm-view').forEach(btn => {
+  btn.onclick = () => {
+    const row = btn.dataset.row;
+    const inp = document.getElementById('permFile' + row);
+    if (inp.files.length) {
+      const url = URL.createObjectURL(inp.files[0]);
+      window.open(url);
+    } else {
+      alert('No hay archivo cargado aún');
+    }
+  };
+});
 
   // Modal +agegar unidad
   renderTablaPerms();
