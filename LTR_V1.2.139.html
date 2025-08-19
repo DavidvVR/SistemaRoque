@@ -2253,16 +2253,15 @@ document.querySelectorAll('.perm-view').forEach(btn => {
   unidadModal.querySelector('.close')?.addEventListener('click', ocultarUnidadModal);
   unidadModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultarUnidadModal);
 
-  unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
-    const archivoInput = 
-document.getElementById('uTarjetaFile');
+unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+  const archivoInput = document.getElementById('uTarjetaFile');
   let archivoURL = '';
   if (archivoInput && archivoInput.files.length) {
     archivoURL = URL.createObjectURL(archivoInput.files[0]);
   }
 
   const datos = {
-    tarjeta: archivoURL, // Guardamos URL en vez de nombre
+    tarjeta: archivoURL,
     placas: (f.placas.value || '').trim(),
     eco: (f.eco.value || '').trim(),
     tipo: f.tipo.value,
@@ -2273,30 +2272,24 @@ document.getElementById('uTarjetaFile');
     permiso: (f.permiso.value || '').trim(),
   };
 
-  // ...validaciones y demás columnas...
+  const venceLegible = datos.vencePoliza
+    ? new Date(datos.vencePoliza).toLocaleDateString('es-MX')
+    : '';
 
-  if (unidadEditingRow) {
-    // Actualizar la fila existente
-    unidadEditingRow.cells[0].innerHTML = `<span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span>`;
-    // ...actualizar el resto de celdas...
-    unidadEditingRow.dataset.info = JSON.stringify(datos);
-  } else {
-    // Crear nueva fila
-    const tr = document.createElement('tr');
-    tr.dataset.info = JSON.stringify(datos);
-    tr.innerHTML = `
-      <td><span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span></td>
-      <td>${datos.placas}</td>
-      <td>${datos.eco}</td>
-      <td>${datos.tipo}</td>
-      <td>${venceLegible}</td>
-      <td>${datos.aseguradora}</td>
-      <td>${datos.marca}</td>
-      <td>${datos.anio || ''}</td>
-      <td>${datos.permiso}</td>
-    `;
-    tablaUnidadesBody.appendChild(tr);
-  }
+  const tr = document.createElement('tr');
+  tr.dataset.info = JSON.stringify(datos);
+  tr.innerHTML = `
+    <td><span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span></td>
+    <td>${datos.placas}</td>
+    <td>${datos.eco}</td>
+    <td>${datos.tipo}</td>
+    <td>${venceLegible}</td>
+    <td>${datos.aseguradora}</td>
+    <td>${datos.marca}</td>
+    <td>${datos.anio || ''}</td>
+    <td>${datos.permiso}</td>
+  `;
+  tablaUnidadesBody.appendChild(tr);
 
   ocultarUnidadModal();
   limpiarFormUnidad();
