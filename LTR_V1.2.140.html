@@ -1031,6 +1031,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
           <th>Marca</th>
           <th>Año</th>
           <th>Permiso SCT</th>
+          <th>Acciones</th>    
           
           
           
@@ -2288,6 +2289,11 @@ unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
     <td>${datos.marca}</td>
     <td>${datos.anio || ''}</td>
     <td>${datos.permiso}</td>
+    <td class="actions">
+    <span class="icon-btn unidad-edit" title="Editar">✏️</span>
+    <span class="icon-btn unidad-delete" title="Eliminar">🗑️</span>
+  </td>
+    
   `;
   tablaUnidadesBody.appendChild(tr);
 
@@ -2527,6 +2533,13 @@ window.addEventListener('DOMContentLoaded', () => {
         </div>`;
     }
   }
+  tr.querySelector('.unidad-edit').addEventListener('click', () => {
+  // Aquí puedes cargar los datos en el modal para editar la unidad
+  cargarUnidadParaEditar(tr);
+});
+tr.querySelector('.unidad-delete').addEventListener('click', () => {
+  tr.remove();
+});    
 
   // Mostramos el modal al guardar
   if(btnGuardar && modal){
