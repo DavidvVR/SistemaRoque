@@ -823,6 +823,12 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     <div class="subtab" data-target="perm-unidades" role="tab">Unidades</div>
     <div class="subtab" data-target="perm-coment" role="tab">Operadores</div>
   </div>
+<div class="actions-bar">
+    <button id="btnPermCancelar" class="btn">Cancelar</button>
+       <button id="btnPermGuardar" class="btn">Guardar Permisionario</button>
+    <button id="btnPermVolverPostSave" class="btn ghost" style="display:none">Volver</button>
+     
+
 
   <!-- Subcontenido: Datos -->
   <div id="perm-datos" class="subcontent active">
@@ -1107,7 +1113,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
           <div class="modal-buttons">
             <button type="button" class="btn-cancelar">Cancelar</button>
             <button type="button" class="btn-guardar">Guardar</button>
-            <button id="btnPermGuardar" class="btn">Guardar Permisionario</button>    
+              
           </div>
         </div>
       </div>     
@@ -2153,11 +2159,7 @@ window.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-  <div class="actions-bar">
-    <button id="btnPermCancelar" class="btn">Cancelar</button>
-    <button id="btnPermVolverPostSave" class="btn ghost" style="display:none">Volver</button>
-     
-
+  
 
 <!-- === V1.2.67 | Modal Felicidades Cliente === -->
 <div id="clienteSaveModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
