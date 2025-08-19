@@ -896,7 +896,8 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
      <input id="searchPerm" type="text" placeholder="ID, Nombre o RFC…">
     </div>
     <div class="list-actions">
-   <button id="btnPermNuevo" class="btn primary">+ Nuevo Permisionario</button>
+   
+   <button id="btnPermNuevo" type="button" class="btn primary">+ Nuevo Permisionario</button>       
       <button id="btnPermVolver" class="btn">Volver</button>
     </div>
   </div>
@@ -2094,12 +2095,17 @@ window.addEventListener('DOMContentLoaded', migratePermsStorage);
   }
 
   // === Botón "Nuevo Permisionario"
-  document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
+  // Se asegura de mostrar el formulario correctamente al crear un nuevo permisionario
+  document.getElementById('btnPermNuevo')?.addEventListener('click', (ev) => {
+    ev.preventDefault();
     editingPermId = null;
     limpiarFormularioPerm();
     permsMenu.querySelector('h3').textContent = 'Nuevo Permisionario';
-    permsMenu.classList.remove('hidden');
-    permsList.classList.add('hidden');
+      if (permsMenu && permsList) {
+      permsMenu.querySelector('h3').textContent = 'Nuevo Permisionario';
+      permsMenu.classList.remove('hidden');
+      permsList.classList.add('hidden');
+    }
     document.querySelector('#permsMenu .subtab[data-target="perm-datos"]')?.click();
   });
 
