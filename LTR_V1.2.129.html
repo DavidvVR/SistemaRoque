@@ -2089,13 +2089,14 @@ window.addEventListener('DOMContentLoaded', migratePermsStorage);
   }
 
   // === Botón "Nuevo Permisionario"
-  document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
-    editingPermId = null;
-    limpiarFormularioPerm();
-    permsMenu.querySelector('h3').textContent = 'Nuevo Permisionario';
-    permsMenu.classList.remove('hidden');
-    permsList.classList.add('hidden');
-    document.querySelector('#permsMenu .subtab[data-target="perm-datos"]')?.click();
+  document.getElementById('btnPermNuevo').onclick = function() {
+  editingPermId = null;
+  limpiarFormularioPerm();
+  permsMenu.querySelector('h3').textContent = 'Nuevo Permisionario';
+  permsMenu.classList.remove('hidden');
+  permsList.classList.add('hidden');
+  document.querySelector('#permsMenu .subtab[data-target="perm-datos"]').click();
+
   });
 
   // === Volver al dashboard desde permisionarios
