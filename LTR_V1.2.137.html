@@ -2254,85 +2254,71 @@ document.querySelectorAll('.perm-view').forEach(btn => {
   unidadModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultarUnidadModal);
 
   unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
-    const datos = {
-      tarjeta: (f.tarjeta.value || '').trim(),
-      placas: (f.placas.value || '').trim(),
-      eco: (f.eco.value || '').trim(),
-      tipo: f.tipo.value,
-      vencePoliza: f.vencePoliza.value,
-      aseguradora: (f.aseguradora.value || '').trim(),
-      marca: (f.marca.value || '').trim(),
-      anio: f.anio.value ? Number(f.anio.value) : '',
-      permiso: (f.permiso.value || '').trim(),
-    };
+    const archivoInput = 
+document.getElementById('uTarjetaFile');
+  let archivoURL = '';
+  if (archivoInput && archivoInput.files.length) {
+    archivoURL = URL.createObjectURL(archivoInput.files[0]);
+  }
 
-    if(!datos.tarjeta || !datos.placas || !datos.tipo){
-      alert('Completa los campos obligatorios: Tarjeta, Placas y Tipo.');
-      return;
-    }
+  const datos = {
+    tarjeta: archivoURL, // Guardamos URL en vez de nombre
+    placas: (f.placas.value || '').trim(),
+    eco: (f.eco.value || '').trim(),
+    tipo: f.tipo.value,
+    vencePoliza: f.vencePoliza.value,
+    aseguradora: (f.aseguradora.value || '').trim(),
+    marca: (f.marca.value || '').trim(),
+    anio: f.anio.value ? Number(f.anio.value) : '',
+    permiso: (f.permiso.value || '').trim(),
+  };
 
-    const venceLegible = datos.vencePoliza
-      ? new Date(datos.vencePoliza + 'T00:00:00').toLocaleDateString('es-MX')
-      : '';
+  // ...validaciones y demás columnas...
 
-    if (unidadEditingRow) {
-      unidadEditingRow.cells[0].textContent = datos.tarjeta;
-      unidadEditingRow.cells[1].textContent = datos.placas;
-      unidadEditingRow.cells[2].textContent = datos.eco;
-      unidadEditingRow.cells[3].textContent = datos.tipo;
-      unidadEditingRow.cells[4].textContent = venceLegible;
-      unidadEditingRow.cells[5].textContent = datos.aseguradora;
-      unidadEditingRow.cells[6].textContent = datos.marca;
-      unidadEditingRow.cells[7].textContent = datos.anio || '';
-      unidadEditingRow.cells[8].textContent = datos.permiso;
-      unidadEditingRow.dataset.info = JSON.stringify(datos);
-    } else {
-      const tr = document.createElement('tr');
-      tr.dataset.info = JSON.stringify(datos);
-      tr.innerHTML = `
-        <td>${datos.tarjeta}</td>
-        <td>${datos.placas}</td>
-        <td>${datos.eco}</td>
-        <td>${datos.tipo}</td>
-        <td>${venceLegible}</td>
-        <td>${datos.aseguradora}</td>
-        <td>${datos.marca}</td>
-        <td>${datos.anio || ''}</td>
-        <td>${datos.permiso}</td>
-      `;
-      tablaUnidadesBody.appendChild(tr);
-    }
+  if (unidadEditingRow) {
+    // Actualizar la fila existente
+    unidadEditingRow.cells[0].innerHTML = `<span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span>`;
+    // ...actualizar el resto de celdas...
+    unidadEditingRow.dataset.info = JSON.stringify(datos);
+  } else {
+    // Crear nueva fila
+    const tr = document.createElement('tr');
+    tr.dataset.info = JSON.stringify(datos);
+    tr.innerHTML = `
+      <td><span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span></td>
+      <td>${datos.placas}</td>
+      <td>${datos.eco}</td>
+      <td>${datos.tipo}</td>
+      <td>${venceLegible}</td>
+      <td>${datos.aseguradora}</td>
+      <td>${datos.marca}</td>
+      <td>${datos.anio || ''}</td>
+      <td>${datos.permiso}</td>
+    `;
+    tablaUnidadesBody.appendChild(tr);
+  }
 
-    ocultarUnidadModal();
-    limpiarFormUnidad();
-    unidadEditingRow = null;
-  });
+  ocultarUnidadModal();
+  limpiarFormUnidad();
+  unidadEditingRow = null;
+});
+  
 
   window.addEventListener('click', (e) => {
     if (e.target === unidadModal) ocultarUnidadModal();
   });
 
-  tablaUnidadesBody?.addEventListener('dblclick', (e) => {
-    const row = e.target.closest('tr');
-    if(!row) return;
-    try{
-      const datos = JSON.parse(row.dataset.info || '{}');
-      f.tarjeta.value = datos.tarjeta || '';
-      f.placas.value = datos.placas || '';
-      f.eco.value = datos.eco || '';
-      f.tipo.value = datos.tipo || '';
-      f.vencePoliza.value = datos.vencePoliza || '';
-      f.aseguradora.value = datos.aseguradora || '';
-      f.marca.value = datos.marca || '';
-      f.anio.value = datos.anio || '';
-      f.permiso.value = datos.permiso || '';
-      unidadEditingRow = row;
-      unidadModal.querySelector('h3').textContent = 'Editar Unidad Vehicular';
-      mostrarUnidadModal();
-    }catch{
-      alert('No fue posible cargar los datos de la unidad para edición.');
-    }
-  });
+ tablaUnidadesBody.addEventListener('click', function(e) {
+  const btn = e.target.closest('.unidad-lupa');
+  if (!btn) return;
+  const url = btn.dataset.url;
+  if (url) {
+    window.open(url, '_blank');
+  } else {
+    alert('No hay archivo adjunto');
+  }
+}); 
+  
 })();
 //Boton de adjuntar tarjeta de circulación
 window.addEventListener('DOMContentLoaded', () => {
