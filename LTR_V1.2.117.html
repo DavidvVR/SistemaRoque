@@ -1345,11 +1345,23 @@ excelInput?.addEventListener('change', (event) => {
     });
 
       // Generar IDs automáticos tipo LTR-CL-01, LTR-CL-02...
-    clientesArr.forEach((c, idx) => {
-      c.id = 'LTR-CL-' + String(idx+1).padStart(2, '0');
-    });
-      // Guarda en el localStorage y refresca la tabla
-    localStorage.setItem(srStoreKey, JSON.stringify(clientesArr));
+    const existing = getClientes();
+    let nextId = existing.reduce((max, c) => {
+      const match = /LTR-CL-(\d+)/.exec(c.id || '');
+      return Math.max(max, match ? parseInt(match[1], 10) : 0);
+    }, 0) + 1;
+
+    clientesArr.forEach(c => {
+      const idxExist = existing.findIndex(e => e.rfc === c.rfc);
+      if (idxExist >= 0) {
+        c.id = existing[idxExist].id;
+        existing[idxExist] = c;
+      } else {
+        c.id = 'LTR-CL-' + String(nextId).padStart(2, '0');
+        existing.push(c);
+        nextId++;
+      }
+setClientes(existing)
     alert('Clientes y tarifas importados correctamente.');
     if (typeof renderTablaClientes === 'function') renderTablaClientes();
   };
@@ -2110,6 +2122,25 @@ document.querySelectorAll('.perm-view').forEach(btn => {
     }
   });
 })();
+    window.addEventListener('DOMContentLoaded', () => {
+  const btnUPolizaPick = document.getElementById('btnUPolizaPick');
+  const uPolizaFile = document.getElementById('uPolizaFile');
+  const uPolizaName = document.getElementById('uPolizaName');
+
+  if(btnUPolizaPick && uPolizaFile && uPolizaName) {
+    btnUPolizaPick.addEventListener('click', () => {
+      uPolizaFile.click();
+    });
+
+    uPolizaFile.addEventListener('change', () => {
+      if(uPolizaFile.files.length) {
+        uPolizaName.value = uPolizaFile.files[0].name;
+      } else {
+        uPolizaName.value = '';
+      }
+    });
+  }
+});   
 
   //Modal de +Agregar Operador
 (function(){
