@@ -390,7 +390,8 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   }
 </style>
 
-<!-- THEME 1.2.71 OVERRIDES: even wider modals -->
+
+<!-- THEME-->
 <style id="theme-1271-overrides">
   .modal .modal-content{
     width:min(960px, 96vw) !important;  /* expanded width */
@@ -400,6 +401,104 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   @media (max-width:760px){
     .modal .modal-content{ width:96vw !important; padding:24px !important; }
   }
+</style>
+<style>
+.modal-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 14px 30px rgba(0,0,0,.13);
+  padding: 32px 30px;
+  max-width: 650px;
+  width: 96vw;
+  color: #1e1e1e;
+  position: relative;
+}
+.modal-card h2 {
+  font-size: 1.38rem;
+  margin-bottom: 18px;
+  color: #1f7a4f;
+  font-weight: 700;
+  text-align: left;
+}
+.modal-section {
+  margin-bottom: 26px;
+}
+.modal-section h3 {
+  font-size: 1.05rem;
+  color: #22a06b;
+  margin-bottom: 8px;
+  font-weight: 600;
+  border-bottom: 1px solid #e9f7f1;
+  padding-bottom: 3px;
+}
+.modal-fields p {
+  margin: 3px 0 8px 0;
+  font-size: 1rem;
+  display: flex;
+  gap: 12px;
+}
+.modal-fields label {
+  font-weight: 600;
+  color: #334155;
+  min-width: 120px;
+  display: inline-block;
+}
+.doc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.doc-list li {
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: .97rem;
+}
+.doc-list .status-yes {
+  color: #1f7a4f;
+  font-weight:700;
+}
+.doc-list .status-no {
+  color: #c0392b;
+  font-weight:700;
+}
+.modal-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 6px;
+  font-size: .97rem;
+}
+.modal-table th, .modal-table td {
+  padding: 8px 7px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+.modal-table th {
+  background: #e9f7f1;
+  color: #1f7a4f;
+  font-weight: 600;
+}
+.modal-comments {
+  background: #f3fbf7;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 1rem;
+  color: #334155;
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .modal-card {padding:16px 6vw;}
+}
+.perm-id-link {
+  background: none;
+  border: none;
+  color: #c0392b;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
 </style>
 </head>
 <body>
@@ -1785,11 +1884,32 @@ window.addEventListener('DOMContentLoaded', () => {
   const permsList = document.getElementById('permsList');
   const permsMenu = document.getElementById('permsMenu');
   let editingPermId = null;
+  const permInfoModal = document.getElementById('permInfoModal');
+  let editingPermId = null;
 
   // === BD local de permisionarios
   function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
   function setPerms(arr){ localStorage.setItem(srPermKey, JSON.stringify(arr)); }
 
+   function openPermDetalle(id){
+    const perm = getPerms().find(p => p.id === id);
+    if(!perm || !permInfoModal) return;
+    permInfoModal.querySelector('#permInfoId').textContent = perm.id || '';
+    permInfoModal.querySelector('#permInfoNombre').textContent = perm.nombre || '';
+    permInfoModal.querySelector('#permInfoRFC').textContent = perm.rfc || '';
+    permInfoModal.querySelector('#permInfoEstatus').textContent = perm.estatus || '';
+    permInfoModal.querySelector('#permInfoContacto').textContent = perm.contacto || '';
+    permInfoModal.classList.remove('hidden');
+    permInfoModal.style.display = 'flex';
+  }
+
+  function closePermDetalle(){
+    if(!permInfoModal) return;
+    permInfoModal.classList.add('hidden');
+    permInfoModal.style.display = 'none';
+  }
+
+      
   // === Render tabla de permisionarios
   function renderTablaPerms(filtro=''){
     const tbody = document.querySelector('#tablaPerms tbody');
@@ -1804,7 +1924,7 @@ window.addEventListener('DOMContentLoaded', () => {
     );
     tbody.innerHTML = fil.map(p => `
       <tr>
-        <td>${p.id || ''}</td>
+        <td><button class="perm-id-link" data-id="${p.id}">${p.id || ''}</button>
         <td>${p.nombre || ''}</td>
         <td>${p.estatus || 'Activo'}</td>
         <td class="actions">
@@ -1818,6 +1938,9 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     tbody.querySelectorAll('.btnPermEdit').forEach(btn => {
       btn.addEventListener('click', () => editPerm(btn.dataset.id));
+    });
+          tbody.querySelectorAll('.perm-id-link').forEach(btn => {
+      btn.addEventListener('click', () => openPermDetalle(btn.dataset.id));
     });
   }
 
