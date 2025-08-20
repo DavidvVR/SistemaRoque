@@ -1377,6 +1377,11 @@ window.addEventListener('DOMContentLoaded', () => {
   };
    document.getElementById('modLTR').onclick = () => {
     showSection('ltrModule');
+  document.getElementById('ltrHome')?.classList.add('hidden');
+  document.getElementById('unidadesList')?.classList.remove('hidden');
+ 
+  if (typeof renderTablaUnidades === 'function') renderTablaUnidades();
+};
   };    
   document.getElementById('btnClientesBack')?.addEventListener('click', () => {
     showSection('dashboard');
