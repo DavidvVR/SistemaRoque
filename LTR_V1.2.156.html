@@ -2665,11 +2665,10 @@ document.getElementById('btnPermNuevo').addEventListener('click', function() {
   document.getElementById('permsMenu').classList.remove('hidden');
   document.getElementById('permsList').classList.add('hidden');
 });
-// Manejar el botón de guardar permisionario (debes crear la función)
-document.getElementById('permsMenu').querySelector('.btn-guardar')?.addEventListener('click', function() {
-
-  alert('Permisionario guardado (demo)');
-});     
+document.querySelector('#permsMenu .btn-guardar').addEventListener('click', function() {
+  // Tu código para guardar el permisionario
+alert('Permisionario guardado');
+});
      
 </script>     
 
