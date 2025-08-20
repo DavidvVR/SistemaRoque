@@ -566,7 +566,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     <div class="dashboard">
       <div class="module" id="modClientes"><div class="module-icon">📋</div><div class="module-label">Clientes</div></div>
       <div class="module" id="modPerm"><div class="module-icon">🚚</div><div class="module-label">Permisionarios</div></div>
-       <div class="module" id="modPerm"><div class="module-icon">🚚</div><div class="module-label">LTR</div></div>    
+      <div class="module" id="modLTR"><div class="module-icon">🚛</div><div class="module-label">LTR</div></div>    
       <div class="module" id="modAsign"><div class="module-icon">📅</div><div class="module-label">Asignación</div></div>
       <div class="module" id="modMonit"><div class="module-icon">📡</div><div class="module-label">Monitoreo</div></div>
       <div class="module" id="modCoord"><div class="module-icon">🔧</div><div class="module-label">Coordinación</div></div>
@@ -1238,7 +1238,27 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
        <button id="btnPermGuardar" class="btn">Guardar Permisionario</button>
     <button id="btnPermVolverPostSave" class="btn ghost" style="display:none">Volver</button>
  </div>     
-</div>    
+</div>  
+
+<!-- Botón LTR en el menú principal -->
+<div id="btnMenuLTR" class="choice-card" role="button" tabindex="0" aria-label="LTR">
+  <span class="icon">🚛</span>
+  <span class="label">LTR</span>
+</div>
+
+<!-- Submenú LTR oculto por defecto -->
+<div id="ltrMenu" class="submenu hidden">
+  <div id="btnUnidades" class="choice-card" role="button" tabindex="0" aria-label="Unidades">
+    <span class="icon">🚚</span>
+    <span class="label">Unidades</span>
+  </div>
+  <div id="btnOperadores" class="choice-card" role="button" tabindex="0" aria-label="Operadores">
+    <span class="icon">👷‍♂️</span>
+    <span class="label">Operadores</span>
+  </div>
+</div>
+
+      
       
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
       
@@ -1303,7 +1323,16 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('modPerm').onclick = () => {
     showSection('permModule');
     if (typeof renderTablaPerms === 'function') renderTablaPerms();
+        
   };
+  document.addEventListener('DOMContentLoaded', () => {
+  const btnMenuLTR = document.getElementById('btnMenuLTR');
+  const ltrMenu = document.getElementById('ltrMenu');
+
+  btnMenuLTR.addEventListener('click', () => {
+    ltrMenu.classList.toggle('active');
+  });
+      
   document.getElementById('btnClientesBack')?.addEventListener('click', () => {
     showSection('dashboard');
   });
