@@ -167,12 +167,11 @@
   display:flex;
   flex-direction:column;
 }
-    #clientsModule.hidden {
+#clientsModule.hidden {
   display:none;
 }
-.h
+
 .home-actions{
-  
   margin-top:auto;
   display:flex;
   justify-content:flex-end;
@@ -1270,10 +1269,9 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     </div>
   </div>
 </div>
+
       
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-      
-        
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js" defer></script>        
 
   
   
@@ -1291,7 +1289,10 @@ window.addEventListener('DOMContentLoaded', () => {
   function showSection(id) {
     document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
+
   }
+// Mostrar login al cargar
+  showSection('loginFrame');
 
   // --- Rellenar usuario si existe en localStorage
   const last = localStorage.getItem('sr_last_user');
@@ -1335,17 +1336,22 @@ window.addEventListener('DOMContentLoaded', () => {
     showSection('permModule');
     if (typeof renderTablaPerms === 'function') renderTablaPerms();
   };
-   document.getElementById('modLTR').addEventListener('click', function() {
-  document.getElementById('dashboard').classList.add('hidden');
-  document.getElementById('LTRModule').classList.remove('hidden');
-});   
-  document.getElementById('btnClientesBack')?.addEventListener('click', () => {
+   
+  document.getElementById('modLTR').addEventListener('click', () => {
+    showSection('LTRModule');
+  });
+
+  const btnClientesBack = document.getElementById('btnClientesBack');
+  if (btnClientesBack) {
+    btnClientesBack.addEventListener('click', () => {
+      showSection('dashboard');
+    });
+  }
+
+  document.getElementById('btnLTRBack').addEventListener('click', () => {
     showSection('dashboard');
   });
-  document.getElementById('btnLTRBack').addEventListener('click', function() {
-  document.getElementById('LTRModule').classList.add('hidden');
-  document.getElementById('dashboard').classList.remove('hidden');
-});
+  
   // --- Puedes agregar aquí otros módulos del dashboard si tienes más botones
 });
 
