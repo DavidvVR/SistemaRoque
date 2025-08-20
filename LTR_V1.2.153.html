@@ -2584,11 +2584,11 @@ window.addEventListener('DOMContentLoaded', () => {
   })(); 
 
   window.addEventListener('DOMContentLoaded', () => {
-    const btnGuardar = document.getElementById('btnPermGuardar');
-    const modal = document.getElementById('permSaveModal');
-    const btnCerrar = document.getElementById('permModalCerrar');
-    const resumen = document.getElementById('permResumenGuardado');
-    const idLabel = document.getElementById('permIDMostrado');
+  const btnGuardar = document.getElementById('btnPermGuardar');
+  const modal = document.getElementById('permSaveModal');
+  const btnCerrar = document.getElementById('permModalCerrar');
+  const resumen = document.getElementById('permResumenGuardado');
+  const idLabel = document.getElementById('permIDMostrado');
 
     function buildPermResumen(){
       const nombre = document.getElementById('permNombre')?.value?.trim() || '';
@@ -2601,6 +2601,7 @@ window.addEventListener('DOMContentLoaded', () => {
             <div><strong>RFC:</strong> ${rfc || '-'}</div>
             <div><strong>Domicilio:</strong> ${domicilio || '-'}</div>
           </div>`;
+      } 
       }     
       function showSaveModal(id){
       if(idLabel) idLabel.textContent = id;
