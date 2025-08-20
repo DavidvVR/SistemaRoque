@@ -2659,6 +2659,17 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
   });
+
+  // Mostrar el modal de nuevo permisionario
+document.getElementById('btnPermNuevo').addEventListener('click', function() {
+  document.getElementById('permsMenu').classList.remove('hidden');
+  document.getElementById('permsList').classList.add('hidden');
+});
+// Manejar el botón de guardar permisionario (debes crear la función)
+document.getElementById('permsMenu').querySelector('.btn-guardar')?.addEventListener('click', function() {
+
+  alert('Permisionario guardado (demo)');
+});     
      
 </script>     
 
