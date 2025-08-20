@@ -1325,18 +1325,20 @@ window.addEventListener('DOMContentLoaded', () => {
     if (typeof renderTablaPerms === 'function') renderTablaPerms();
         
   };
-  document.addEventListener('DOMContentLoaded', () => {
-  const btnMenuLTR = document.getElementById('btnMenuLTR');
-  const ltrMenu = document.getElementById('ltrMenu');
-}
-  btnMenuLTR.addEventListener('click', () => {
-    ltrMenu.classList.toggle('active');
+    document.getElementById('modLTR').onclick = () => {
+    showSection('clientsModule');
+    document.getElementById('LTRHome')?.classList.remove('hidden');
+    document.getElementById('LTRMenu')?.classList.add('hidden');
+
   });
       
   document.getElementById('btnClientesBack')?.addEventListener('click', () => {
     showSection('dashboard');
   });
   document.getElementById('btnPermVolver')?.addEventListener('click', () => {
+    showSection('dashboard');
+  });
+   document.getElementById('btnLTRVolver')?.addEventListener('click', () => {
     showSection('dashboard');
   });
 
