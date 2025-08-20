@@ -4,17 +4,8 @@
   <meta charset="UTF-8">
   <title>SistemaRoque V1.2.48.2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <!-- THEME 1.2.70 OVERRIDES: visual only -->
-<!-- THEME-->
 
 <style>
-
-/* =====================================================================
-   SistemaRoque CSS — V1.3.179 (UI Kit scaffold, SIN cambiar look)
-   - Las clases base (.btn, .input, .card, .modal, .tabs) se definen aquí.
-   - El "LEGACY MAP" va después y DOMINA en caso de diferencias.
-   - OBJETIVO: ofrecer clases consistentes para nuevos módulos.
-   ===================================================================== */
 
 /* 1) :root - variables (heredadas de 1.3.178) */
 :root {
@@ -78,12 +69,9 @@
 
 /* 6) Helpers/Overrides (vacío por ahora) */
 
-/* =====================================================================
-   LEGACY MAP — se incluye debajo para conservar el look original
-   ===================================================================== */
+/* == LEGACY MAP — se incluye debajo para conservar el look original == */
 
 
-/* === BEGIN LEGACY (from 1.3.178) === */
    - Se agregan variables en :root como referencia futura (no usadas aún).
    - Puedes migrar gradualmente a var(--nombre) sin afectar versiones actuales.
    ===================================================================== */
@@ -1877,36 +1865,21 @@ font: inherit;
  </div>     
 </div>    
 
-<!-- LTR Modulo-->
-<div id="LTRModule" class="frame hidden">
-
-  <div id="LTRHome" class="clients-home">
-    <div class="home-grid">
-      <!-- Unidades -->
-      <div id="btnLTRUnidades" class="choice-card" role="button" tabindex="0" aria-label="Unidades">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        
-          <rect x="3" y="11" width="18" height="7" rx="2"/>
-          <circle cx="7" cy="19" r="2"/>
-          <circle cx="17" cy="19" r="2"/>
-        </svg>
-        <div class="choice-label">UNIDADES</div>
-      </div>
-      <!-- Operadores -->
-      <div id="btnLTROperadores" class="choice-card" role="button" tabindex="0" aria-label="Operadores">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <!-- icono persona (ejemplo) -->
-          <circle cx="12" cy="7" r="4"/>
-          <path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/>
-        </svg>
-        <div class="choice-label">OPERADORES</div>
-      </div>
-    </div>
-    <div class="home-actions">
-      <button id="btnLTRBack" class="btn">Volver</button>
-    </div>
+<div id="inicio" class="seccion activa">
+    <h2>Bienvenido al módulo LTR</h2>
+    <p>Selecciona una opción del menú para comenzar.</p>
   </div>
-</div>
+
+  <div id="clientes" class="seccion">
+    <h2>Clientes</h2>
+    <button class="btn">Agregar cliente 🚚</button>
+  </div>
+
+  <div id="perms" class="seccion">
+    <h2>Permisionarios</h2>
+    <button class="btn">Nuevo permisionario 🚚</button>
+  </div>
+ 
 
       
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js" defer></script>        
@@ -3336,7 +3309,18 @@ window.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('click', (e) => { if (e.target === operadorModal) ocultar(); });
 
    })();
-</script>     
+</script>   
+
+<script>
+    document.querySelectorAll('nav a').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelectorAll('.seccion').forEach(sec => sec.classList.remove('activa'));
+        const id = link.getAttribute('href').substring(1);
+        document.getElementById(id).classList.add('activa');
+      });
+    });
+  </script>  
 
 <!-- Detalle permisionario -->
 <div id="permInfoModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
