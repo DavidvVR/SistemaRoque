@@ -1964,7 +1964,7 @@ window.addEventListener('DOMContentLoaded', migratePermsStorage);
       </thead><tbody>
         ${(perm.unidades||[]).map(u => `
           <tr>
-            <td>${u.tarjeta||''}</td>
+            <td>${u.tarjeta ? `<span class="icon-btn" onclick="window.open('${u.tarjeta}','_blank')">🔍</span>` : '-'}</td>
             <td>${u.placas||''}</td>
             <td>${u.eco||''}</td>
             <td>${u.tipo||''}</td>
