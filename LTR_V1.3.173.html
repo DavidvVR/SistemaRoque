@@ -566,7 +566,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     <div class="dashboard">
       <div class="module" id="modClientes"><div class="module-icon">📋</div><div class="module-label">Clientes</div></div>
       <div class="module" id="modPerm"><div class="module-icon">🚚</div><div class="module-label">Permisionarios</div></div>
-       <div class="module" id="modPerm"><div class="module-icon">🚚</div><div class="module-label">LTR</div></div>    
+       <div class="module" id="modLTR"><div class="module-icon">🚚</div><div class="module-label">LTR</div></div>    
       <div class="module" id="modAsign"><div class="module-icon">📅</div><div class="module-label">Asignación</div></div>
       <div class="module" id="modMonit"><div class="module-icon">📡</div><div class="module-label">Monitoreo</div></div>
       <div class="module" id="modCoord"><div class="module-icon">🔧</div><div class="module-label">Coordinación</div></div>
@@ -1239,6 +1239,37 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     <button id="btnPermVolverPostSave" class="btn ghost" style="display:none">Volver</button>
  </div>     
 </div>    
+
+<!-- LTR Modulo-->
+<div id="LTRModule" class="frame hidden">
+
+  <div id="LTRHome" class="clients-home">
+    <div class="home-grid">
+      <!-- Unidades -->
+      <div id="btnLTRUnidades" class="choice-card" role="button" tabindex="0" aria-label="Unidades">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        
+          <rect x="3" y="11" width="18" height="7" rx="2"/>
+          <circle cx="7" cy="19" r="2"/>
+          <circle cx="17" cy="19" r="2"/>
+        </svg>
+        <div class="choice-label">UNIDADES</div>
+      </div>
+      <!-- Operadores -->
+      <div id="btnLTROperadores" class="choice-card" role="button" tabindex="0" aria-label="Operadores">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <!-- icono persona (ejemplo) -->
+          <circle cx="12" cy="7" r="4"/>
+          <path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/>
+        </svg>
+        <div class="choice-label">OPERADORES</div>
+      </div>
+    </div>
+    <div class="home-actions">
+      <button id="btnLTRBack" class="btn">Volver</button>
+    </div>
+  </div>
+</div>
       
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
       
@@ -1304,13 +1335,17 @@ window.addEventListener('DOMContentLoaded', () => {
     showSection('permModule');
     if (typeof renderTablaPerms === 'function') renderTablaPerms();
   };
+   document.getElementById('modLTR').addEventListener('click', function() {
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('LTRModule').classList.remove('hidden');
+});   
   document.getElementById('btnClientesBack')?.addEventListener('click', () => {
     showSection('dashboard');
   });
-  document.getElementById('btnPermVolver')?.addEventListener('click', () => {
-    showSection('dashboard');
-  });
-
+  document.getElementById('btnLTRBack').addEventListener('click', function() {
+  document.getElementById('LTRModule').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+});
   // --- Puedes agregar aquí otros módulos del dashboard si tienes más botones
 });
 
