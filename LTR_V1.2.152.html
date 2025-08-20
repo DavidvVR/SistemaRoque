@@ -2581,141 +2581,113 @@ window.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('click', (e) => { if (e.target === operadorModal) ocultar(); });
 
-})(); 
-window.addEventListener('DOMContentLoaded', () => {
-  //aqui esta para guardar lainformacioón                  
-  const btnGuardar =
-  document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
-  const nombre   = document.getElementById('permNombre').value.trim();
-  const rfc      = document.getElementById('permRFC').value.trim();
-  const estatus  = document.getElementById('permEstatus').value;
-  const contacto = document.getElementById('permContacto').value.trim();
+  })(); 
 
-  // Documentos
-  const docNames = [
-    "Acta Constitutiva", "Poder Rep. Legal", "Comprobante de Domicilio",
-    "Constancia de Situación Fiscal", "INE Rep. Legal", "Contrato"
-  ];
-  const documentos = docNames.map((nombre, idx) => {
-    const st = document.getElementById(`permStatus${idx+1}`);
-    const inp = document.getElementById(`permFile${idx+1}`);
-    let archivo = null;
-    if (inp && inp.files && inp.files.length) {
-      // Guardar archivo como URL temporal (solo para ver)
-      archivo = URL.createObjectURL(inp.files[0]);
-    }
-    return {
-      nombre,
-      estatus: st?.classList.contains('status-yes') || false,
-      archivo
-    };
-  });
+  window.addEventListener('DOMContentLoaded', () => {
+    const btnGuardar = document.getElementById('btnPermGuardar');
+    const modal = document.getElementById('permSaveModal');
+    const btnCerrar = document.getElementById('permModalCerrar');
+    const resumen = document.getElementById('permResumenGuardado');
+    const idLabel = document.getElementById('permIDMostrado');
 
-  // Unidades
-  const unidadesBody = document.querySelector('#tablaUnidades tbody');
-  const unidades = Array.from(unidadesBody?.children || []).map(tr => {
-    try { return JSON.parse(tr.dataset.info || '{}'); } catch { return {}; }
-  });
-
-  // Operadores
-  const operadoresBody = document.querySelector('#tablaOperadores tbody');
-  const operadores = Array.from(operadoresBody?.children || []).map(tr => {
-    const tds = tr.querySelectorAll('td');
-    return {
-      nombre: tds[0]?.textContent || '',
-      numero: tds[1]?.textContent || '',
-      licencia: tds[2]?.textContent || '',
-      vtoLic: tds[3]?.textContent || '',
-      apto: tds[4]?.textContent || '',
-      vtoApto: tds[5]?.textContent || '',
-      rfc: tds[6]?.textContent || ''
-    };
-  });
-
-  if(!nombre || !rfc){
-    alert('Por favor, completa al menos Nombre/Razón social y RFC.');
-    return;
-  }
-
-  const arr = getPerms();
-  let id = editingPermId;
-
-  if(editingPermId){
-    const idx = arr.findIndex(p => p.id === editingPermId);
-    if(idx >= 0) arr[idx] = { id: editingPermId, nombre, rfc, estatus, contacto, documentos, unidades, operadores };
-  } else {
-    id = generarSiguienteIdPerm(arr);
-    arr.push({ id, nombre, rfc, estatus, contacto, documentos, unidades, operadores });
-  }
-  setPerms(arr);
-
-  permsMenu.classList.add('hidden');
-  permsList.classList.remove('hidden');
-  renderTablaPerms();
-  editingPermId = null;
-});
-  const modal = document.getElementById('permSaveModal');
-  const btnCerrar = document.getElementById('permModalCerrar');
-  const resumen = document.getElementById('permResumenGuardado');
-  const idLabel = document.getElementById('permIDMostrado');
-
-  function nextPermId(){
-    const n = parseInt(localStorage.getItem('permCounter') || '0', 10) + 1;
-    localStorage.setItem('permCounter', String(n));
-    return 'LTR-PR-' + String(n).padStart(2,'0');
-  }
-
-  function buildPermResumen(){
-    const nombre = document.getElementById('permNombre')?.value?.trim() || '';
-    const rfc = document.getElementById('permRFC')?.value?.trim() || '';
-    const domicilio = document.getElementById('permContacto')?.value?.trim() || '';
-    if(resumen){
-      resumen.innerHTML = `
-        <div style="display:grid;gap:6px;">
-          <div><strong>Permisionario:</strong> ${nombre || '-'}</div>
-          <div><strong>RFC:</strong> ${rfc || '-'}</div>
-          <div><strong>Domicilio:</strong> ${domicilio || '-'}</div>
-        </div>`;
-    }
-  }
-  tr.querySelector('.unidad-edit').addEventListener('click', () => {
-  // Aquí puedes cargar los datos en el modal para editar la unidad
-  cargarUnidadParaEditar(tr);
-});
-tr.querySelector('.unidad-delete').addEventListener('click', () => {
-  tr.remove();
-});    
-
-  // Mostramos el modal al guardar
-  if(btnGuardar && modal){
-    btnGuardar.addEventListener('click', (ev) => {
-      if (typeof ev.preventDefault === 'function') ev.preventDefault();
-      if (btnGuardar.disabled) return;
-      const genId = nextPermId();
-      if(idLabel) idLabel.textContent = genId;
+    function buildPermResumen(){
+      const nombre = document.getElementById('permNombre')?.value?.trim() || '';
+      const rfc = document.getElementById('permRFC')?.value?.trim() || '';
+      const domicilio = document.getElementById('permContacto')?.value?.trim() || '';
+      if(resumen){
+        resumen.innerHTML = `
+          <div style="display:grid;gap:6px;">
+            <div><strong>Permisionario:</strong> ${nombre || '-'}</div>
+            <div><strong>RFC:</strong> ${rfc || '-'}</div>
+            <div><strong>Domicilio:</strong> ${domicilio || '-'}</div>
+          </div>`;
+      }     
+      function showSaveModal(id){
+      if(idLabel) idLabel.textContent = id;
       buildPermResumen();
-      modal.classList.remove('hidden');
-      modal.style.display = 'flex';
-    });
-  }
+      modal?.classList.remove('hidden');
+      if(modal) modal.style.display = 'flex';
+    } 
+     function hideSaveModal(){
+      modal?.classList.add('hidden');
+      if(modal) modal.style.display = 'none';
+    }
+   btnGuardar?.addEventListener('click', () => {
+      const nombre   = document.getElementById('permNombre').value.trim();
+      const rfc      = document.getElementById('permRFC').value.trim();
+      const estatus  = document.getElementById('permEstatus').value;
+      const contacto = document.getElementById('permContacto').value.trim();
 
-  btnCerrar?.addEventListener('click', () => {
-    modal.classList.add('hidden');
-    modal.style.display = 'none';
+      // Documentos
+      const docNames = [
+        "Acta Constitutiva", "Poder Rep. Legal", "Comprobante de Domicilio",
+        "Constancia de Situación Fiscal", "INE Rep. Legal", "Contrato"
+      ];
+      const documentos = docNames.map((nombre, idx) => {
+        const st = document.getElementById(`permStatus${idx+1}`);
+        const inp = document.getElementById(`permFile${idx+1}`);
+        let archivo = null;
+        if (inp && inp.files && inp.files.length) {
+          archivo = URL.createObjectURL(inp.files[0]);
+        }
+        return {
+          nombre,
+          estatus: st?.classList.contains('status-yes') || false,
+          archivo
+        };
+      });
+
+      // Unidades
+      const unidadesBody = document.querySelector('#tablaUnidades tbody');
+      const unidades = Array.from(unidadesBody?.children || []).map(tr => {
+        try { return JSON.parse(tr.dataset.info || '{}'); } catch { return {}; }
+      });
+
+      // Operadores
+      const operadoresBody = document.querySelector('#tablaOperadores tbody');
+      const operadores = Array.from(operadoresBody?.children || []).map(tr => {
+        const tds = tr.querySelectorAll('td');
+        return {
+          nombre: tds[0]?.textContent || '',
+          numero: tds[1]?.textContent || '',
+          licencia: tds[2]?.textContent || '',
+          vtoLic: tds[3]?.textContent || '',
+          apto: tds[4]?.textContent || '',
+          vtoApto: tds[5]?.textContent || '',
+          rfc: tds[6]?.textContent || ''
+        };
+      });
+
+      if(!nombre || !rfc){
+        alert('Por favor, completa al menos Nombre/Razón social y RFC.');
+        return;
+      }
+
+      const arr = getPerms();
+      let id = editingPermId;
+
+      if(editingPermId){
+        const idx = arr.findIndex(p => p.id === editingPermId);
+        if(idx >= 0) arr[idx] = { id: editingPermId, nombre, rfc, estatus, contacto, documentos, unidades, operadores };
+      } else {
+        id = generarSiguienteIdPerm(arr);
+        arr.push({ id, nombre, rfc, estatus, contacto, documentos, unidades, operadores });
+      }
+      setPerms(arr);
+
+      permsMenu.classList.add('hidden');
+      permsList.classList.remove('hidden');
+      renderTablaPerms();
+      editingPermId = null;
+      showSaveModal(id);
+    });
+     btnCerrar?.addEventListener('click', hideSaveModal);
+    modal?.addEventListener('click', (e) => { if (e.target === modal) hideSaveModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideSaveModal(); });
+
+
   });
-  modal?.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.classList.add('hidden');
-      modal.style.display = 'none';
-    }
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      modal.classList.add('hidden');
-      modal.style.display = 'none';
-    }
-  });
-});       
+     
 </script>     
 
 <!-- Detalle permisionario -->
