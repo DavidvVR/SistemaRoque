@@ -2121,36 +2121,7 @@ window.addEventListener('DOMContentLoaded', migratePermsStorage);
     permsList.classList.remove('hidden');
   });
 
-  // === Guardar permisionario
-  document.getElementById('btnPermGuardar')?.addEventListener('click', () => {
-    const nombre   = document.getElementById('permNombre').value.trim();
-    const rfc      = document.getElementById('permRFC').value.trim();
-    const estatus  = document.getElementById('permEstatus').value;
-    const contacto = document.getElementById('permContacto').value.trim();
-
-    if(!nombre || !rfc){
-      alert('Por favor, completa al menos Nombre/Razón social y RFC.');
-      return;
-    }
-
-    const arr = getPerms();
-    let id = editingPermId;
-
-    if(editingPermId){
-      const idx = arr.findIndex(p => p.id === editingPermId);
-      if(idx >= 0) arr[idx] = { id: editingPermId, nombre, rfc, estatus, contacto };
-    } else {
-      id = generarSiguienteIdPerm(arr);
-      arr.push({ id, nombre, rfc, estatus, contacto });
-    }
-    setPerms(arr);
-
-    permsMenu.classList.add('hidden');
-    permsList.classList.remove('hidden');
-    renderTablaPerms();
-    editingPermId = null;
-  });
-
+ 
   // === Generar siguiente ID consecutivo tipo LTR-PR-01
   function generarSiguienteIdPerm(arr){
     const prefijo = 'LTR-PR-';
