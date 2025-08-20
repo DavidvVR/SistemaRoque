@@ -1269,9 +1269,51 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     <button id="btnLTRBack" class="btn">Volver</button>
   </div>
 </div>
+<!-- Módulo: Unidades -->
+<div id="unidadesModule" class="module-content hidden">
+  <h2 class="section-title">Unidades</h2>
+
+  <!-- Filtros -->
+  <div class="filter-row" style="display:flex;gap:12px;align-items:center;margin-bottom:15px;">
+    <input type="text" id="buscarUnidad" class="search-input" placeholder="🔍 Buscar...">
+    <label for="filtroTipo">Tipo:</label>
+    <select id="filtroTipo" class="filter-select">
+      <option value="">Todos</option>
+      <option value="Camión">Camión</option>
+      <option value="Tracto">Tracto</option>
+      <option value="Caja">Caja</option>
+      <option value="Otro">Otro</option>
+    </select>
+  </div>
+
+  <!-- Botones -->
+  <div class="button-row" style="margin-bottom:15px;">
+    <button id="btnAgregarUnidad" class="action-btn">+Agregar unidad</button>
+    <button id="btnImportarExcel" class="action-btn">Importar Excel</button>
+  </div>
+
+  <!-- Tabla -->
+  <table id="tablaUnidades" class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Tipo</th>
+        <th>Placas</th>
+        <th>Eco</th>
+        <th>Fotografías</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Aquí se insertarán dinámicamente las unidades -->
+    </tbody>
+  </table>
+</div>
       
       
+<!-- Importar en el modulo de clientes-->      
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<!-- Importar en el modulo de LTR-->
+ <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>     
       
         
 
@@ -2695,6 +2737,204 @@ window.addEventListener('DOMContentLoaded', () => {
 
    })();
 </script>     
+
+
+
+<!-- Agrega este script DESPUÉS de tu HTML del módulo de Unidades -->
+<script>
+// ====== "BD" local para Unidades ======
+const SR_UNITS_KEY = 'sr_unidades';
+
+function getUnidades() {
+  try { return JSON.parse(localStorage.getItem(SR_UNITS_KEY)) || []; }
+  catch { return []; }
+}
+function setUnidades(arr) {
+  localStorage.setItem(SR_UNITS_KEY, JSON.stringify(arr));
+}
+
+// IDs consecutivos tipo LTR-UN-01
+function generarSiguienteIdUnidad(arr) {
+  const prefijo = 'LTR-UN-';
+  const maxNum = arr.reduce((max, u) => {
+    const m = (u.id || '').match(/^LTR-UN-(\d+)$/);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return Math.max(max, n);
+  }, 0);
+  return `${prefijo}${String(maxNum + 1).padStart(2, '0')}`;
+}
+
+// Mapa en memoria para URLs de fotos (sólo sesión actual)
+const fotoUrlsByUnidadId = new Map();
+
+// ====== Render de la tabla ======
+function renderTablaUnidades(q = '', tipo = '') {
+  const tbody = document.querySelector('#tablaUnidades tbody');
+  if (!tbody) return;
+
+  const data = getUnidades();
+  const query = (q || '').toLowerCase();
+  const tipoSel = (tipo || '').toLowerCase();
+
+  const fil = data.filter(u => {
+    const matchTexto =
+      !query ||
+      (String(u.id||'').toLowerCase().includes(query)) ||
+      (String(u.tipo||'').toLowerCase().includes(query)) ||
+      (String(u.placas||'').toLowerCase().includes(query)) ||
+      (String(u.eco||'').toLowerCase().includes(query));
+    const matchTipo = !tipoSel || String(u.tipo||'').toLowerCase() === tipoSel;
+    return matchTexto && matchTipo;
+  });
+
+  tbody.innerHTML = fil.map(u => {
+    const fotosCnt = (u.fotos && u.fotos.length) ? u.fotos.length : 0;
+    const fotosCell = fotosCnt
+      ? `<span class="icon-btn ver-fotos" data-id="${u.id}" title="Ver fotografías">🔍</span> <span class="badge">${fotosCnt}</span>`
+      : '—';
+    return `
+      <tr>
+        <td>${u.id || ''}</td>
+        <td>${u.tipo || ''}</td>
+        <td>${u.placas || ''}</td>
+        <td>${u.eco || ''}</td>
+        <td class="actions">${fotosCell}</td>
+      </tr>
+    `;
+  }).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
+}
+
+// ====== Búsqueda y filtro ======
+document.getElementById('buscarUnidad')?.addEventListener('input', (e) => {
+  renderTablaUnidades(e.target.value, document.getElementById('filtroTipo')?.value || '');
+});
+document.getElementById('filtroTipo')?.addEventListener('change', (e) => {
+  renderTablaUnidades(document.getElementById('buscarUnidad')?.value || '', e.target.value);
+});
+
+// ====== Importar Excel (.xlsx) ======
+(function setupExcelImport(){
+  // Crea input oculto si no existe
+  let excelInput = document.getElementById('excelUnidadesInput');
+  if (!excelInput) {
+    excelInput = document.createElement('input');
+    excelInput.type = 'file';
+    excelInput.id = 'excelUnidadesInput';
+    excelInput.accept = '.xlsx,.xls';
+    excelInput.style.display = 'none';
+    document.body.appendChild(excelInput);
+  }
+
+  document.getElementById('btnImportarExcel')?.addEventListener('click', () => excelInput.click());
+
+  // Requiere que ya cargues XLSX (como en otros módulos):
+  // <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
+  excelInput.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const data = await file.arrayBuffer();
+      const wb = XLSX.read(data, { type: 'array' });
+      const sh = wb.Sheets['Unidades'] || wb.Sheets['UNIDADES'] || wb.Sheets['unidades'];
+      const rows = sh ? XLSX.utils.sheet_to_json(sh) : [];
+
+      // Columnas esperadas (flexible): ID (opcional), Tipo, Placas, Eco, Fotos (opcional, separadas por coma)
+      const existentes = getUnidades();
+      rows.forEach(r => {
+        const tipo  = String(r['Tipo']||'').trim();
+        const placas= String(r['Placas']||'').trim();
+        const eco   = String(r['Eco']||'').trim();
+
+        if (!tipo && !placas && !eco) return; // evita filas vacías
+
+        let id = String(r['ID']||'').trim();
+        if (!id) id = generarSiguienteIdUnidad(existentes);
+
+        const fotos = String(r['Fotos']||'').split(',').map(s => s.trim()).filter(Boolean);
+
+        // Si ya existe el ID, actualiza; si no, inserta
+        const idx = existentes.findIndex(u => u.id === id);
+        const payload = { id, tipo, placas, eco, fotos };
+        if (idx >= 0) existentes[idx] = payload;
+        else existentes.push(payload);
+      });
+
+      setUnidades(existentes);
+      renderTablaUnidades(
+        document.getElementById('buscarUnidad')?.value || '',
+        document.getElementById('filtroTipo')?.value || ''
+      );
+      e.target.value = '';
+      alert('Importación de Unidades completada ✅\n(Hoja esperada: "Unidades")');
+    } catch (err) {
+      console.error(err);
+      alert('No fue posible leer el archivo. Verifica que sea .xlsx y que contenga la hoja "Unidades".');
+    }
+  });
+})();
+
+// ====== +Agregar unidad ======
+// Si ya tienes un modal propio, llama openUnidadModal() aquí y, al guardar,
+// usa addUnidadFromForm({...}). Si NO tienes modal, usamos un flujo rápido con prompt().
+document.getElementById('btnAgregarUnidad')?.addEventListener('click', () => {
+  // Fallback rápido (puedes reemplazar por tu modal):
+  const tipo   = (prompt('Tipo de unidad (p.ej. "Tracto", "Caja 53"):') || '').trim();
+  const placas = (prompt('Placas:') || '').trim();
+  const eco    = (prompt('Económico (opcional):') || '').trim();
+
+  if (!tipo || !placas) {
+    alert('Tipo y Placas son obligatorios.');
+    return;
+  }
+  addUnidadFromForm({ tipo, placas, eco, fotos: [] });
+});
+
+// Función reutilizable si después conectas un modal
+function addUnidadFromForm({ tipo, placas, eco, fotos }) {
+  const arr = getUnidades();
+  const id = generarSiguienteIdUnidad(arr);
+
+  // fotos: array de File o de strings. Si son File, generamos URL y guardamos nombre.
+  let fotosNombres = [];
+  if (Array.isArray(fotos) && fotos.length && typeof fotos[0] !== 'string') {
+    const urls = fotos.map(f => URL.createObjectURL(f));
+    fotoUrlsByUnidadId.set(id, urls); // sólo para vista en sesión
+    fotosNombres = fotos.map(f => f.name);
+  } else if (Array.isArray(fotos)) {
+    fotosNombres = fotos; // ya venían como nombres
+  }
+
+  arr.push({ id, tipo, placas, eco, fotos: fotosNombres });
+  setUnidades(arr);
+  renderTablaUnidades(
+    document.getElementById('buscarUnidad')?.value || '',
+    document.getElementById('filtroTipo')?.value || ''
+  );
+}
+
+//  Ver fotografías (ícono 🔍) ======
+document.querySelector('#tablaUnidades tbody')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.ver-fotos');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const urls = fotoUrlsByUnidadId.get(id);
+  if (urls && urls.length) {
+    // Abre la 1ª foto. (Puedes mejorar a un visor con carrusel si quieres)
+    window.open(urls[0], '_blank');
+  } else {
+    alert('Las fotos importadas desde Excel sólo guardan nombres.\nAdjunta fotos desde tu formulario para poder visualizarlas en esta sesión.');
+  }
+});
+
+// ====== Inicializa vista al entrar al módulo ======
+(function initUnidadesModuleOnce(){
+  // Llena la tabla al cargar o al mostrar el módulo
+  // Si tienes navegación por secciones, vuelve a llamar renderTablaUnidades() al entrar
+  renderTablaUnidades();
+})();
+
+</script>
+
 
 <!-- Detalle permisionario -->
 <div id="permInfoModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
