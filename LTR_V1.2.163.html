@@ -1301,6 +1301,43 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
       </table>
     </div>
     <input type="file" id="inputUnidadExcel" accept=".xlsx,.xls" style="display:none" />
+  </div>
+  <div id="operadoresList" class="clients-menu perms-list hidden" aria-label="Listado de operadores">
+    <div class="list-toolbar">
+      <div class="search">
+        <label for="searchOperador">Buscar:</label>
+        <input id="searchOperador" type="text" placeholder="Nombre, ID o licencia…">
+      </div>
+      <div class="filter">
+        <label for="filtroEstatus">Estatus:</label>
+        <select id="filtroEstatus">
+          <option value="">Todos</option>
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
+      </div>
+      <div class="list-actions">
+        <button id="btnOperadorNuevo" class="btn">+ Agregar operador</button>
+        <button id="btnOperadorImport" class="btn">Importar Excel</button>
+        <button id="btnOperadorVolver" class="btn">Volver</button>
+      </div>
+    </div>
+
+    <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
+      <table class="doc-table" id="tablaOperadores">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Licencia</th>
+            <th>Vigencia</th>
+            <th>Estatus</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <input type="file" id="inputOperadorExcel" accept=".xlsx,.xls" style="display:none" />
   </div>    
   <div class="home-actions">
     <button id="btnLTRBack" class="btn">Volver</button>
@@ -1309,9 +1346,9 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 
       
 <!-- Importar en el modulo de clientes-->      
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script> -->
 <!-- Importar en el modulo de LTR-->
- <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>     
+<!-- <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script> -->     
       
         
 
@@ -2742,10 +2779,15 @@ window.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('DOMContentLoaded', () => {
   const ltrHome = document.getElementById('ltrHome');
   const unidadesList = document.getElementById('unidadesList');
+  const operadoresList = document.getElementById('operadoresList');
   const srUnitsKey = 'sr_unidades';
+  const srOperadoresKey = 'sr_operadores';
 
   function getUnidades(){ try { return JSON.parse(localStorage.getItem(srUnitsKey)) || []; } catch { return []; } }
   function setUnidades(arr){ localStorage.setItem(srUnitsKey, JSON.stringify(arr)); }
+
+  function getOperadores(){ try { return JSON.parse(localStorage.getItem(srOperadoresKey)) || []; } catch { return []; } }
+  function setOperadores(arr){ localStorage.setItem(srOperadoresKey, JSON.stringify(arr)); }
 
   function renderTablaUnidades(filtro='', tipo=''){
     const tbody = document.querySelector('#tablaUnidades tbody');
@@ -2799,11 +2841,13 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btnUnidadImport')?.addEventListener('click', () => {
-    document.getElementById('inputUnidadExcel').click();
+    alert('Excel import functionality requires XLSX library. Feature temporarily disabled.');
+    // document.getElementById('inputUnidadExcel').click();
   });
 
   document.getElementById('inputUnidadExcel')?.addEventListener('change', e => {
-    const file = e.target.files[0];
+    alert('Excel import functionality requires XLSX library. Feature temporarily disabled.');
+    /* const file = e.target.files[0];
     if(!file) return;
     const reader = new FileReader();
     reader.onload = evt => {
@@ -2833,7 +2877,102 @@ window.addEventListener('DOMContentLoaded', () => {
       setUnidades(arr);
       renderTablaUnidades(document.getElementById('searchUnidad').value, document.getElementById('filtroTipo').value);
     };
-    reader.readAsArrayBuffer(file);
+    reader.readAsArrayBuffer(file); */
+  });
+
+  // === OPERADORES FUNCTIONALITY ===
+  
+  function renderTablaOperadores(filtro='', estatus=''){
+    const tbody = document.querySelector('#tablaOperadores tbody');
+    if(!tbody) return;
+    const data = getOperadores();
+    const q = (filtro||'').toLowerCase();
+    const fil = data.filter(op =>
+      (!q || [op.id, op.nombre, op.licencia].some(v => String(v||'').toLowerCase().includes(q))) &&
+      (!estatus || op.estatus === estatus)
+    );
+    tbody.innerHTML = fil.map(op => `
+      <tr>
+        <td>${op.id || ''}</td>
+        <td>${op.nombre || ''}</td>
+        <td>${op.licencia || ''}</td>
+        <td>${op.vigencia || ''}</td>
+        <td>${op.estatus || ''}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="5">Sin registros</td></tr>';
+  }
+
+  document.getElementById('btnOperadores')?.addEventListener('click', () => {
+    ltrHome.classList.add('hidden');
+    operadoresList.classList.remove('hidden');
+    renderTablaOperadores();
+  });
+
+  document.getElementById('btnOperadorVolver')?.addEventListener('click', () => {
+    operadoresList.classList.add('hidden');
+    ltrHome.classList.remove('hidden');
+  });
+
+  document.getElementById('searchOperador')?.addEventListener('input', e => {
+    renderTablaOperadores(e.target.value, document.getElementById('filtroEstatus').value);
+  });
+
+  document.getElementById('filtroEstatus')?.addEventListener('change', e => {
+    renderTablaOperadores(document.getElementById('searchOperador').value, e.target.value);
+  });
+
+  document.getElementById('btnOperadorNuevo')?.addEventListener('click', () => {
+    const id = prompt('ID del operador:');
+    if(!id) return;
+    const nombre = prompt('Nombre del operador:') || '';
+    const licencia = prompt('Número de licencia:') || '';
+    const vigencia = prompt('Vigencia de la licencia (YYYY-MM-DD):') || '';
+    const estatus = prompt('Estatus (Activo/Inactivo):') || 'Activo';
+    const arr = getOperadores();
+    arr.push({id, nombre, licencia, vigencia, estatus});
+    setOperadores(arr);
+    renderTablaOperadores(document.getElementById('searchOperador').value, document.getElementById('filtroEstatus').value);
+  });
+
+  document.getElementById('btnOperadorImport')?.addEventListener('click', () => {
+    alert('Excel import functionality requires XLSX library. Feature temporarily disabled.');
+    // document.getElementById('inputOperadorExcel').click();
+  });
+
+  document.getElementById('inputOperadorExcel')?.addEventListener('change', e => {
+    alert('Excel import functionality requires XLSX library. Feature temporarily disabled.');
+    /* const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = evt => {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, {type:'array'});
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, {header:1});
+      const headers = rows[0] || [];
+      const idx = {
+        id: headers.indexOf('ID'),
+        nombre: headers.indexOf('Nombre'),
+        licencia: headers.indexOf('Licencia'),
+        vigencia: headers.indexOf('Vigencia'),
+        estatus: headers.indexOf('Estatus')
+      };
+      const arr = getOperadores();
+      for(let i=1;i<rows.length;i++){
+        const r = rows[i];
+        if(!r[idx.id]) continue;
+        arr.push({
+          id: r[idx.id],
+          nombre: r[idx.nombre] || '',
+          licencia: r[idx.licencia] || '',
+          vigencia: r[idx.vigencia] || '',
+          estatus: r[idx.estatus] || 'Activo'
+        });
+      }
+      setOperadores(arr);
+      renderTablaOperadores(document.getElementById('searchOperador').value, document.getElementById('filtroEstatus').value);
+    };
+    reader.readAsArrayBuffer(file); */
   });
 });
 </script>
