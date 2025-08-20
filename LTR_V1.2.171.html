@@ -49,6 +49,62 @@
     .module:hover { transform:translateY(-3px); }
     .module-icon { font-size:2rem; }
     .module-label { margin-top:8px; font-weight:bold; font-size:.9rem; text-align:center; }
+
+    /* Posiciona submenús solo en tiles que lo requieren */
+.module.has-submenu { position: relative; }
+
+/* Panel de submenú (dropdown) reutilizable */
+.submenu-panel{
+  position: absolute;
+  top: 110%;
+  left: 50%;
+  transform: translateX(-50%) scale(.98);
+  opacity: 0; pointer-events: none;
+  min-width: 220px;
+  display: grid; gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 28px rgba(0,0,0,.14);
+  backdrop-filter: blur(6px);
+  z-index: 20;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.submenu-panel.open{
+  opacity: 1; transform: translateX(-50%) scale(1);
+  pointer-events: auto;
+}
+
+/* Ítems del submenú (comparten diseño con las tarjetas de Clientes) */
+.submenu-item,
+#clientsHome .choice-card{
+  background: var(--panel-bg);
+  border: 2px solid var(--frame-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.submenu-item:hover,
+#clientsHome .choice-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0,0,0,.12);
+  border-color: #cbd5e1; /* sutil */
+}
+
+/* Contenedor visual para el “selector” de Clientes (queda con el mismo look) */
+#clientsHome .home-grid{
+  background: rgba(255,255,255,.6);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  backdrop-filter: blur(6px);
+}
+    
+        
     /* clientsModule */
     .clients-menu {
       margin: 0 auto; width: 100%; max-width:860px; background:var(--section-bg);
@@ -566,7 +622,16 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
     <div class="dashboard">
       <div class="module" id="modClientes"><div class="module-icon">📋</div><div class="module-label">Clientes</div></div>
       <div class="module" id="modPerm"><div class="module-icon">🚚</div><div class="module-label">Permisionarios</div></div>
-      <div class="module" id="modLTR"><div class="module-icon">🚛</div><div class="module-label">LTR</div></div>    
+      <div class="module has-submenu" id="modLTR">
+     <div class="module-icon">🚚</div>
+      <div class="module-label">LTR</div>
+
+      <!-- Submenú LTR -->
+    <div id="ltrSubmenu" class="submenu-panel" role="menu" aria-label="Submenú LTR">
+    <button id="btnLTRUnidades" class="submenu-item" role="menuitem">🚛 Unidades</button>
+     <button id="btnLTROperadores" class="submenu-item" role="menuitem">👷‍♂️ Operadores</button>
+    </div>
+    </div>   
       <div class="module" id="modAsign"><div class="module-icon">📅</div><div class="module-label">Asignación</div></div>
       <div class="module" id="modMonit"><div class="module-icon">📡</div><div class="module-label">Monitoreo</div></div>
       <div class="module" id="modCoord"><div class="module-icon">🔧</div><div class="module-label">Coordinación</div></div>
@@ -1240,23 +1305,13 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
  </div>     
 </div>  
 
-<!-- Botón LTR en el menú principal -->
-<div id="btnMenuLTR" class="choice-card" role="button" tabindex="0" aria-label="LTR">
-  <span class="icon">🚛</span>
-  <span class="label">LTR</span>
-</div>
 
-<!-- Submenú LTR oculto por defecto -->
-<div id="ltrMenu" class="submenu hidden">
-  <div id="btnUnidades" class="choice-card" role="button" tabindex="0" aria-label="Unidades">
-    <span class="icon">🚚</span>
-    <span class="label">Unidades</span>
-  </div>
-  <div id="btnOperadores" class="choice-card" role="button" tabindex="0" aria-label="Operadores">
-    <span class="icon">👷‍♂️</span>
-    <span class="label">Operadores</span>
-  </div>
-</div>
+
+      
+
+
+      
+
 
       
       
@@ -1325,12 +1380,14 @@ window.addEventListener('DOMContentLoaded', () => {
     if (typeof renderTablaPerms === 'function') renderTablaPerms();
         
   };
-    document.getElementById('modLTR').onclick = () => {
-    showSection('clientsModule');
-    document.getElementById('LTRHome')?.classList.remove('hidden');
-    document.getElementById('LTRMenu')?.classList.add('hidden');
+   // --- Submenú LTR
+const modLTR = document.getElementById('modLTR');
+const ltrMenu = document.getElementById('ltrSubmenu');
 
-  });
+modLTR?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  ltrMenu.classList.toggle('open');
+});
       
   document.getElementById('btnClientesBack')?.addEventListener('click', () => {
     showSection('dashboard');
@@ -1338,7 +1395,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnPermVolver')?.addEventListener('click', () => {
     showSection('dashboard');
   });
-   document.getElementById('btnLTRVolver')?.addEventListener('click', () => {
+   document.getElementById('btnLtrVolver')?.addEventListener('click', () => {
     showSection('dashboard');
   });
 
