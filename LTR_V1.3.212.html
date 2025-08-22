@@ -1266,7 +1266,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 
 
       
-<!-- LTR MODULE -->
+<!-- LTR MODulo -->
 <div id="ltrModule" class="frame hidden" aria-label="Módulo LTR">
   <!-- Submenú (Home) -->
   <div id="ltrHome" class="ltr-home">
@@ -1336,6 +1336,19 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
         </thead>
         <tbody><!-- filas dinámicas --></tbody>
       </table>
+
+          <!-- Modal LTR: Detalle de Unidad -->
+            <div id="ltrUnidadDetalleModal" class="modal hidden" aria-hidden="true">
+              <div class="modal-content" style="min-width:720px;">
+              <span id="ltrUnidadDetalleClose" class="close" title="Cerrar">&times;</span>
+              <h3>Detalle de Unidad</h3>
+            <div id="ltrUnidadDetalleBody"></div>
+         <div class="modal-buttons">
+         <button type="button" id="ltrUnidadDetalleCerrar" class="btn">Cerrar</button>
+          </div>
+         </div>
+        </div>
+
              <!-- Modal LTR: Agregar Unidad (independiente de Permisionarios) -->
       <div id="ltrUnidadModal" class="modal hidden" aria-hidden="true">
         <div class="modal-content" style="min-width: 720px;">
@@ -3118,7 +3131,12 @@ window.addEventListener('DOMContentLoaded', () => {
     var data = getUnits();
     tbody.innerHTML = data.map(function(u){
       return '<tr data-id="'+u.id+'">'
-        + '<td>'+ (u.id || '') +'</td>'
+        + '<td>'
+           '<button class="ltr-id-btn" data-id="'+(u.id||'')+'"'
+           ' style="background:none;border:none;color:#1b5cff;text-decoration:underline;cursor:pointer;padding:0;font:inherit;">'
+           (u.id || '')
+           '</button>'
+           '</td>'
         + '<td>'+ (u.tipo || '') +'</td>'
         + '<td>'+ (u.placas || '') +'</td>'
         + '<td>'+ (u.eco || '') +'</td>'
@@ -3126,6 +3144,31 @@ window.addEventListener('DOMContentLoaded', () => {
         + '</tr>';
     }).join('') || '<tr><td colspan="5">Sin registros</td></tr>';
 
+   tbody.onclick = function(e){
+  // 1) Click en ID -> abre detalle
+  var idBtn = e.target.closest('.ltr-id-btn');
+  if (idBtn) {
+    var uid = idBtn.getAttribute('data-id');
+    openLTRUnidadDetalle(uid);
+    return;
+  }
+
+  // 2) Click en eliminar
+  var btn = e.target.closest('.btnDel');
+  if(btn){
+    var tr = btn.closest('tr');
+    var id = tr && tr.getAttribute('data-id');
+    if(!id) return;
+    var arr = getUnitsFromStorage().filter(function(x){ return String(x.id) !== String(id); });
+    setUnitsFromStorage(arr);
+    renderLTRTable();
+    if(window.LTRUnitsFilter){
+      try { LTRUnitsFilter.refreshTypeOptions(); LTRUnitsFilter.apply(); } catch(e){}
+    }
+    return;
+  }
+  };
+        
     // Delegación para eliminar
     tbody.onclick = function(e){
       var btn = e.target.closest('.btnDel');
@@ -3346,6 +3389,92 @@ function nextLTRId(){
   return LTR_PREFIX + padLeft(seq, 4); // -> LTR-UN-0001, 0002, ...
 }
 syncSequence();
+
+// === Helpers globales de almacenamiento (si no los tienes aún) ===
+var LTR_STORE_KEY = 'sr_ltr_unidades';
+function getUnitsFromStorage(){
+  try { return JSON.parse(localStorage.getItem(LTR_STORE_KEY)) || []; }
+  catch(e){ return []; }
+}
+function setUnitsFromStorage(arr){
+  localStorage.setItem(LTR_STORE_KEY, JSON.stringify(arr));
+}
+
+// === Apertura de detalle por ID ===
+function openLTRUnidadDetalle(id){
+  var modal = document.getElementById('ltrUnidadDetalleModal');
+  var body  = document.getElementById('ltrUnidadDetalleBody');
+  if(!modal || !body) return;
+
+  var list = getUnitsFromStorage();
+  var u = (list || []).find(function(x){ return String(x.id) === String(id); });
+
+  if(!u){
+    body.innerHTML = '<p>No se encontró la unidad con ID <strong>'+ (id || '') +'</strong>.</p>';
+  } else {
+    // formato de fecha local
+    var fVence = (u.vencePoliza ? new Date(u.vencePoliza).toLocaleDateString('es-MX') : '');
+    // botón/ícono para tarjeta si es URL/archivo válido (si solo guardas el nombre, se muestra el nombre)
+    var tarjetaHTML = (u.tarjeta
+      ? (u.tarjeta.indexOf('http') === 0 || u.tarjeta.indexOf('/') === 0
+          ? '<button class="icon-btn" title="Abrir tarjeta" onclick="window.open(\''+u.tarjeta+'\',\'_blank\')">🔍</button> '+u.tarjeta
+          : u.tarjeta)
+      : '-');
+
+    // Construye el detalle
+    body.innerHTML =
+      '<div class="modal-section">'
+      +  '<table class="modal-table"><tbody>'
+      +    row('ID',            u.id)
+      +    row('Placas',        u.placas)
+      +    row('Eco',           u.eco)
+      +    row('Tipo',          u.tipo)
+      +    row('Aseguradora',   u.aseguradora)
+      +    row('Venc. Póliza',  fVence)
+      +    row('Póliza',        (u.poliza || ''))
+      +    row('Marca',         (u.marca || ''))
+      +    row('Año',           (u.anio || ''))
+      +    row('Permiso SCT',   (u.permisoSCT || ''))
+      +    row('Tarjeta de Circulación', tarjetaHTML)
+      +  '</tbody></table>'
+      +'</div>';
+  }
+
+  // Mostrar modal
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+  modal.setAttribute('aria-hidden','false');
+  window.scrollTo(0,0);
+}
+
+// Helper para filas del detalle
+function row(label, value){
+  return '<tr>'
+       +   '<th style="text-align:left;white-space:nowrap;padding-right:8px;">'+ label +'</th>'
+       +   '<td>'+ (value == null ? '' : value) +'</td>'
+       + '</tr>';
+}
+
+// Cierre del modal de detalle
+(function(){
+  var modal = document.getElementById('ltrUnidadDetalleModal');
+  var btnX  = document.getElementById('ltrUnidadDetalleClose');
+  var btnC  = document.getElementById('ltrUnidadDetalleCerrar');
+  if(btnX) btnX.addEventListener('click', close, false);
+  if(btnC) btnC.addEventListener('click', close, false);
+  if(modal) modal.addEventListener('click', function(e){ if(e.target === modal) close(); }, false);
+  window.addEventListener('keydown', function(e){ if(e.key === 'Escape') close(); }, false);
+
+  function close(){
+    if(!modal) return;
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden','true');
+    var body = document.getElementById('ltrUnidadDetalleBody');
+    if (body) body.innerHTML = '';
+  }
+})();
+      
 
    
 </script>
