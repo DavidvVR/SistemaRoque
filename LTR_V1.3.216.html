@@ -2993,9 +2993,8 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // === Buscadores
-  document.getElementById('searchUnits')?.addEventListener('input', e => renderTablaLTRUnidades(e.target.value));
+  
   document.getElementById('searchOps')?.addEventListener('input',   e => renderTablaLTROperadores(e.target.value));
-
   // Render inicial
   
   renderTablaLTROperadores();
