@@ -1336,6 +1336,93 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
         </thead>
         <tbody><!-- filas dinámicas --></tbody>
       </table>
+             <!-- Modal LTR: Agregar Unidad (independiente de Permisionarios) -->
+      <div id="ltrUnidadModal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content" style="min-width: 720px;">
+          <span id="ltrUnidadModalClose" class="close" title="Cerrar">&times;</span>
+          <h3>Alta de Unidad LTR</h3>
+      
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ltrUTarjetaName">Tarjeta de Circulación*</label>
+              <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+                <button type="button" id="btnLTRUTarjetaPick" class="icon-btn" title="Adjuntar">📁</button>
+                <input id="ltrUTarjetaFile" type="file" accept=".pdf,.jpg,.jpeg,.png" required style="display:none">
+                <input id="ltrUTarjetaName" type="text" placeholder="Selecciona un archivo…" readonly required>
+                <input id="ltrUTarjeta" type="hidden" value="">
+              </div>
+              <div class="field-error" data-for="ltrUTarjetaName"></div>
+            </div>
+            <div class="form-group">
+              <label for="ltrUPlacas">Placas*</label>
+              <input id="ltrUPlacas" type="text" placeholder="ABC123A" required>
+            </div>
+          </div>
+      
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ltrUEco">Eco</label>
+              <input id="ltrUEco" type="text" placeholder="Económico interno">
+            </div>
+            <div class="form-group">
+              <label for="ltrUTipo">Tipo*</label>
+              <select id="ltrUTipo" required>
+                <option value="">Seleccione…</option>
+                <option>Tractor</option>
+                <option>Unidad seca 53"</option>
+                <option>Refrigerada 53"</option>
+                <option>Thorton</option>
+                <option>3.5</option>
+                <option>Torton</option>
+                <option>Rabón</option>
+              </select>
+              <div class="field-error" data-for="ltrUTipo"></div>
+            </div>
+          </div>
+      
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ltrUAseguradora">Aseguradora</label>
+              <input id="ltrUAseguradora" type="text" placeholder="Nombre de aseguradora">
+            </div>
+            <div class="form-group">
+              <label for="ltrUVencePoliza">Vencimiento Póliza</label>
+              <input id="ltrUVencePoliza" type="date">
+            </div>
+            <div class="form-group">
+              <label for="ltrUPolizaName">Póliza de Seguro</label>
+              <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+                <button type="button" id="btnLTRUPolizaPick" class="icon-btn" title="Adjuntar póliza" aria-label="Adjuntar póliza">📁</button>
+                <input id="ltrUPolizaFile" type="file" accept="application/pdf,image/*" style="display:none">
+                <input id="ltrUPolizaName" type="text" placeholder="Selecciona un archivo…" readonly autocomplete="off">
+                <input id="ltrUPoliza" type="hidden" value="">
+              </div>
+              <div class="field-error" data-for="ltrUPolizaName"></div>
+            </div>
+            <div class="form-group">
+              <label for="ltrUMarca">Marca</label>
+              <input id="ltrUMarca" type="text" placeholder="Kenworth / Freightliner…">
+            </div>
+            <div class="form-group">
+              <label for="ltrUAnio">Año</label>
+              <input id="ltrUAnio" type="number" min="1980" max="2100" placeholder="2022">
+            </div>
+          </div>
+      
+          <div class="form-row">
+            <div class="form-group form-group-full">
+              <label for="ltrUPermisoSCT">Permiso SCT</label>
+              <input id="ltrUPermisoSCT" type="text" placeholder="Número de permiso SCT">
+            </div>
+          </div>
+      
+          <div class="modal-buttons">
+            <button type="button" id="ltrUnidadCancelar" class="btn-cancelar">Cancelar</button>
+            <button type="button" id="ltrUnidadGuardar" class="btn-guardar">Guardar</button>
+        </div>
+        </div>
+        </div>
+
     </div>
   </div>
 
@@ -2833,10 +2920,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // === Volver (desde home de LTR hacia dashboard)
   btnLTRBack?.addEventListener('click', () => {
-    // Mismo patrón que usas en otros “volver”
-    // Ejemplo: btnClientesBack vuelve al dashboard
-    // (ver líneas: addEventListener('click', () => showSection('dashboard')))
-    // Reutilizamos showSection:
+   
     showSection('dashboard');
   });
 
@@ -2869,7 +2953,6 @@ window.addEventListener('DOMContentLoaded', () => {
         <td>${u.tipo||''}</td>
         <td>${u.placas||''}</td>
         <td>${u.eco||''}</td>
-        <td>${(u.fotos||[]).length} archivo(s)</td>
         <td class="actions">
           <span class="icon-btn" title="Editar">✏️</span>
           <span class="icon-btn btnDelete" title="Eliminar">🗑️</span>
@@ -2912,7 +2995,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // ===== Filtro por Tipo (LTR Unidades) =====
 (function(){
-  // Normaliza strings (quita acentos y hace minúsculas)
+  // Normaliza strings 
   function normalize(s){
     return (s || '')
       .toString()
@@ -2994,7 +3077,179 @@ window.addEventListener('DOMContentLoaded', () => {
 })();
       
  LTRUnitsFilter.refreshTypeOptions();
- LTRUnitsFilter.apply();      
+ LTRUnitsFilter.apply();   
+
+(function(){
+  // ====== Store local para LTR Unidades ======
+  var LTR_STORE = 'sr_ltr_unidades';
+  function getUnits(){ try { return JSON.parse(localStorage.getItem(LTR_STORE)) || []; } catch(e){ return []; } }
+  function setUnits(arr){ localStorage.setItem(LTR_STORE, JSON.stringify(arr)); }
+
+  // ====== Helpers de UI ======
+  function openModal(){ modal.classList.remove('hidden'); modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); }
+  function closeModal(){ modal.classList.add('hidden'); modal.style.display='none'; modal.setAttribute('aria-hidden','true'); clearErrors(); }
+  function clearForm(){
+    ['ltrUTarjetaFile','ltrUTarjetaName','ltrUTarjeta','ltrUPlacas','ltrUEco','ltrUTipo','ltrUAseguradora','ltrUVencePoliza',
+     'ltrUPolizaFile','ltrUPolizaName','ltrUPoliza','ltrUMarca','ltrUAnio','ltrUPermisoSCT'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      if(el.tagName === 'SELECT') el.value = '';
+      else el.value = '';
+    });
+  }
+  function clearErrors(){
+    Array.prototype.forEach.call(modal.querySelectorAll('.form-group'), function(g){ g.classList.remove('error'); });
+    Array.prototype.forEach.call(modal.querySelectorAll('.field-error'), function(fe){ fe.textContent=''; });
+  }
+  function setError(forId, msg){
+    var field = document.getElementById(forId);
+    if(field){
+      var group = field.closest('.form-group');
+      if(group) group.classList.add('error');
+    }
+    var fe = modal.querySelector('.field-error[data-for="'+forId+'"]');
+    if(fe) fe.textContent = msg || 'Campo requerido';
+  }
+
+  // ====== Render de tabla LTR ======
+  function renderLTRTable(){
+    var tbody = document.querySelector('#tablaLTRUnidades tbody');
+    if(!tbody) return;
+    var data = getUnits();
+    tbody.innerHTML = data.map(function(u){
+      return '<tr data-id="'+u.id+'">'
+        + '<td>'+ (u.id || '') +'</td>'
+        + '<td>'+ (u.tipo || '') +'</td>'
+        + '<td>'+ (u.placas || '') +'</td>'
+        + '<td>'+ (u.eco || '') +'</td>'
+        + '<td class="actions"><button class="icon-btn btnDel" title="Eliminar">🗑️</button></td>'
+        + '</tr>';
+    }).join('') || '<tr><td colspan="5">Sin registros</td></tr>';
+
+    // Delegación para eliminar
+    tbody.onclick = function(e){
+      var btn = e.target.closest('.btnDel');
+      if(!btn) return;
+      var tr = btn.closest('tr');
+      var id = tr && tr.getAttribute('data-id');
+      if(!id) return;
+      var arr = getUnits().filter(function(x){ return String(x.id) !== String(id); });
+      setUnits(arr);
+      renderLTRTable();
+      // refresca filtros si existen
+      if(window.LTRUnitsFilter){
+        try { LTRUnitsFilter.refreshTypeOptions(); LTRUnitsFilter.apply(); } catch(e){}
+      }
+    };
+
+    // Actualiza opciones del filtro "Tipo" si lo tienes
+    if(window.LTRUnitsFilter){
+      try { LTRUnitsFilter.refreshTypeOptions(); LTRUnitsFilter.apply(); } catch(e){}
+    }
+  }
+
+  // ====== Guardar nueva unidad ======
+  function saveUnit(){
+    clearErrors();
+
+    var tarjetaName = document.getElementById('ltrUTarjetaName').value.trim();
+    var placas = document.getElementById('ltrUPlacas').value.trim();
+    var tipo = document.getElementById('ltrUTipo').value.trim();
+    var eco = document.getElementById('ltrUEco').value.trim();
+    var aseguradora = document.getElementById('ltrUAseguradora').value.trim();
+    var vencePoliza = document.getElementById('ltrUVencePoliza').value;
+    var polizaName = document.getElementById('ltrUPolizaName').value.trim();
+    var marca = document.getElementById('ltrUMarca').value.trim();
+    var anio = document.getElementById('ltrUAnio').value;
+    var permisoSCT = document.getElementById('ltrUPermisoSCT').value.trim();
+
+    // Validaciones mínimas para tu tabla (Placas y Tipo)
+    var ok = true;
+    if(!tarjetaName){ setError('ltrUTarjetaName', 'Selecciona archivo'); ok = false; }
+    if(!placas){ setError('ltrUPlacas', 'Requerido'); ok = false; }
+    if(!tipo){ setError('ltrUTipo', 'Selecciona un tipo'); ok = false; }
+    if(!ok) return;
+
+    var list = getUnits();
+    var newId = 'LTRU-' + String(Date.now()).slice(-6); // o puedes usar (list.length+1)
+    list.push({
+      id: newId,
+      placas: placas,
+      eco: eco,
+      tipo: tipo,
+      tarjeta: tarjetaName,
+      aseguradora: aseguradora,
+      vencePoliza: vencePoliza,
+      poliza: polizaName,
+      marca: marca,
+      anio: anio,
+      permisoSCT: permisoSCT
+    });
+    setUnits(list);
+    renderLTRTable();
+    closeModal();
+  }
+
+  // ====== File pickers ======
+  function wirePickers(){
+    var btnTar = document.getElementById('btnLTRUTarjetaPick');
+    var fileTar = document.getElementById('ltrUTarjetaFile');
+    var nameTar = document.getElementById('ltrUTarjetaName');
+    var hidTar = document.getElementById('ltrUTarjeta');
+
+    if(btnTar && fileTar && nameTar){
+      btnTar.onclick = function(){ fileTar.click(); };
+      fileTar.onchange = function(e){
+        var f = e.target.files && e.target.files[0];
+        nameTar.value = f ? f.name : '';
+        if(hidTar) hidTar.value = nameTar.value;
+      };
+    }
+
+    var btnPol = document.getElementById('btnLTRUPolizaPick');
+    var filePol = document.getElementById('ltrUPolizaFile');
+    var namePol = document.getElementById('ltrUPolizaName');
+    var hidPol = document.getElementById('ltrUPoliza');
+
+    if(btnPol && filePol && namePol){
+      btnPol.onclick = function(){ filePol.click(); };
+      filePol.onchange = function(e){
+        var f = e.target.files && e.target.files[0];
+        namePol.value = f ? f.name : '';
+        if(hidPol) hidPol.value = namePol.value;
+      };
+    }
+  }
+
+  // ====== Wiring ======
+  var modal = document.getElementById('ltrUnidadModal');
+
+  // Abrir modal desde el botón de la lista LTR
+  var btnOpen = document.getElementById('btnUnidadNuevaLTR');
+  if(btnOpen){
+    btnOpen.addEventListener('click', function(){
+      clearForm();
+      wirePickers();
+      openModal();
+    });
+  }
+
+  // Cerrar modal
+  document.getElementById('ltrUnidadModalClose')?.addEventListener('click', closeModal, false);
+  document.getElementById('ltrUnidadCancelar')?.addEventListener('click', closeModal, false);
+  // click fuera (overlay)
+  modal && modal.addEventListener('click', function(e){ if(e.target === modal) closeModal(); }, false);
+  // Esc para cerrar
+  window.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); }, false);
+
+  // Guardar
+  document.getElementById('ltrUnidadGuardar')?.addEventListener('click', saveUnit, false);
+
+  // Render inicial
+  document.addEventListener('DOMContentLoaded', renderLTRTable);
+})();
+
+   
 </script>
       
 
