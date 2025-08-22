@@ -3170,8 +3170,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if(!tipo){ setError('ltrUTipo', 'Selecciona un tipo'); ok = false; }
     if(!ok) return;
 
-    var list = getUnits();
-    var newId = 'LTRU-' + String(Date.now()).slice(-6); // o puedes usar (list.length+1)
+    var list = getUnitsFromStorage();
+    var newId = nextLTRId(); // -> LTR-UN-0001, LTR-UN-0002, ...
     list.push({
       id: newId,
       placas: placas,
@@ -3185,7 +3185,7 @@ window.addEventListener('DOMContentLoaded', () => {
       anio: anio,
       permisoSCT: permisoSCT
     });
-    setUnits(list);
+    setUnitsFromStorage(list);
     renderLTRTable();
     closeModal();
   }
@@ -3295,6 +3295,57 @@ function nextLTRId(){
   // ajusta 4 dígitos; cambia a 5/6 si quieres más amplitud
   return LTR_PREFIX + padLeft(seq, 4);
 }
+
+//Este Scrit debe ir dentro de modal 3 creo que cada avnce puedo hacer un scrtipt para mas facil mdificaciones futuras
+// ====== Almacenamiento LTR Unidades (global, sin depender de scopes) ======
+var LTR_STORE_KEY = 'sr_ltr_unidades';
+
+function getUnitsFromStorage(){
+  try { return JSON.parse(localStorage.getItem(LTR_STORE_KEY)) || []; }
+  catch(e){ return []; }
+}
+function setUnitsFromStorage(arr){
+  localStorage.setItem(LTR_STORE_KEY, JSON.stringify(arr));
+}
+
+// ====== ID consecutivo LTR con prefijo "LTR-UN-" ======
+var LTR_PREFIX = 'LTR-UN-';
+var LTR_SEQ_KEY = 'sr_ltr_unidades_seq'; // último consecutivo guardado
+
+function padLeft(num, width){
+  var s = String(num);
+  while (s.length < width) s = '0' + s;
+  return s;
+}
+function extractNum(id){
+  var m = (id || '').match(/^LTR-UN-(\d+)$/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+function maxIdFromData(){
+  var list = getUnitsFromStorage();
+  var max = 0, n, i;
+  for(i=0;i<list.length;i++){
+    n = extractNum(list[i] && list[i].id);
+    if(n > max) max = n;
+  }
+  return max;
+}
+function syncSequence(){
+  var maxData = maxIdFromData();
+  var seq = parseInt(localStorage.getItem(LTR_SEQ_KEY) || '0', 10);
+  if (isNaN(seq)) seq = 0;
+  if (seq < maxData) seq = maxData;
+  localStorage.setItem(LTR_SEQ_KEY, String(seq));
+}
+function nextLTRId(){
+  syncSequence();
+  var seq = parseInt(localStorage.getItem(LTR_SEQ_KEY) || '0', 10);
+  if (isNaN(seq)) seq = 0;
+  seq = seq + 1;
+  localStorage.setItem(LTR_SEQ_KEY, String(seq));
+  return LTR_PREFIX + padLeft(seq, 4); // -> LTR-UN-0001, 0002, ...
+}
+syncSequence();
 
    
 </script>
