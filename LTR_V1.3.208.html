@@ -1303,7 +1303,15 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   <div id="ltrUnitsList" class="clients-menu clients-list hidden" aria-label="Unidades LTR">
     <div class="list-toolbar">
       <div><h3>Unidades LTR</h3></div>
-      <div class="search">
+        <!-- Filtro por tipo de unidad -->
+      <div class="filters" style="display:flex; align-items:center; gap:8px;">
+        <label for="tipoUnidadFilter">Tipo:</label>
+        <select id="tipoUnidadFilter" class="input">
+        <option value="">Todos</option>
+      <!-- Las opciones se llenan automáticamente desde la tabla -->
+        </select>
+        </div>     
+        <div class="search">
         <label for="searchUnits">Buscar:</label>
         <input id="searchUnits" type="text" placeholder="Placas, Eco, Tipo…">
       </div>
@@ -1323,7 +1331,6 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
             <th>Tipo</th>
             <th>Placas</th>
             <th>Eco</th>
-            <th>Fotografías</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -2902,6 +2909,92 @@ window.addEventListener('DOMContentLoaded', () => {
   renderTablaLTRUnidades();
   renderTablaLTROperadores();
 });
+
+// ===== Filtro por Tipo (LTR Unidades) =====
+(function(){
+  // Normaliza strings (quita acentos y hace minúsculas)
+  function normalize(s){
+    return (s || '')
+      .toString()
+      .normalize('NFD')                    // descompone acentos
+      .replace(/[\u0300-\u036f]/g, '')    // elimina marcas diacríticas
+      .toLowerCase().trim();
+  }
+
+  // Elementos base
+  var $tabla = document.getElementById('tablaLTRUnidades');       // <table>
+  var $tbody = $tabla ? $tabla.querySelector('tbody') : null;     // <tbody>
+  var $buscar = document.getElementById('searchUnits');           // input texto
+  var $filtroTipo = document.getElementById('tipoUnidadFilter');  // <select>
+
+  if(!$tabla || !$tbody){ console.warn('[Filtro Tipo] No se encontró la tabla de unidades.'); return; }
+
+  // Rellena las opciones del select con los tipos únicos encontrados en la col 2 ("Tipo")
+  function refreshTypeOptions(){
+    if(!$filtroTipo) return;
+    var tipos = new Set();
+    var rows = $tbody.querySelectorAll('tr');
+    rows.forEach(function(tr){
+      var celdas = tr.querySelectorAll('td');
+      if(celdas.length > 1){
+        var tipo = (celdas[1].textContent || '').trim(); // Columna "Tipo"
+        if(tipo) tipos.add(tipo);
+      }
+    });
+
+    var valorActual = $filtroTipo.value; // conserva selección
+    // Limpia y repuebla (deja el "Todos")
+    $filtroTipo.innerHTML = '<option value="">Todos</option>';
+    Array.from(tipos).sort().forEach(function(tipo){
+      var opt = document.createElement('option');
+      opt.value = tipo;
+      opt.textContent = tipo;
+      $filtroTipo.appendChild(opt);
+    });
+    // Si existía selección y sigue disponible, recupérala
+    if(valorActual && tipos.has(valorActual)) $filtroTipo.value = valorActual;
+  }
+
+  // Aplica el filtro por texto + tipo
+  function filterUnits(){
+    var q = normalize($buscar ? $buscar.value : '');
+    var tipoSel = $filtroTipo ? $filtroTipo.value : '';
+
+    var rows = $tbody.querySelectorAll('tr');
+    rows.forEach(function(tr){
+      var celdas = tr.querySelectorAll('td');
+      if(celdas.length === 0){ tr.style.display = 'none'; return; }
+
+      // Texto del renglón (para "Buscar")
+      var rowText = '';
+      for(var i=0;i<celdas.length;i++){ rowText += ' ' + (celdas[i].textContent || ''); }
+      var matchTexto = q ? normalize(rowText).indexOf(q) !== -1 : true;
+
+      // Tipo de la col 2
+      var tipo = (celdas[1].textContent || '').trim();
+      var matchTipo = tipoSel ? (normalize(tipo) === normalize(tipoSel)) : true;
+
+      tr.style.display = (matchTexto && matchTipo) ? '' : 'none';
+    });
+  }
+
+  // Eventos
+  if($filtroTipo) $filtroTipo.addEventListener('change', filterUnits, false);
+  if($buscar) $buscar.addEventListener('input', filterUnits, false);
+
+  // Helpers públicos por si repintas la tabla dinámicamente
+  window.LTRUnitsFilter = {
+    refreshTypeOptions: refreshTypeOptions, // vuelve a leer tipos desde el tbody
+    apply: filterUnits                       // re-aplica filtros actuales
+  };
+
+  // Inicializa: llena el select y aplica el filtro
+  refreshTypeOptions();
+  filterUnits();
+})();
+      
+ LTRUnitsFilter.refreshTypeOptions();
+ LTRUnitsFilter.apply();      
 </script>
       
 
