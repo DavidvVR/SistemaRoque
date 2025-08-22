@@ -3248,6 +3248,53 @@ window.addEventListener('DOMContentLoaded', () => {
   // Render inicial
   document.addEventListener('DOMContentLoaded', renderLTRTable);
 })();
+// ====== ID consecutivo LTR con prefijo "LTR-UN-" ======
+var LTR_PREFIX = 'LTR-UN-';
+var LTR_SEQ_KEY = 'sr_ltr_unidades_seq'; // donde guardamos el último consecutivo
+
+function padLeft(num, width){
+  var s = String(num);
+  while (s.length < width) s = '0' + s;
+  return s;
+}
+
+// Extrae el número de un ID tipo "LTR-UN-0007" -> 7
+function extractNum(id){
+  var m = (id || '').match(/^LTR-UN-(\d+)$/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+// Lee la lista y devuelve el mayor número usado en los IDs existentes
+function maxIdFromData(){
+  var list = getUnits ? getUnits() : [];
+  var max = 0, i, n;
+  for (i = 0; i < list.length; i++){
+    n = extractNum(list[i] && list[i].id);
+    if (n > max) max = n;
+  }
+  return max;
+}
+
+// Sincroniza el contador con los datos (por si se borraron o importaron registros)
+function syncSequence(){
+  var maxData = maxIdFromData();
+  var seq = parseInt(localStorage.getItem(LTR_SEQ_KEY) || '0', 10);
+  if (isNaN(seq)) seq = 0;
+  if (seq < maxData) seq = maxData;
+  localStorage.setItem(LTR_SEQ_KEY, String(seq));
+}
+
+// Obtiene el siguiente ID consecutivo seguro
+function nextLTRId(){
+  // asegura que el contador nunca sea menor al usado en datos
+  syncSequence();
+  var seq = parseInt(localStorage.getItem(LTR_SEQ_KEY) || '0', 10);
+  if (isNaN(seq)) seq = 0;
+  seq = seq + 1;
+  localStorage.setItem(LTR_SEQ_KEY, String(seq));
+  // ajusta 4 dígitos; cambia a 5/6 si quieres más amplitud
+  return LTR_PREFIX + padLeft(seq, 4);
+}
 
    
 </script>
