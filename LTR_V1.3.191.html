@@ -502,6 +502,29 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   font: inherit;
 }
 </style>
+
+<style>
+  /* === LTR Menu === */
+  #ltrModule .ltr-home { /* mismo layout que clientsHome */
+    margin:0 auto 12px; width:100%; max-width:860px;
+    background:#e9e9ec; border-radius:12px; padding:28px 24px;
+    outline:3px solid #7c3aed;
+  }
+  #ltrModule .home-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:center; justify-items:center; }
+  #ltrModule .choice-card{
+    width:100%; min-height:220px; background:#efefef; border:2px solid #000; border-radius:12px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+    cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; user-select:none;
+  }
+  #ltrModule .choice-card:hover{ transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.15);}
+  #ltrModule .choice-card svg{ width:96px; height:96px;}
+  #ltrModule .choice-label{ font-weight:700; letter-spacing:.03em;}
+  @media (max-width:780px){ #ltrModule .home-grid{grid-template-columns:1fr;} }
+
+  /* Vistas internas de LTR (reutiliza “clients-list”) */
+  #ltrUnitsList.clients-list, #ltrOpsList.clients-list { padding-top: 20px; }
+</style>
+
 </head>
 <body>
 
@@ -1238,7 +1261,109 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
        <button id="btnPermGuardar" class="btn">Guardar Permisionario</button>
     <button id="btnPermVolverPostSave" class="btn ghost" style="display:none">Volver</button>
  </div>     
-</div>    
+</div>  
+
+
+      
+<!-- LTR MODULE -->
+<div id="ltrModule" class="frame hidden" aria-label="Módulo LTR">
+  <!-- Submenú (Home) -->
+  <div id="ltrHome" class="ltr-home">
+    <h2 style="text-align:center;margin-bottom:16px;">LTR</h2>
+    <div class="home-grid">
+      <!-- Tarjeta: Unidades -->
+      <div id="btnLTRUnidades" class="choice-card" role="button" tabindex="0" aria-label="Unidades LTR">
+        <!-- ícono camión / llantas -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="1" y="7" width="15" height="10" rx="2"></rect>
+          <path d="M16 10h4l3 3v4h-7z"></path>
+          <circle cx="5.5" cy="19" r="2"></circle>
+          <circle cx="18.5" cy="19" r="2"></circle>
+        </svg>
+        <div class="choice-label">UNIDADES</div>
+      </div>
+
+      <!-- Tarjeta: Operadores -->
+      <div id="btnLTROperadores" class="choice-card" role="button" tabindex="0" aria-label="Operadores LTR">
+        <!-- ícono casco -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 13a8 8 0 0 1 16 0v2H4z"></path>
+          <path d="M2 17h20"></path>
+        </svg>
+        <div class="choice-label">OPERADORES</div>
+      </div>
+    </div>
+    <div class="home-actions" style="margin-top:16px; display:flex; justify-content:flex-end;">
+      <button id="btnLTRBack" class="btn">Volver</button>
+    </div>
+  </div>
+
+  <!-- Vista: LTR > Unidades -->
+  <div id="ltrUnitsList" class="clients-menu clients-list hidden" aria-label="Unidades LTR">
+    <div class="list-toolbar">
+      <div><h3>Unidades LTR</h3></div>
+      <div class="search">
+        <label for="searchUnits">Buscar:</label>
+        <input id="searchUnits" type="text" placeholder="Placas, Eco, Tipo…">
+      </div>
+      <div class="list-actions">
+        <button id="btnUnidadNuevaLTR" class="btn primary">+ Agregar Unidad</button>
+        <button id="btnLTRUnidadesVolverHome" class="btn">Volver</button>
+        <button id="btnImportExcelUnidades" class="btn">Importar Excel</button>
+        <input id="excelInputUnidades" type="file" accept=".xlsx,.xls" style="display:none">
+      </div>
+    </div>
+
+    <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
+      <table class="doc-table" id="tablaLTRUnidades">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Tipo</th>
+            <th>Placas</th>
+            <th>Eco</th>
+            <th>Fotografías</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody><!-- filas dinámicas --></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Vista: LTR > Operadores -->
+  <div id="ltrOpsList" class="clients-menu clients-list hidden" aria-label="Operadores LTR">
+    <div class="list-toolbar">
+      <div><h3>Operadores LTR</h3></div>
+      <div class="search">
+        <label for="searchOps">Buscar:</label>
+        <input id="searchOps" type="text" placeholder="Nombre, Licencia, RFC…">
+      </div>
+      <div class="list-actions">
+        <button id="btnOperadorNuevoLTR" class="btn primary">+ Agregar Operador</button>
+        <button id="btnLTROpsVolverHome" class="btn">Volver</button>
+        <button id="btnImportExcelOperadores" class="btn">Importar Excel</button>
+        <input id="excelInputOperadores" type="file" accept=".xlsx,.xls" style="display:none">
+      </div>
+    </div>
+
+    <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
+      <table class="doc-table" id="tablaLTROperadores">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Núm. Licencia</th>
+            <th>RFC</th>
+            <th>Vto Licencia</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody><!-- filas dinámicas --></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+  
       
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
       
@@ -1304,6 +1429,14 @@ window.addEventListener('DOMContentLoaded', () => {
     showSection('permModule');
     if (typeof renderTablaPerms === 'function') renderTablaPerms();
   };
+  // Handler LTR (mismo bloque donde están modClientes/modPerm)
+document.getElementById('modLTR').onclick = () => {
+  showSection('ltrModule');
+  // Mostrar el home y ocultar las vistas internas
+  document.getElementById('ltrHome')?.classList.remove('hidden');
+  document.getElementById('ltrUnitsList')?.classList.add('hidden');
+  document.getElementById('ltrOpsList')?.classList.add('hidden');
+};    
   document.getElementById('btnClientesBack')?.addEventListener('click', () => {
     showSection('dashboard');
   });
@@ -2657,7 +2790,118 @@ window.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('click', (e) => { if (e.target === operadorModal) ocultar(); });
 
    })();
-</script>     
+</script>  
+
+
+<script>
+
+//Modulo 3
+window.addEventListener('DOMContentLoaded', () => {
+  // === Referencias de vistas LTR
+  const ltrHome         = document.getElementById('ltrHome');
+  const ltrUnitsList    = document.getElementById('ltrUnitsList');
+  const ltrOpsList      = document.getElementById('ltrOpsList');
+
+  // === Botones principales LTR
+  const btnLTR          = document.getElementById('modLTR'); // dashboard
+  const btnUnidades     = document.getElementById('btnLTRUnidades');
+  const btnOperadores   = document.getElementById('btnLTROperadores');
+  const btnLTRBack      = document.getElementById('btnLTRBack');
+
+  // === Botones internos (volver y acciones)
+  const btnUnitsBack    = document.getElementById('btnLTRUnidadesVolverHome');
+  const btnOpsBack      = document.getElementById('btnLTROpsVolverHome');
+
+  // === Helpers de vista interna LTR
+  function showInLTR(el){
+    [ltrHome, ltrUnitsList, ltrOpsList].forEach(x => x && x.classList.add('hidden'));
+    el && el.classList.remove('hidden');
+  }
+
+  // === Navegación desde Home LTR
+  btnUnidades?.addEventListener('click', () => showInLTR(ltrUnitsList));
+  btnOperadores?.addEventListener('click', () => showInLTR(ltrOpsList));
+
+  // === Volver (desde home de LTR hacia dashboard)
+  btnLTRBack?.addEventListener('click', () => {
+    // Mismo patrón que usas en otros “volver”
+    // Ejemplo: btnClientesBack vuelve al dashboard
+    // (ver líneas: addEventListener('click', () => showSection('dashboard')))
+    // Reutilizamos showSection:
+    showSection('dashboard');
+  });
+
+  // === Volver internos (listas) hacia Home LTR
+  btnUnitsBack?.addEventListener('click', () => showInLTR(ltrHome));
+  btnOpsBack?.addEventListener('click', () => showInLTR(ltrHome));
+
+  // === Datos locales (puedes integrarlo con tu storage real)
+  const srUnitsKey = 'sr_ltr_unidades';
+  const srOpsKey   = 'sr_ltr_operadores';
+
+  function getUnits(){ try { return JSON.parse(localStorage.getItem(srUnitsKey)) || []; } catch { return []; } }
+  function setUnits(arr){ localStorage.setItem(srUnitsKey, JSON.stringify(arr)); }
+
+  function getOps(){ try { return JSON.parse(localStorage.getItem(srOpsKey)) || []; } catch { return []; } }
+  function setOps(arr){ localStorage.setItem(srOpsKey, JSON.stringify(arr)); }
+
+  // === Render Unidades
+  function renderTablaLTRUnidades(filtro=''){
+    const tbody = document.querySelector('#tablaLTRUnidades tbody');
+    if(!tbody) return;
+    const data = getUnits();
+    const q = (filtro||'').toLowerCase();
+    const fil = data.filter(u =>
+      !q || [u.id,u.tipo,u.placas,u.eco].some(v => String(v||'').toLowerCase().includes(q))
+    );
+    tbody.innerHTML = fil.map(u => `
+      <tr>
+        <td>${u.id||''}</td>
+        <td>${u.tipo||''}</td>
+        <td>${u.placas||''}</td>
+        <td>${u.eco||''}</td>
+        <td>${(u.fotos||[]).length} archivo(s)</td>
+        <td class="actions">
+          <span class="icon-btn" title="Editar">✏️</span>
+          <span class="icon-btn btnDelete" title="Eliminar">🗑️</span>
+        </td>
+      </tr>
+    `).join('') || `<tr><td colspan="6">Sin registros</td></tr>`;
+  }
+
+  // === Render Operadores
+  function renderTablaLTROperadores(filtro=''){
+    const tbody = document.querySelector('#tablaLTROperadores tbody');
+    if(!tbody) return;
+    const data = getOps();
+    const q = (filtro||'').toLowerCase();
+    const fil = data.filter(o =>
+      !q || [o.nombre,o.licencia,o.rfc].some(v => String(v||'').toLowerCase().includes(q))
+    );
+    tbody.innerHTML = fil.map(o => `
+      <tr>
+        <td>${o.nombre||''}</td>
+        <td>${o.licencia||''}</td>
+        <td>${o.rfc||''}</td>
+        <td>${o.vtoLic||''}</td>
+        <td class="actions">
+          <span class="icon-btn" title="Editar">✏️</span>
+          <span class="icon-btn btnDelete" title="Eliminar">🗑️</span>
+        </td>
+      </tr>
+    `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
+  }
+
+  // === Buscadores
+  document.getElementById('searchUnits')?.addEventListener('input', e => renderTablaLTRUnidades(e.target.value));
+  document.getElementById('searchOps')?.addEventListener('input',   e => renderTablaLTROperadores(e.target.value));
+
+  // Render inicial vacío
+  renderTablaLTRUnidades();
+  renderTablaLTROperadores();
+});
+</script>
+      
 
 <!-- Detalle permisionario -->
 <div id="permInfoModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
