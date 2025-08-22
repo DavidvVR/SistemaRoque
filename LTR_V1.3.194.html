@@ -1426,6 +1426,8 @@ window.addEventListener('DOMContentLoaded', () => {
     };
   });
 
+
+      
   // --- Navegación principal desde dashboard
   document.getElementById('modClientes').onclick = () => {
     showSection('clientsModule');
@@ -1438,13 +1440,13 @@ window.addEventListener('DOMContentLoaded', () => {
     if (typeof renderTablaPerms === 'function') renderTablaPerms();
   };
   // Handler LTR (mismo bloque donde están modClientes/modPerm)
-document.getElementById('modLTR').onclick = () => {
+document.getElementById('modLTR')('click', function () {
   showSection('ltrModule');
   // Mostrar el home y ocultar las vistas internas
   document.getElementById('ltrHome')?.classList.remove('hidden');
   document.getElementById('ltrUnitsList')?.classList.add('hidden');
   document.getElementById('ltrOpsList')?.classList.add('hidden');
-};    
+});    
   document.getElementById('btnClientesBack')?.addEventListener('click', () => {
     showSection('dashboard');
   });
