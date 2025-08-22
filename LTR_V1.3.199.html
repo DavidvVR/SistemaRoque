@@ -1367,7 +1367,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
       
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
       
-        
+  
 
   
   
@@ -1386,6 +1386,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
   }
+   window.showSection = showSection;   
 
   // --- Rellenar usuario si existe en localStorage
   const last = localStorage.getItem('sr_last_user');
