@@ -2976,25 +2976,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // === Render Operadores
   function renderTablaLTROperadores(filtro=''){
-    const tbody = document.querySelector('#tablaLTROperadores tbody');
-    if(!tbody) return;
-    const data = getOps();
-    const q = (filtro||'').toLowerCase();
-    const fil = data.filter(o =>
-      !q || [o.nombre,o.licencia,o.rfc].some(v => String(v||'').toLowerCase().includes(q))
-    );
-    tbody.innerHTML = fil.map(o => `
-      <tr>
-        <td>${o.nombre||''}</td>
-        <td>${o.licencia||''}</td>
-        <td>${o.rfc||''}</td>
-        <td>${o.vtoLic||''}</td>
-        <td class="actions">
-          <span class="icon-btn" title="Editar">✏️</span>
-          <span class="icon-btn btnDelete" title="Eliminar">🗑️</span>
-        </td>
-      </tr>
-    `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
+    if (typeof window.renderLTRTable === 'function') {
+      window.renderLTRTable(filtro);
+    }
   }
 
   // === Buscadores
@@ -3125,72 +3109,56 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // ====== Render de tabla LTR ======
-  function renderLTRTable(){
+  function renderLTRTable(filtro=''){
     var tbody = document.querySelector('#tablaLTRUnidades tbody');
     if(!tbody) return;
-    var data = getUnits();
+   var data = getUnitsFromStorage();
+    var q = (filtro || '').toLowerCase();
+    data = data.filter(function(u){
+      return !q || [u.id, u.tipo, u.placas, u.eco].some(function(v){
+        return String(v || '').toLowerCase().includes(q);
+      });
+    });
+
     tbody.innerHTML = data.map(function(u){
-      return '<tr data-id="'+u.id+'">'
-        + '<td>'
-           '<button class="ltr-id-btn" data-id="'+(u.id||'')+'"'
-           ' style="background:none;border:none;color:#1b5cff;text-decoration:underline;cursor:pointer;padding:0;font:inherit;">'
-           (u.id || '')
-           '</button>'
-           '</td>'
-        + '<td>'+ (u.tipo || '') +'</td>'
-        + '<td>'+ (u.placas || '') +'</td>'
-        + '<td>'+ (u.eco || '') +'</td>'
-        + '<td class="actions"><button class="icon-btn btnDel" title="Eliminar">🗑️</button></td>'
-        + '</tr>';
+    return `
+        <tr data-id="${u.id}">
+          <td>
+            <button class="ltr-id-btn" data-id="${u.id}" style="background:none;border:none;color:#1b5cff;text-decoration:underline;cursor:pointer;padding:0;font:inherit;">${u.id || ''}</button>
+          </td>
+          <td>${u.tipo || ''}</td>
+          <td>${u.placas || ''}</td>
+          <td>${u.eco || ''}</td>
+          <td class="actions"><button class="icon-btn btnDel" title="Eliminar">🗑️</button></td>
+        </tr>`;  
     }).join('') || '<tr><td colspan="5">Sin registros</td></tr>';
 
-   tbody.onclick = function(e){
-  // 1) Click en ID -> abre detalle
-  var idBtn = e.target.closest('.ltr-id-btn');
-  if (idBtn) {
-    var uid = idBtn.getAttribute('data-id');
-    openLTRUnidadDetalle(uid);
-    return;
-  }
-
-  // 2) Click en eliminar
-  var btn = e.target.closest('.btnDel');
-  if(btn){
-    var tr = btn.closest('tr');
-    var id = tr && tr.getAttribute('data-id');
-    if(!id) return;
-    var arr = getUnitsFromStorage().filter(function(x){ return String(x.id) !== String(id); });
-    setUnitsFromStorage(arr);
-    renderLTRTable();
-    if(window.LTRUnitsFilter){
-      try { LTRUnitsFilter.refreshTypeOptions(); LTRUnitsFilter.apply(); } catch(e){}
-    }
-    return;
-  }
-  };
-        
-    // Delegación para eliminar
+      // Delegación para eliminar
     tbody.onclick = function(e){
+    var idBtn = e.target.closest('.ltr-id-btn');
+      if(idBtn){
+        var uid = idBtn.getAttribute('data-id');
+        openLTRUnidadDetalle(uid);
+        return;
+      }      
       var btn = e.target.closest('.btnDel');
-      if(!btn) return;
-      var tr = btn.closest('tr');
-      var id = tr && tr.getAttribute('data-id');
-      if(!id) return;
-      var arr = getUnits().filter(function(x){ return String(x.id) !== String(id); });
-      setUnits(arr);
-      renderLTRTable();
-      // refresca filtros si existen
-      if(window.LTRUnitsFilter){
-        try { LTRUnitsFilter.refreshTypeOptions(); LTRUnitsFilter.apply(); } catch(e){}
-      }
-    };
+      if(btn){
+        var tr = btn.closest('tr');
+        var id = tr && tr.getAttribute('data-id');
+        if(!id) return;
+        var arr = getUnitsFromStorage().filter(function(x){ return String(x.id) !== String(id); });
+        setUnitsFromStorage(arr);
+        var current = document.getElementById('searchUnits')?.value || '';
+        renderLTRTable(current);
+        if(window.LTRUnitsFilter){
+          try { LTRUnitsFilter.refreshTypeOptions(); LTRUnitsFilter.apply(); } catch(e){}
+        }
 
-    // Actualiza opciones del filtro "Tipo" si lo tienes
     if(window.LTRUnitsFilter){
       try { LTRUnitsFilter.refreshTypeOptions(); LTRUnitsFilter.apply(); } catch(e){}
     }
   }
-
+ window.renderLTRTable = renderLTRTable;
   // ====== Guardar nueva unidad ======
   function saveUnit(){
     clearErrors();
@@ -3229,7 +3197,8 @@ window.addEventListener('DOMContentLoaded', () => {
       permisoSCT: permisoSCT
     });
     setUnitsFromStorage(list);
-    renderLTRTable();
+var current = document.getElementById('searchUnits')?.value || '';
+    renderLTRTable(current);
     closeModal();
   }
 
