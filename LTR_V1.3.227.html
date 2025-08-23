@@ -1534,7 +1534,7 @@ btn.primary { background:#efe9ff; border-color:#033552; }
       </div>
       <div class="form-group">
         <label for="opLTRCURP">CURP*</label>
-        <input id="opLTRCURP" type="text" placeholder="CURP" required>
+        <input id="opLTRCURP" type="text" placeholder="CURP">
         <div class="field-error" data-for="opLTRCURP"></div>
       </div>
     </div>
@@ -3542,11 +3542,11 @@ function nextLTRId(){
     let ok = true;
     setError('opLTRNombre','');
     setError('opLTRLicencia','');
-    setError('opLTRCURP','');
 
+        
     if(!f.nombre.value.trim()){ setError('opLTRNombre','Requerido'); ok=false; }
     if(!f.numero.value.trim()){ setError('opLTRLicencia','Requerido'); ok=false; }
-    if(!f.curp.value.trim()){   setError('opLTRCURP','Requerido'); ok=false; }
+    
     return ok;
   }
 
