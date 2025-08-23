@@ -501,6 +501,15 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
   padding: 0;
   font: inherit;
 }
+.ltr-id-link {
+  background: none;
+  border: none;
+  color: #c0392b;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}      
 </style>
 
 <style>
@@ -523,6 +532,7 @@ btn.primary { background:#efe9ff; border-color:#7c3aed; }
 
   /* Vistas internas de LTR (reutiliza “clients-list”) */
   #ltrUnitsList.clients-list, #ltrOpsList.clients-list { padding-top: 20px; }
+      
 </style>
 
 </head>
@@ -3104,6 +3114,36 @@ function fillForm(u){
     document.getElementById('ltrUAnio').value = u.anio || '';
     document.getElementById('ltrUPermisoSCT').value = u.permisoSCT || '';
   }
+function openLTRUnidadDetalle(id){
+    var unit = getUnits().find(function(x){ return String(x.id) === String(id); });
+    var modal = document.getElementById('ltrUnidadInfoModal');
+    if(!unit || !modal) return;
+    var html = '<div class="modal-section"><h3>Datos de la unidad</h3><div class="modal-fields">'
+      + '<p><label>ID:</label><span>'+ (unit.id || '') +'</span></p>'
+      + '<p><label>Tarjeta:</label><span>' + (unit.tarjeta ? '<span class="icon-btn" onclick="window.open(\''+unit.tarjeta+'\',\'_blank\')">🔍</span>' : '-') + '</span></p>'
+      + '<p><label>Placas:</label><span>'+ (unit.placas || '') +'</span></p>'
+      + '<p><label>Eco:</label><span>'+ (unit.eco || '') +'</span></p>'
+      + '<p><label>Tipo:</label><span>'+ (unit.tipo || '') +'</span></p>'
+      + '<p><label>Aseguradora:</label><span>'+ (unit.aseguradora || '') +'</span></p>'
+      + '<p><label>Vence Póliza:</label><span>'+ (unit.vencePoliza ? new Date(unit.vencePoliza).toLocaleDateString('es-MX') : '') +'</span></p>'
+      + '<p><label>Póliza:</label><span>' + (unit.poliza ? '<span class="icon-btn" onclick="window.open(\''+unit.poliza+'\',\'_blank\')">🔍</span>' : '-') + '</span></p>'
+      + '<p><label>Marca:</label><span>'+ (unit.marca || '') +'</span></p>'
+      + '<p><label>Año:</label><span>'+ (unit.anio || '') +'</span></p>'
+      + '<p><label>Permiso SCT:</label><span>'+ (unit.permisoSCT || '') +'</span></p>'
+      + '</div></div>';
+    var card = modal.querySelector('.modal-card');
+    card.innerHTML = '<span id="ltrUnidadInfoCerrar" class="close">&times;</span><h2>Detalle de la unidad</h2>' + html;
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    modal.querySelector('#ltrUnidadInfoCerrar').onclick = closeLTRUnidadDetalle;
+  }
+
+  function closeLTRUnidadDetalle(){
+    var modal = document.getElementById('ltrUnidadInfoModal');
+    if(!modal) return;
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  }
   // ====== Render de tabla LTR ======
   function renderLTRTable(){
     var tbody = document.querySelector('#tablaLTRUnidades tbody');
@@ -3111,7 +3151,7 @@ function fillForm(u){
     var data = getUnits();
     tbody.innerHTML = data.map(function(u){
       return '<tr data-id="'+u.id+'">'
-        + '<td>'+ (u.id || '') +'</td>'
+        + '<td><button class="ltr-id-link" data-id="'+ (u.id || '') +'">'+ (u.id || '') +'</button></td>'
         + '<td>'+ (u.tipo || '') +'</td>'
         + '<td>'+ (u.placas || '') +'</td>'
         + '<td>'+ (u.eco || '') +'</td>'
@@ -3119,8 +3159,13 @@ function fillForm(u){
         + '</tr>';
     }).join('') || '<tr><td colspan="5">Sin registros</td></tr>';
 
-   
     tbody.onclick = function(e){
+     var idBtn = e.target.closest('.ltr-id-link');
+      if(idBtn){
+        var id = idBtn.getAttribute('data-id');
+        openLTRUnidadDetalle(id);
+        return;
+      } 
       var editBtn = e.target.closest('.btnEdit');
       if(editBtn){
         var tr = editBtn.closest('tr');
@@ -3271,10 +3316,14 @@ function fillForm(u){
 
   // Guardar
   document.getElementById('ltrUnidadGuardar')?.addEventListener('click', saveUnit, false);
+// Render inicial
+    document.addEventListener('DOMContentLoaded', renderLTRTable);
 
-  // Render inicial
-  document.addEventListener('DOMContentLoaded', renderLTRTable);
-})();
+    var infoModal = document.getElementById('ltrUnidadInfoModal');
+    infoModal && infoModal.addEventListener('click', function(e){ if(e.target === infoModal) closeLTRUnidadDetalle(); });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeLTRUnidadDetalle(); });
+  })();
+  
 // ====== ID consecutivo LTR con prefijo "LTR-UN-" ======
 var LTR_PREFIX = 'LTR-UN-';
 var LTR_SEQ_KEY = 'sr_ltr_unidades_seq'; // donde guardamos el último consecutivo
@@ -3326,7 +3375,12 @@ function nextLTRId(){
    
 </script>
       
+ <!-- Detalle unidad LTR -->
+  <div id="ltrUnidadInfoModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
+    <div class="modal-card"></div>
+  </div>
 
+      
 <!-- Detalle permisionario -->
 <div id="permInfoModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
   <div class="modal-card">
