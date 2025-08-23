@@ -1463,13 +1463,105 @@ btn.primary { background:#efe9ff; border-color:#033552; }
             <th>Apto Médico</th>
             <th>Vto de apto.</th>
             <th>RFC</th>
+            <th>CURP</th>
+            <th>Telefono</th>
+            <th>NSS</th>
           </tr>     
         </thead>
         <tbody><!-- filas dinámicas --></tbody>
       </table>
     </div>
+        <!-- Modal: + Agregar Operador (EXCLUSIVO LTR) -->
+<div id="ltrOperadorModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-content" style="min-width:560px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <h3>+ Agregar Operador</h3>
+
+    <div class="form-row">
+      <div class="form-group form-group-full">
+        <label for="opLTRNombre">Nombre*</label>
+        <input id="opLTRNombre" type="text" placeholder="Nombre(s) y apellidos" required>
+        <div class="field-error" data-for="opLTRNombre"></div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="opLTRLicencia">No. Licencia*</label>
+        <input id="opLTRLicencia" type="text" placeholder="Numero de Licencia" required>
+        <div class="field-error" data-for="opLTRLicencia"></div>
+      </div>
+      <div class="form-group">
+        <label for="opLTRVtoLicencia">Vto de Licencia</label>
+        <input id="opLTRVtoLicencia" type="date">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group form-group-full">
+        <label for="opLicenciaName">Licencia</label>
+        <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+          <button type="button" id="btnOpLicenciaPick" class="icon-btn" title="Adjuntar licencia">📁</button>
+          <input id="opLicenciaFile" type="file" accept="application/pdf,image/*" style="display:none">
+          <input id="opLicenciaName" type="text" placeholder="Selecciona un archivo…" readonly>
+          <input id="opLicencia" type="hidden" value="">
+        </div>
+        <div class="field-error" data-for="opLicenciaName"></div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="opVtoApto">Vto apto</label>
+        <input id="opVtoApto" type="date">
+      </div>
+      <div class="form-group form-group-full">
+        <label for="opAptoName">Apto Médico</label>
+        <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+          <button type="button" id="btnOpAptoPick" class="icon-btn" title="Adjuntar apto médico">📁</button>
+          <input id="opAptoFile" type="file" accept="application/pdf,image/*" style="display:none">
+          <input id="opAptoName" type="text" placeholder="Selecciona un archivo…" readonly>
+          <input id="opAptoMedico" type="hidden" value="">
+        </div>
+        <div class="field-error" data-for="opAptoName"></div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="opRFC">RFC</label>
+        <input id="opRFC" type="text">
+      </div>
+      <div class="form-group">
+        <label for="opLTRCURP">CURP*</label>
+        <input id="opLTRCURP" type="text" placeholder="CURP" required>
+        <div class="field-error" data-for="opLTRCURP"></div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="opLTRTelefono">Teléfono</label>
+        <input id="opLTRTelefono" type="tel" placeholder="10 dígitos">
+      </div>
+      <div class="form-group">
+        <label for="opLTRNSS">NSS</label>
+        <input id="opLTRNSS" type="text" placeholder="Número de Seguro Social">
+      </div>
+    </div>
+
+    <div class="modal-buttons">
+      <button type="button" id="ltrOpCancelar" class="btn-cancelar">Cancelar</button>
+      <button type="button" id="ltrOpGuardar" class="btn-guardar">Guardar</button>
+    </div>
+    </div>
+    </div>
+
+
   </div>
-</div>
+
+      
+</div><!-- Este cierra el Modulo 3 -->
   
       
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -2951,28 +3043,41 @@ window.addEventListener('DOMContentLoaded', () => {
   function setOps(arr){ localStorage.setItem(srOpsKey, JSON.stringify(arr)); }
 
 
-  // === Render Operadores
-  function renderTablaLTROperadores(filtro=''){
-    const tbody = document.querySelector('#tablaLTROperadores tbody');
-    if(!tbody) return;
-    const data = getOps();
-    const q = (filtro||'').toLowerCase();
-    const fil = data.filter(o =>
-      !q || [o.nombre,o.licencia,o.rfc].some(v => String(v||'').toLowerCase().includes(q))
-    );
-    tbody.innerHTML = fil.map(o => `
+ // === Render Operadores
+function renderTablaLTROperadores(filtro=''){
+  const tbody = document.querySelector('#tablaLTROperadores tbody');
+  if(!tbody) return;
+  const data = getOps(); // usa la misma “BD” local sr_ltr_operadores
+
+  const q = (filtro || '').toLowerCase();
+  const fil = data.filter(o =>
+    !q || [o.nombre, o.numero, o.rfc].some(v => String(v||'').toLowerCase().includes(q))
+  );
+
+  tbody.innerHTML = fil.map(o => {
+    // mostramos el nombre del archivo si existe, o vacío
+    const licVis = o.licencia || '';
+    const aptoVis = o.apto || '';
+    // fechas legibles (si vienen en ISO yyyy-mm-dd)
+    const vtoLicVis  = o.vtoLic  ? new Date(o.vtoLic  + 'T00:00:00').toLocaleDateString('es-MX') : '';
+    const vtoAptoVis = o.vtoApto ? new Date(o.vtoApto + 'T00:00:00').toLocaleDateString('es-MX') : '';
+
+    return `
       <tr>
-        <td>${o.nombre||''}</td>
-        <td>${o.licencia||''}</td>
-        <td>${o.rfc||''}</td>
-        <td>${o.vtoLic||''}</td>
-        <td class="actions">
-          <span class="icon-btn" title="Editar">✏️</span>
-          <span class="icon-btn btnDelete" title="Eliminar">🗑️</span>
-        </td>
-      </tr>
-    `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
-  }
+        <td>${o.nombre || ''}</td>
+        <td>${o.numero || ''}</td>
+        <td>${licVis}</td>
+        <td>${vtoLicVis}</td>
+        <td>${aptoVis}</td>
+        <td>${vtoAptoVis}</td>
+        <td>${o.rfc || ''}</td>
+        <td>${o.curp || ''}</td>
+        <td>${o.telefono || ''}</td>
+        <td>${o.nss || ''}</td>
+      </tr>`;
+  }).join('') || `<tr><td colspan="7">Sin registros</td></tr>`;
+}
+
 
   // === Buscadores
   document.getElementById('searchUnits')?.addEventListener('input', e => renderTablaLTRUnidades(e.target.value));
@@ -3373,6 +3478,105 @@ function nextLTRId(){
   // ajusta 4 dígitos; cambia a 5/6 si quieres más amplitud
   return LTR_PREFIX + padLeft(seq, 4);
 }
+// === Modal: + Agregar Operador (EXCLUSIVO LTR) ===
+(function(){
+  // Referencias
+  const btnNuevo   = document.getElementById('btnOperadorNuevoLTR');
+  const modal      = document.getElementById('ltrOperadorModal');
+  const btnClose   = modal?.querySelector('.close');
+  const btnGuardar = document.getElementById('ltrOpGuardar');
+  const btnCancelar= document.getElementById('ltrOpCancelar');
+
+  // Campos
+  const $ = (id) => document.getElementById(id);
+  const f = {
+    nombre: $('opLTRNombre'),
+    numero: $('opLTRLicencia'),
+    vtoLic: $('opLTRVtoLicencia'),
+    licBtn: $('btnOpLicenciaPick'),
+    licFile:$('opLicenciaFile'),
+    licName:$('opLicenciaName'),
+    licHidden:$('opLicencia'),
+    vtoApto:$('opVtoApto'),
+    aptoBtn:$('btnOpAptoPick'),
+    aptoFile:$('opAptoFile'),
+    aptoName:$('opAptoName'),
+    aptoHidden:$('opAptoMedico'),
+    rfc: $('opRFC'),
+    curp:$('opLTRCURP'),
+    tel: $('opLTRTelefono'),
+    nss: $('opLTRNSS')
+  };
+
+  function mostrar(){ modal.classList.remove('hidden'); modal.style.display = 'flex'; }
+  function ocultar(){ modal.classList.add('hidden'); modal.style.display = 'none'; }
+  function limpiar(){
+    Object.values(f).forEach(el => { if(el && 'value' in el) el.value = ''; });
+  }
+
+  // Pickers
+  f.licBtn?.addEventListener('click', () => f.licFile?.click());
+  f.licFile?.addEventListener('change', () => {
+    f.licName.value = f.licFile.files?.[0]?.name || '';
+    f.licHidden.value = f.licName.value;
+  });
+
+  f.aptoBtn?.addEventListener('click', () => f.aptoFile?.click());
+  f.aptoFile?.addEventListener('change', () => {
+    f.aptoName.value = f.aptoFile.files?.[0]?.name || '';
+    f.aptoHidden.value = f.aptoName.value;
+  });
+
+  // Abrir / cerrar
+  btnNuevo?.addEventListener('click', () => { limpiar(); mostrar(); });
+  btnClose?.addEventListener('click', ocultar);
+  btnCancelar?.addEventListener('click', ocultar);
+  window.addEventListener('click', (e) => { if (e.target === modal) ocultar(); });
+
+  // Validación mínima
+  function setError(id, msg){
+    const err = modal.querySelector(`.field-error[data-for="${id}"]`);
+    if(err) err.textContent = msg || '';
+  }
+  function validar(){
+    let ok = true;
+    setError('opLTRNombre','');
+    setError('opLTRLicencia','');
+    setError('opLTRCURP','');
+
+    if(!f.nombre.value.trim()){ setError('opLTRNombre','Requerido'); ok=false; }
+    if(!f.numero.value.trim()){ setError('opLTRLicencia','Requerido'); ok=false; }
+    if(!f.curp.value.trim()){   setError('opLTRCURP','Requerido'); ok=false; }
+    return ok;
+  }
+
+  // Guardar: agrega a sr_ltr_operadores y re-render
+  btnGuardar?.addEventListener('click', () => {
+    if(!validar()) return;
+
+    const datos = {
+      nombre: f.nombre.value.trim(),
+      numero: f.numero.value.trim(),
+      licencia: f.licName.value.trim(),     // solo nombre del archivo
+      vtoLic: f.vtoLic.value || '',         // ISO yyyy-mm-dd
+      apto: f.aptoName.value.trim(),        // solo nombre del archivo
+      vtoApto: f.vtoApto.value || '',
+      rfc: f.rfc.value.trim(),
+      curp: f.curp.value.trim(),
+      telefono: f.tel.value.trim(),
+      nss: f.nss.value.trim()
+    };
+
+    const arr = getOps();    // funciones ya existentes en el módulo LTR
+    arr.push(datos);
+    setOps(arr);
+
+    renderTablaLTROperadores(); // refresca la tabla
+    ocultar();
+    limpiar();
+  });
+})();
+
 
    
 </script>
