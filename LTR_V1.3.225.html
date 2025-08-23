@@ -1466,6 +1466,69 @@ btn.primary { background:#efe9ff; border-color:#033552; }
         <tbody><!-- filas dinámicas --></tbody>
       </table>
     </div>
+     <div id="ltrOperadorModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-content" style="min-width:480px;">
+        <span class="close" title="Cerrar">&times;</span>
+        <h3>Agregar Operador</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ltrOpNombre">Nombre</label>
+            <input id="ltrOpNombre" type="text">
+          </div>
+          <div class="form-group">
+            <label for="ltrOpNumeroLicencia">Número de Licencia</label>
+            <input id="ltrOpNumeroLicencia" type="text">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ltrOpLicenciaName">Licencia</label>
+            <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+              <button type="button" id="btnLTROpLicenciaPick" class="icon-btn" title="Adjuntar licencia">📁</button>
+              <input id="ltrOpLicenciaFile" type="file" accept="application/pdf,image/*" style="display:none">
+              <input id="ltrOpLicenciaName" type="text" placeholder="Selecciona un archivo…" readonly>
+              <input id="ltrOpLicencia" type="hidden" value="">
+              <div class="field-error" data-for="ltrOpLicenciaName"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ltrOpVtoLicencia">Vto de Licencia</label>
+            <input id="ltrOpVtoLicencia" type="date">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ltrOpAptoName">Apto Médico</label>
+            <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+              <button type="button" id="btnLTROpAptoPick" class="icon-btn" title="Adjuntar apto médico">📁</button>
+              <input id="ltrOpAptoFile" type="file" accept="application/pdf,image/*" style="display:none">
+              <input id="ltrOpAptoName" type="text" placeholder="Selecciona un archivo…" readonly>
+              <input id="ltrOpAptoMedico" type="hidden" value="">
+              <div class="field-error" data-for="ltrOpAptoName"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ltrOpVtoApto">Vto apto</label>
+            <input id="ltrOpVtoApto" type="date">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group form-group-full">
+            <label for="ltrOpRFC">RFC</label>
+            <input id="ltrOpRFC" type="text">
+          </div>
+        </div>
+
+        <div class="modal-buttons">
+          <button type="button" class="btn-cancelar">Cancelar</button>
+          <button type="button" class="btn-guardar">Guardar</button>
+        </div>
+      </div>
+    </div>    
   </div>
 </div>
   
@@ -2948,31 +3011,7 @@ window.addEventListener('DOMContentLoaded', () => {
   function getOps(){ try { return JSON.parse(localStorage.getItem(srOpsKey)) || []; } catch { return []; } }
   function setOps(arr){ localStorage.setItem(srOpsKey, JSON.stringify(arr)); }
 
-
-  // === Render Operadores
-  function renderTablaLTROperadores(filtro=''){
-    const tbody = document.querySelector('#tablaLTROperadores tbody');
-    if(!tbody) return;
-    const data = getOps();
-    const q = (filtro||'').toLowerCase();
-    const fil = data.filter(o =>
-      !q || [o.nombre,o.licencia,o.rfc].some(v => String(v||'').toLowerCase().includes(q))
-    );
-    tbody.innerHTML = fil.map(o => `
-      <tr>
-        <td>${o.nombre||''}</td>
-        <td>${o.licencia||''}</td>
-        <td>${o.rfc||''}</td>
-        <td>${o.vtoLic||''}</td>
-        <td class="actions">
-          <span class="icon-btn" title="Editar">✏️</span>
-          <span class="icon-btn btnDelete" title="Eliminar">🗑️</span>
-        </td>
-      </tr>
-    `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
-  }
-
-  // === Buscadores
+     // === Buscadores
   document.getElementById('searchUnits')?.addEventListener('input', e => renderTablaLTRUnidades(e.target.value));
   document.getElementById('searchOps')?.addEventListener('input',   e => renderTablaLTROperadores(e.target.value));
 
@@ -2991,6 +3030,31 @@ window.addEventListener('DOMContentLoaded', () => {
       .replace(/[\u0300-\u036f]/g, '')    // elimina marcas diacríticas
       .toLowerCase().trim();
   }
+   
+
+  // === Render Operadores
+  function renderTablaLTROperadores(filtro=''){
+    const tbody = document.querySelector('#tablaLTROperadores tbody');
+    if(!tbody) return;
+    const data = getOps();
+    const q = (filtro||'').toLowerCase();
+    const fil = data.filter(o =>
+     const fil = data.map((o,idx) => ({...o, idx})).filter(o =>
+      !q || [o.nombre,o.numero,o.rfc].some(v => String(v||'').toLowerCase().includes(q))  
+    tbody.innerHTML = fil.map(o => `
+      <tr data-idx="${o.idx}">
+        <td>${o.nombre||''}</td>
+        <td>${o.numero||''}</td>
+        <td>${o.rfc||''}</td>
+         <td>${o.vtoLic ? new Date(o.vtoLic+'T00:00:00').toLocaleDateString('es-MX') : ''}</td>
+        <td class="actions">
+           <span class="icon-btn edit" title="Editar">✏️</span>
+          <span class="icon-btn btnDelete" title="Eliminar">🗑️</span>
+        </td>
+      </tr>
+    `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
+  }
+
 
   // Elementos base
   var $tabla = document.getElementById('tablaLTRUnidades');       // <table>
@@ -3371,6 +3435,109 @@ function nextLTRId(){
   // ajusta 4 dígitos; cambia a 5/6 si quieres más amplitud
   return LTR_PREFIX + padLeft(seq, 4);
 }
+
+ // === Modal Operador LTR ===
+  const btnOpNuevo = document.getElementById('btnOperadorNuevoLTR');
+  const opModal = document.getElementById('ltrOperadorModal');
+  const opsBody = document.querySelector('#tablaLTROperadores tbody');
+  let editingOp = null;
+  const opFields = {
+    nombre: document.getElementById('ltrOpNombre'),
+    numero: document.getElementById('ltrOpNumeroLicencia'),
+    licencia: document.getElementById('ltrOpLicencia'),
+    licenciaName: document.getElementById('ltrOpLicenciaName'),
+    licenciaFile: document.getElementById('ltrOpLicenciaFile'),
+    vtoLic: document.getElementById('ltrOpVtoLicencia'),
+    apto: document.getElementById('ltrOpAptoMedico'),
+    aptoName: document.getElementById('ltrOpAptoName'),
+    aptoFile: document.getElementById('ltrOpAptoFile'),
+    vtoApto: document.getElementById('ltrOpVtoApto'),
+    rfc: document.getElementById('ltrOpRFC')
+  };
+
+  function limpiarOp(){ Object.values(opFields).forEach(el => { if(el) el.value=''; }); }
+  function llenarOp(op){
+    if(!op) return;
+    opFields.nombre.value = op.nombre || '';
+    opFields.numero.value = op.numero || '';
+    opFields.licencia.value = op.licencia || '';
+    opFields.licenciaName.value = op.licencia || '';
+    opFields.vtoLic.value = op.vtoLic || '';
+    opFields.apto.value = op.apto || '';
+    opFields.aptoName.value = op.apto || '';
+    opFields.vtoApto.value = op.vtoApto || '';
+    opFields.rfc.value = op.rfc || '';
+  }
+  function mostrarOp(){ opModal.classList.remove('hidden'); opModal.style.display='flex'; }
+  function ocultarOp(){ opModal.classList.add('hidden'); opModal.style.display='none'; }
+
+  btnOpNuevo?.addEventListener('click', () => { editingOp = null; limpiarOp(); mostrarOp(); });
+  opModal.querySelector('.close')?.addEventListener('click', ocultarOp);
+  opModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultarOp);
+  opModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+    const datos = {
+      nombre: opFields.nombre.value.trim(),
+      numero: opFields.numero.value.trim(),
+      licencia: opFields.licencia.value.trim(),
+      vtoLic: opFields.vtoLic.value,
+      apto: opFields.apto.value.trim(),
+      vtoApto: opFields.vtoApto.value,
+      rfc: opFields.rfc.value.trim()
+    };
+    if(!datos.nombre || !datos.numero || !datos.rfc){
+      alert('Completa los campos obligatorios: Nombre, Núm. Licencia y RFC');
+      return;
+    }
+    const arr = getOps();
+    if(editingOp !== null){
+      arr[editingOp] = { ...arr[editingOp], ...datos };
+    } else {
+      arr.push(datos);
+    }
+    setOps(arr);
+    renderTablaLTROperadores(document.getElementById('searchOps')?.value || '');
+    ocultarOp();
+  });
+  window.addEventListener('click', e => { if(e.target === opModal) ocultarOp(); });
+
+  document.getElementById('btnLTROpLicenciaPick')?.addEventListener('click', () => opFields.licenciaFile.click());
+  opFields.licenciaFile?.addEventListener('change', () => {
+    if(opFields.licenciaFile.files.length){
+      opFields.licenciaName.value = opFields.licenciaFile.files[0].name;
+      opFields.licencia.value = opFields.licenciaFile.files[0].name;
+    } else {
+      opFields.licenciaName.value = '';
+      opFields.licencia.value = '';
+    }
+  });
+  document.getElementById('btnLTROpAptoPick')?.addEventListener('click', () => opFields.aptoFile.click());
+  opFields.aptoFile?.addEventListener('change', () => {
+    if(opFields.aptoFile.files.length){
+      opFields.aptoName.value = opFields.aptoFile.files[0].name;
+      opFields.apto.value = opFields.aptoFile.files[0].name;
+    } else {
+      opFields.aptoName.value = '';
+      opFields.apto.value = '';
+    }
+  });
+
+  opsBody?.addEventListener('click', e => {
+    const tr = e.target.closest('tr');
+    if(!tr) return;
+    const idx = parseInt(tr.getAttribute('data-idx'), 10);
+    if(e.target.closest('.edit')){
+      const op = getOps()[idx];
+      if(op){ editingOp = idx; limpiarOp(); llenarOp(op); mostrarOp(); }
+    } else if(e.target.closest('.btnDelete')){
+      if(confirm('¿Eliminar operador?')){
+        const arr = getOps();
+        arr.splice(idx,1);
+        setOps(arr);
+        renderTablaLTROperadores(document.getElementById('searchOps')?.value || '');
+      }
+    }
+  });
+      
 
    
 </script>
