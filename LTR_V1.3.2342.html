@@ -532,6 +532,9 @@ btn.primary { background:#efe9ff; border-color:#033552; }
 
   /* Vistas internas de LTR (reutiliza “clients-list”) */
   #ltrUnitsList.clients-list, #ltrOpsList.clients-list { padding-top: 20px; }
+
+.muted { color: #666; font-size: .9em; }
+.icon-btn { cursor: pointer; }
       
 </style>
 <style>
@@ -1637,7 +1640,11 @@ btn.primary { background:#efe9ff; border-color:#033552; }
     <div class="form-group">
       <label for="asigClienteSelect">Cliente*</label>
       <div style="display:flex; gap:8px; align-items:center;">
-        <select id="asigClienteSelect" required style="min-width:320px;">
+       
+
+            
+<!-- Aqui empieza el render de servicios activos -->
+<select id="asigClienteSelect" required style="min-width:320px;">
           <option value="">Cargando clientes…</option>
         </select>
         <button type="button" id="btnAsignRefrescarClientes" class="icon-btn" title="Refrescar clientes">🔄</button>
@@ -3930,7 +3937,222 @@ document.addEventListener('DOMContentLoaded', () => {
     bindClienteChange();
   }
 });
+// ========== ASIGNACIÓN: Tipos de unidad por cliente (desde tabla de tarifas) ==========
+// Reusamos la lista de posibles llaves de clientes; si no existe, la definimos.
+const ASIG_CLIENT_KEYS = (window.ASIG_CLIENT_KEYS && Array.isArray(window.ASIG_CLIENT_KEYS))
+  ? window.ASIG_CLIENT_KEYS
+  : ['sr_clientes','sr_clientes_registrados','srClientes'];
 
+// Helpers LS
+function _readLS(key){ try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } }
+function _readLSObj(key){ try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch { return {}; } }
+
+// Busca al cliente "raw" (sin normalizar) en cualquiera de las llaves
+function findRawClienteById(clienteId){
+  const idStr = String(clienteId ?? '');
+  for(const k of ASIG_CLIENT_KEYS){
+    const arr = _readLS(k);
+    if(Array.isArray(arr) && arr.length){
+      const found = arr.find(c => {
+        const cands = [
+          c.id, c.clienteId, c.codigo, c.clave
+        ].map(v => String(v ?? ''));
+        return cands.includes(idStr);
+      });
+      if(found) return found;
+    }
+  }
+  return null;
+}
+
+// Algunas implementaciones guardan tarifas por fuera; probamos varias ubicaciones
+function getTarifasForClient(clienteId, raw){
+  // 1) Dentro del objeto cliente
+  const inClient =
+    raw?.tarifas || raw?.Tarifas || raw?.tablaTarifas || raw?.tabla_tarifas ||
+    raw?.pricing || raw?.rates;
+  if (Array.isArray(inClient) && inClient.length) return inClient;
+
+  // 2) Un objeto global { [clienteId]: tarifas[] }
+  const glob = _readLSObj('sr_tarifas_por_cliente');
+  if (Array.isArray(glob?.[clienteId]) && glob[clienteId].length) return glob[clienteId];
+
+  // 3) Un arreglo global de tarifas con campo clienteId
+  const flat = _readLS('sr_tarifas');
+  if (Array.isArray(flat) && flat.length){
+    const byId = flat.filter(t => String(t.clienteId ?? t.cliente ?? '') === String(clienteId));
+    if (byId.length) return byId;
+  }
+
+  // 4) Llave por cliente
+  const perKey = _readLS(`sr_tarifas_${clienteId}`);
+  if (Array.isArray(perKey) && perKey.length) return perKey;
+
+  return [];
+}
+
+// Normaliza el nombre de una clave para detectar “tipo de unidad”
+function _normKey(s){
+  return String(s||'')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // quita acentos
+    .replace(/\s+/g,'')
+    .replace(/[^a-z0-9_]/g,'');
+}
+
+// Dado un renglón de tarifa (objeto), devuelve el valor de su columna "tipo de unidad"
+function getTipoUnidadFromRowObj(row){
+  if (!row || typeof row !== 'object') return '';
+  // candidatos comunes
+  const candidates = Object.keys(row);
+  let key = candidates.find(k => {
+    const nk = _normKey(k);
+    return nk === 'tipounidad' || nk === 'unidad' || nk === 'tipo' || nk === 'tipodeunidad' || nk === 'tipounidads';
+  });
+  // fallback: intenta detectar claves que contengan 'unidad' o 'tipo'
+  if (!key){
+    key = candidates.find(k => /unidad|tipo/i.test(k));
+  }
+  return (key ? String(row[key]) : '').trim();
+}
+
+// Si la tabla de tarifas viene como 2D array [ [headers...], [fila...], ... ]
+function extractTiposFrom2D(arr){
+  if (!Array.isArray(arr) || arr.length === 0 || !Array.isArray(arr[0])) return [];
+  const headers = arr[0].map(h => _normKey(h));
+  let idx = headers.findIndex(h => ['tipounidad','unidad','tipo','tipodeunidad'].includes(h));
+  if (idx === -1){
+    idx = headers.findIndex(h => /unidad|tipo/.test(h));
+  }
+  if (idx === -1) return [];
+  const tipos = [];
+  for (let i=1; i<arr.length; i++){
+    const row = arr[i];
+    if (Array.isArray(row) && row[idx] != null){
+      const val = String(row[idx]).trim();
+      if (val) tipos.push(val);
+    }
+  }
+  return tipos;
+}
+
+// Extrae lista única de tipos de unidad a partir de cualquier forma de "tarifas"
+function extractTiposUnidad(tarifas){
+  if (!tarifas || !tarifas.length) return [];
+  // Caso objetos
+  if (typeof tarifas[0] === 'object' && !Array.isArray(tarifas[0])){
+    const tipos = tarifas.map(getTipoUnidadFromRowObj).filter(Boolean);
+    return Array.from(new Set(tipos)).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+  }
+  // Caso 2D array
+  if (Array.isArray(tarifas[0])){
+    const tipos = extractTiposFrom2D(tarifas).filter(Boolean);
+    return Array.from(new Set(tipos)).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+  }
+  return [];
+}
+
+// Lee el cliente actualmente elegido del borrador o del <select>
+function getSelectedClienteId(){
+  const sel = document.getElementById('asigClienteSelect');
+  const fromSelect = sel?.value || '';
+  if (fromSelect) return fromSelect;
+  // fallback: del borrador
+  try {
+    const d = JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}');
+    return String(d?.cliente?.id || '');
+  } catch { return ''; }
+}
+
+// Renderiza opciones de Tipo de unidad basadas en el cliente seleccionado
+function renderUnidadOptionsBasedOnClient(){
+  const sel = document.getElementById('asigUnidadSelect');
+  const msg = document.getElementById('asigSinUnidades');
+  if(!sel) return;
+
+  const clienteId = getSelectedClienteId();
+  if (!clienteId){
+    sel.innerHTML = `<option value="">Selecciona un cliente primero…</option>`;
+    sel.disabled = true;
+    if (msg) msg.style.display = 'none';
+    return;
+  }
+
+  const raw = findRawClienteById(clienteId);
+  const tarifas = getTarifasForClient(clienteId, raw);
+  const tipos = extractTiposUnidad(tarifas);
+
+  if (!tipos.length){
+    sel.innerHTML = `<option value="">— Sin tipos de unidad para este cliente —</option>`;
+    sel.disabled = true;
+    if (msg) msg.style.display = 'inline';
+    return;
+  }
+
+  sel.disabled = false;
+  if (msg) msg.style.display = 'none';
+
+  // intenta mantener la selección anterior si es válida
+  let prev = '';
+  try{
+    const draft = JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}');
+    prev = String(draft?.tipoUnidad || '');
+  }catch{}
+
+  sel.innerHTML = [
+    `<option value="">— Selecciona tipo de unidad —</option>`,
+    ...tipos.map(t => `<option value="${t}">${t}</option>`)
+  ].join('');
+
+  if (prev && tipos.includes(prev)) sel.value = prev;
+}
+
+// Vincula el change y guarda en borrador
+function bindUnidadChange(){
+  const sel = document.getElementById('asigUnidadSelect');
+  if(!sel) return;
+  sel.addEventListener('change', () => {
+    const draft = {
+      ...(JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}')),
+      tipoUnidad: sel.value || ''
+    };
+    localStorage.setItem('sr_asign_borrador', JSON.stringify(draft));
+  });
+}
+
+// --- Eventos / wiring ---
+document.getElementById('btnAsignRefrescarUnidades')
+  ?.addEventListener('click', renderUnidadOptionsBasedOnClient);
+
+// Cuando cambie el cliente, recalcula los tipos de unidad
+document.getElementById('asigClienteSelect')
+  ?.addEventListener('change', () => {
+    // limpia selección previa del borrador
+    const draft = {...(JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}'))};
+    delete draft.tipoUnidad;
+    localStorage.setItem('sr_asign_borrador', JSON.stringify(draft));
+
+    renderUnidadOptionsBasedOnClient();
+    bindUnidadChange();
+  });
+
+// Si entras directo a "Nuevo Servicio" (ya visible), prepara el selector
+document.addEventListener('DOMContentLoaded', () => {
+  const nuevo = document.getElementById('asignNuevo');
+  if (nuevo && !nuevo.classList.contains('hidden')){
+    renderUnidadOptionsBasedOnClient();
+    bindUnidadChange();
+  }
+});
+
+// También cuando navegues a "Nuevo Servicio" desde el submenú (si ya tienes ese listener):
+document.getElementById('asignNuevoBtn')
+  ?.addEventListener('click', () => {
+    renderUnidadOptionsBasedOnClient();
+    bindUnidadChange();
+  });
+
+      
       
 </script>
 
