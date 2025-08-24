@@ -3072,18 +3072,18 @@ function renderTablaLTROperadores(filtro=''){
 
     return `
       <tr>
-        <td>${o.nombre || ''}</td>
-        <td>${o.numero || ''}</td>
-        <td>${licVis}</td>
-        <td>${vtoLicVis}</td>
-        <td>${aptoVis}</td>
-        <td>${vtoAptoVis}</td>
-        <td>${o.rfc || ''}</td>
-        <td>${o.curp || ''}</td>
-        <td>${o.telefono || ''}</td>
-        <td>${o.nss || ''}</td>
+              <td>${o.nombre || ''}</td>
+              <td>${o.numero || ''}</td>
+            <td>${licCell}</td>
+            <td>${vtoLicVis}</td>
+            <td>${aptoCell}</td>
+            <td>${vtoAptoVis}</td>
+              <td>${o.rfc || ''}</td>
+              <td>${o.curp || ''}</td>
+              <td>${o.telefono || ''}</td>
+              <td>${o.nss || ''}</td>
       </tr>`;
-  }).join('') || `<tr><td colspan="7">Sin registros</td></tr>`;
+  }).join('') || `<tr><td colspan="10">Sin registros</td></tr>`;
 }
 // Delegado de clic para las lupas (Licencia / Apto) en la tabla LTR
 document.querySelector('#tablaLTROperadores tbody')?.addEventListener('click', (e) => {
@@ -3094,7 +3094,7 @@ document.querySelector('#tablaLTROperadores tbody')?.addEventListener('click', (
     const url = licBtn.dataset.url;
     if (url) window.open(url, '_blank'); else alert('No hay archivo adjunto');
     return;
-  }
+  }      
   if (aptoBtn) {
     const url = aptoBtn.dataset.url;
     if (url) window.open(url, '_blank'); else alert('No hay archivo adjunto');
