@@ -4010,70 +4010,90 @@ document.addEventListener('DOMContentLoaded', () => {
       bindTipoUnidadChange();
     }
   });
-// === Abreviaturas de estados (MX) ===
-const ESTADO_ABBR = {
-  'Aguascalientes':'AGS','Baja California':'BC','Baja California Sur':'BCS',
-  'Campeche':'CAMP','Coahuila':'COAH','Colima':'COL','Chiapas':'CHIS','Chihuahua':'CHIH',
-  'Ciudad de México':'CDMX','CDMX':'CDMX','Durango':'DGO','Guanajuato':'GTO','Guerrero':'GRO',
-  'Hidalgo':'HGO','Jalisco':'JAL','México':'MEX','Estado de México':'MEX','Michoacán':'MICH',
-  'Morelos':'MOR','Nayarit':'NAY','Nuevo León':'NL','Oaxaca':'OAX','Puebla':'PUE',
-  'Querétaro':'QRO','Queretaro':'QRO','Quintana Roo':'QROO','San Luis Potosí':'SLP',
-  'Sinaloa':'SIN','Sonora':'SON','Tabasco':'TAB','Tamaulipas':'TAMPS','Tlaxcala':'TLAX',
-  'Veracruz':'VER','Yucatán':'YUC','Yucatan':'YUC','Zacatecas':'ZAC'
-};
-const abrevEstado = s => ESTADO_ABBR[String(s||'').trim()] 
-                      || String(s||'').trim().slice(0,3).toUpperCase();
-function renderTrayectoOptions(cliente, tipoUnidad){
-  const sel = document.getElementById('asigTrayecto');
-  if(!sel) return;
+      
+/* === ASIGNACIÓN: cascada Cliente -> Tipo de unidad -> Trayecto === */
+window.addEventListener('DOMContentLoaded', () => {
+  const selCliente  = document.getElementById('asigClienteSelect');
+  const selTipo     = document.getElementById('asigTipoUnidad');
+  const selTrayecto = document.getElementById('asigTrayecto');
+  const STORE_KEY   = 'sr_clientes';
 
-  // Reset si falta cliente o tipo
-  if(!cliente || !tipoUnidad){
-    sel.innerHTML = `<option value="">Selecciona cliente y tipo de unidad</option>`;
-    sel.disabled = true;
-    return;
+  // Abreviaturas MX
+  const MX = {
+    'Aguascalientes':'AGS','Baja California':'BC','Baja California Sur':'BCS','Campeche':'CAMP',
+    'Coahuila':'COAH','Colima':'COL','Chiapas':'CHIS','Chihuahua':'CHIH','Ciudad de México':'CDMX',
+    'Durango':'DGO','Guanajuato':'GTO','Guerrero':'GRO','Hidalgo':'HGO','Jalisco':'JAL',
+    'Estado de México':'MEX','Michoacán':'MICH','Morelos':'MOR','Nayarit':'NAY','Nuevo León':'NLE',
+    'Oaxaca':'OAX','Puebla':'PUE','Querétaro':'QRO','Quintana Roo':'QROO','San Luis Potosí':'SLP',
+    'Sinaloa':'SIN','Sonora':'SON','Tabasco':'TAB','Tamaulipas':'TAM','Tlaxcala':'TLAX',
+    'Veracruz':'VER','Yucatán':'YUC','Zacatecas':'ZAC'
+  };
+
+  function getClientes(){
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+    catch { return []; }
   }
 
-  // Filtra filas de tarifas por tipo de unidad
-  const filas = (cliente.tarifas || []).filter(t => String(t.tipoUnidad||'') === String(tipoUnidad||''));
-
-  // Unicos por Origen-Destino
-  const uniq = new Map();
-  filas.forEach((t, idx) => {
-    const key = `${t.estadoOrigen}|${t.estadoDestino}`;
-    if (uniq.has(key)) return;
-    const etiqueta = `${abrevEstado(t.estadoOrigen)} — ${abrevEstado(t.estadoDestino)}`;
-    // Guardamos valor serializado para poder recuperarlo después si hace falta
-    const value = JSON.stringify({ idx, estadoOrigen:t.estadoOrigen, estadoDestino:t.estadoDestino });
-    uniq.set(key, `<option value='${value.replace(/'/g, '&#39;')}'>${etiqueta}</option>`);
-  });
-
-  if(uniq.size){
-    sel.innerHTML = `<option value="">— Selecciona trayecto —</option>` + [...uniq.values()].join('');
-    sel.disabled = false;
-
-    // Restaura borrador si existiera
-    const draft = JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}');
-    if (draft.trayecto && sel.querySelector(`option[value='${draft.trayecto.replace(/'/g, '&#39;')}']`)){
-      sel.value = draft.trayecto;
+  function fillClientes(){
+    const data = getClientes();
+    if (!data.length){
+      selCliente.innerHTML = '<option value="">No hay clientes. Da de alta en el módulo Clientes.</option>';
+      selTipo.disabled = true; selTrayecto.disabled = true;
+      return;
     }
-  } else {
-    sel.innerHTML = `<option value="">— Sin trayectos para este tipo —</option>`;
-    sel.disabled = true;
+    selCliente.innerHTML =
+      '<option value="">Selecciona…</option>' +
+      data.map(c => `<option value="${c.id}">${c.nombre} (${c.id})</option>`).join('');
+    selTipo.disabled = true;
+    selTrayecto.disabled = true;
+    selTrayecto.innerHTML = '<option value="">Selecciona primero el Tipo de unidad</option>';
   }
-}
 
-function bindTrayectoChange(){
-  const sel = document.getElementById('asigTrayecto');
-  if(!sel) return;
-  sel.addEventListener('change', () => {
-    const draft = {
-      ...(JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}')),
-      trayecto: sel.value || null
-    };
-    localStorage.setItem('sr_asign_borrador', JSON.stringify(draft));
-  });
-}      
+  function onClienteChange(){
+    const id = selCliente.value;
+    const cli = getClientes().find(c => c.id === id);
+    const tipos = [...new Set((cli?.tarifas || [])
+                    .map(t => t.tipoUnidad)
+                    .filter(Boolean))];
+
+    selTipo.innerHTML = tipos.length
+      ? '<option value="">Selecciona…</option>' + tipos.map(t => `<option>${t}</option>`).join('')
+      : '<option value="">Sin tipos configurados</option>';
+
+    selTipo.disabled = !tipos.length;
+
+    // reset trayecto
+    selTrayecto.innerHTML = '<option value="">Selecciona primero el Tipo de unidad</option>';
+    selTrayecto.disabled = true;
+  }
+
+  function onTipoChange(){
+    const id   = selCliente.value;
+    const tipo = selTipo.value;
+    const cli  = getClientes().find(c => c.id === id);
+
+    const rutas = (cli?.tarifas || []).filter(t => (t.tipoUnidad || '') === tipo);
+
+    const options = rutas.map(t => {
+      const abO = MX[t.estadoOrigen]  || t.estadoOrigen  || '';
+      const abD = MX[t.estadoDestino] || t.estadoDestino || '';
+      // value con texto completo; label con abreviaturas
+      const value = `${t.estadoOrigen} -> ${t.estadoDestino}`;
+      return `<option value="${value}">${abO} — ${abD}</option>`;
+    });
+
+    selTrayecto.innerHTML = options.length
+      ? '<option value="">Selecciona…</option>' + options.join('')
+      : '<option value="">Sin trayectos para ese tipo</option>';
+
+    selTrayecto.disabled = !options.length;
+  }
+
+  // Wiring
+  fillClientes();
+  selCliente?.addEventListener('change', onClienteChange);
+  selTipo?.addEventListener('change', onTipoChange);
+});
       
 </script>
 
