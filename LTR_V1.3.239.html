@@ -1635,6 +1635,27 @@ btn.primary { background:#efe9ff; border-color:#033552; }
   <h2>Servicios activos</h2>
   <p>(placeholder — aquí irá la lista/gestión de servicios)</p>
   <div class="home-actions"><button class="btn" id="asignVolverDesdeActivos">Volver</button></div>
+
+      
+      <div id="asignNuevoForm" class="card" style="padding:16px; margin:12px 0;">
+      <h3 style="margin:0 0 12px;">Datos del servicio</h3>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="asigClienteSelect">Cliente*</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <select id="asigClienteSelect" required style="min-width:320px;">
+          <option value="">Cargando clientes…</option>
+        </select>
+        <button type="button" id="btnAsignRefrescarClientes" class="icon-btn" title="Refrescar clientes">🔄</button>
+      </div>
+      <small id="asigSinClientes" class="muted" style="display:none;">
+        No hay clientes registrados aún. Ve al módulo <strong>Clientes</strong> para dar de alta.
+      </small>
+       </div>
+       </div>
+    </div>
+
 </div><!-- Aqui termina el modulo Asignación-->
 
       
@@ -3821,6 +3842,93 @@ function showFrame(id){
   // Botones volver en vistas internas
   document.getElementById('asignVolverDesdeNuevo')?.addEventListener('click', () => showFrame('asignMenu'));
   document.getElementById('asignVolverDesdeActivos')?.addEventListener('click', () => showFrame('asignMenu'));
+
+//Aqui empieza el render de Asignación
+const ASIG_CLIENT_KEYS = ['sr_clientes', 'sr_clientes_registrados', 'srClientes'];
+
+function _readLS(key){
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); }
+  catch { return []; }
+}
+
+// Normaliza un cliente cualquiera al shape {id, nombre, rfc}
+function _normCliente(c){
+  return {
+    id:     c.id || c.clienteId || c.codigo || c.clave || '',
+    nombre: c.nombre || c.razonSocial || c.nombreRazon || c.nombre_comercial || '',
+    rfc:    c.rfc || c.RFC || ''
+  };
+}
+
+function getAllClientes(){
+  for (const k of ASIG_CLIENT_KEYS){
+    const arr = _readLS(k);
+    if (Array.isArray(arr) && arr.length) {
+      return arr.map(_normCliente).filter(x => x.nombre);
+    }
+  }
+  return [];
+}
+
+// Pinta las opciones del <select> y maneja estados vacíos
+function renderClienteOptions(){
+  const sel  = document.getElementById('asigClienteSelect');
+  const msg  = document.getElementById('asigSinClientes');
+  if(!sel) return;
+
+  const clientes = getAllClientes();
+  if (!clientes.length){
+    sel.innerHTML = `<option value="">— Sin clientes —</option>`;
+    sel.disabled = true;
+    if (msg) msg.style.display = 'inline';
+    return;
+  }
+
+  sel.disabled = false;
+  if (msg) msg.style.display = 'none';
+  sel.innerHTML = [
+    `<option value="">— Selecciona un cliente —</option>`,
+    ...clientes.map(c => `<option value="${c.id}">${c.nombre}${c.rfc ? ' ('+c.rfc+')' : ''}</option>`)
+  ].join('');
+}
+
+// Guarda la selección del cliente en un “borrador” de servicio
+function bindClienteChange(){
+  const sel = document.getElementById('asigClienteSelect');
+  if(!sel) return;
+  sel.addEventListener('change', () => {
+    const clientes = getAllClientes();
+    const chosen = clientes.find(c => String(c.id) === String(sel.value));
+    const draft = {
+      ...(JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}')),
+      cliente: chosen || null
+    };
+    localStorage.setItem('sr_asign_borrador', JSON.stringify(draft));
+  });
+}
+
+// Botón “🔄 Refrescar”
+document.getElementById('btnAsignRefrescarClientes')
+  ?.addEventListener('click', renderClienteOptions);
+
+// Si otro tab/ventana modifica clientes, actualiza opciones aquí
+window.addEventListener('storage', (e) => {
+  if (ASIG_CLIENT_KEYS.includes(e.key)) renderClienteOptions();
+});
+
+// Llama a render cuando entras a “Nuevo Servicio”
+document.getElementById('asignNuevoBtn')
+  ?.addEventListener('click', () => { renderClienteOptions(); bindClienteChange(); });
+
+// Por si navegas directo a #asignNuevo (F5 sobre esa vista)
+document.addEventListener('DOMContentLoaded', () => {
+  if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
+    renderClienteOptions();
+    bindClienteChange();
+  }
+});
+
+      
 </script>
 
 
