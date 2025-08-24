@@ -4016,81 +4016,119 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
       
-/* === ASIGNACIÓN: Cliente -> Tipo de unidad -> Trayecto -> Precio (solo lectura) === */
-window.addEventListener('DOMContentLoaded', () => {
+// ===== ASIGNACIÓN: encadenar Cliente -> Tipo de unidad -> Trayecto (+ Precio) =====
+(function(){
   const selCliente  = document.getElementById('asigClienteSelect');
   const selTipo     = document.getElementById('asigTipoUnidad');
   const selTrayecto = document.getElementById('asigTrayecto');
   const inpPrecio   = document.getElementById('asigPrecio');
-  const STORE_KEY   = 'sr_clientes';
 
-  // Abreviaturas de estados (para la etiqueta del trayecto)
-  const MX = {
-    'Aguascalientes':'AGS','Baja California':'BC','Baja California Sur':'BCS','Campeche':'CAMP',
-    'Coahuila':'COAH','Colima':'COL','Chiapas':'CHIS','Chihuahua':'CHIH','Ciudad de México':'CDMX',
-    'Durango':'DGO','Guanajuato':'GTO','Guerrero':'GRO','Hidalgo':'HGO','Jalisco':'JAL',
-    'Estado de México':'MEX','Michoacán':'MICH','Morelos':'MOR','Nayarit':'NAY','Nuevo León':'NLE',
-    'Oaxaca':'OAX','Puebla':'PUE','Querétaro':'QRO','Quintana Roo':'QROO','San Luis Potosí':'SLP',
-    'Sinaloa':'SIN','Sonora':'SON','Tabasco':'TAB','Tamaulipas':'TAM','Tlaxcala':'TLAX',
-    'Veracruz':'VER','Yucatán':'YUC','Zacatecas':'ZAC'
-  };
+  // Clientes están en localStorage con la clave usada en el módulo Clientes
+  const STORE_CLIENTES = 'sr_clientes';
+  function getClientes(){ try { return JSON.parse(localStorage.getItem(STORE_CLIENTES)) || []; } catch { return []; } }
 
-  const getClientes = () => {
-    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
-    catch { return []; }
+  // Abreviaturas MX para mostrar trayecto corto
+  const ABBR = {
+    "Aguascalientes":"AGS","Baja California":"BC","Baja California Sur":"BCS","Campeche":"CAMP","Coahuila":"COAH",
+    "Colima":"COL","Chiapas":"CHIS","Chihuahua":"CHIH","Ciudad de México":"CDMX","Durango":"DGO","Guanajuato":"GTO",
+    "Guerrero":"GRO","Hidalgo":"HGO","Jalisco":"JAL","Estado de México":"EDOMEX","Michoacán":"MICH","Morelos":"MOR",
+    "Nayarit":"NAY","Nuevo León":"NL","Oaxaca":"OAX","Puebla":"PUE","Querétaro":"QRO","Quintana Roo":"QROO",
+    "San Luis Potosí":"SLP","Sinaloa":"SIN","Sonora":"SON","Tabasco":"TAB","Tamaulipas":"TAM","Tlaxcala":"TLAX",
+    "Veracruz":"VER","Yucatán":"YUC","Zacatecas":"ZAC"
   };
-  const fmtMXN = (v) => {
-    const n = Number(String(v).toString().replace(/[^0-9.\-]/g, ''));
-    return isFinite(n) ? n.toLocaleString('es-MX', { style:'currency', currency:'MXN' }) : '';
-  };
+  const abbr = (s) => ABBR[s?.trim()] || (s || '').trim();
 
-  function resetTrayectoYPrecio() {
-    selTrayecto.innerHTML = '<option value="">Selecciona primero el Tipo de unidad</option>';
-    selTrayecto.disabled = true;
-    if (inpPrecio) inpPrecio.value = '';
+  // Formatea precio
+  const fmtMXN = (n) => Number(n || 0).toLocaleString('es-MX', { style:'currency', currency:'MXN' });
+
+  // 1) Pinta lista de clientes
+  function cargarClientes() {
+    const clientes = getClientes();
+    selCliente.innerHTML = '<option value="">Selecciona…</option>';
+    clientes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;                // guardamos el ID
+      opt.textContent = c.nombre || c.id || 'Cliente';
+      selCliente.appendChild(opt);
+    });
+    // Estado inicial de los otros dos
+    resetTipoYTrayecto();
   }
 
-  // Cuando cambia Cliente, reiniciamos Trayecto y Precio (tu otro script ya llena "Tipo de unidad")
-  selCliente?.addEventListener('change', () => {
-    resetTrayectoYPrecio();
+  function resetTipoYTrayecto() {
+    selTipo.innerHTML = '<option value="">Selecciona un cliente</option>';
+    selTipo.disabled = true;
+
+    selTrayecto.innerHTML = '<option value="">Selecciona cliente y tipo de unidad</option>';
+    selTrayecto.disabled = true;
+
+    inpPrecio.value = '';
+  }
+
+  // 2) Al cambiar cliente -> llena tipos de unidad únicos
+  selCliente.addEventListener('change', () => {
+    const id = selCliente.value;
+    const cli = getClientes().find(c => c.id === id);
+
+    // Reset de dependientes
+    selTrayecto.innerHTML = '<option value="">Selecciona cliente y tipo de unidad</option>';
+    selTrayecto.disabled = true;
+    inpPrecio.value = '';
+
+    selTipo.innerHTML = '<option value="">Selecciona…</option>';
+    selTipo.disabled = true;
+
+    if(!cli || !Array.isArray(cli.tarifas) || !cli.tarifas.length) return;
+
+    // Tipos únicos
+    const tipos = [...new Set(cli.tarifas.map(t => String(t.tipoUnidad || '').trim()).filter(Boolean))];
+    tipos.forEach(t => selTipo.appendChild(new Option(t, t)));
+    selTipo.disabled = tipos.length === 0;
   });
 
-  // Cuando cambia Tipo de unidad, llenamos los trayectos disponibles (con su tarifa)
-  selTipo?.addEventListener('change', () => {
-    const cliente = getClientes().find(c => c.id === selCliente.value);
-    const tipoSel = selTipo.value;
+  // 3) Al cambiar tipo -> llena trayectos de ese tipo
+  selTipo.addEventListener('change', () => {
+    const id = selCliente.value;
+    const tipo = (selTipo.value || '').trim();
+    const cli = getClientes().find(c => c.id === id);
 
-    // filtra tarifas por tipo
-    const rutas = (cliente?.tarifas || []).filter(t => (t.tipoUnidad || '') === tipoSel);
+    selTrayecto.innerHTML = '<option value="">Selecciona…</option>';
+    selTrayecto.disabled = true;
+    inpPrecio.value = '';
 
-    if (!rutas.length) {
-      resetTrayectoYPrecio();
-      return;
-    }
+    if(!cli || !tipo) return;
 
-    // arma opciones con abreviaturas y data-precio
-    const opts = rutas.map((t, i) => {
-      const abO = MX[t.estadoOrigen]  || t.estadoOrigen  || '';
-      const abD = MX[t.estadoDestino] || t.estadoDestino || '';
-      const precio = t.tarifa ?? '';
-      return `<option value="${i}" data-precio="${precio}" data-origen="${t.estadoOrigen}" data-destino="${t.estadoDestino}">
-                ${abO} — ${abD}
-              </option>`;
+    const rutas = (cli.tarifas || []).filter(t => String(t.tipoUnidad || '').trim() === tipo);
+    // Para poder leer el precio después, guardamos un JSON en value
+    rutas.forEach((t, idx) => {
+      const label = `${abbr(t.estadoOrigen)} — ${abbr(t.estadoDestino)}`;
+      const value = JSON.stringify({ precio: t.tarifa, idx });
+      selTrayecto.appendChild(new Option(label, value));
     });
 
-    selTrayecto.innerHTML = '<option value="">Selecciona…</option>' + opts.join('');
-    selTrayecto.disabled = false;
-    if (inpPrecio) inpPrecio.value = '';
+    selTrayecto.disabled = rutas.length === 0;
   });
 
-  // Al elegir Trayecto, mostramos el Precio formateado
-  selTrayecto?.addEventListener('change', () => {
-    const opt = selTrayecto.selectedOptions[0];
-    if (!opt) { if (inpPrecio) inpPrecio.value = ''; return; }
-    const precio = opt.getAttribute('data-precio') || '';
-    if (inpPrecio) inpPrecio.value = precio ? fmtMXN(precio) : '';
+  // 4) Al elegir trayecto -> muestra precio (solo lectura)
+  selTrayecto.addEventListener('change', () => {
+    if(!selTrayecto.value){ inpPrecio.value = ''; return; }
+    try{
+      const { precio } = JSON.parse(selTrayecto.value);
+      inpPrecio.value = fmtMXN(precio);
+    }catch{
+      inpPrecio.value = '';
+    }
   });
-});
+
+  // API pública para reinicializar cuando entras a "Nuevo Servicio"
+  window.initAsignacionNuevoServicio = function(){
+    cargarClientes();                // repinta clientes (por si importaste nuevos)
+    selCliente.dispatchEvent(new Event('change')); // deja todo coherente
+  };
+
+
+  cargarClientes();
+})();
       
 </script>
 
