@@ -1645,13 +1645,20 @@ btn.primary { background:#efe9ff; border-color:#033552; }
       <small id="asigSinClientes" class="muted" style="display:none;">
         No hay clientes registrados aún. Ve al módulo <strong>Clientes</strong> para dar de alta.
       </small>
-       </div>
-       </div>
+      
     </div>
+   <div class="form-group">
+      <label for="asigTipoUnidad">Tipo de unidad*</label>
+      <select id="asigTipoUnidad" required disabled>
+        <option value="">Selecciona un cliente</option>
+      </select>
+    </div>
+    </div>
+  </div>
   <div class="home-actions"><button class="btn" id="asignVolverDesdeNuevo">Volver</button></div>
 </div>
 
-<div id="asignActivos" class="frame hidden">
+  <div id="asignActivos" class="frame hidden">
   <h2>Servicios activos</h2>
   <p>(placeholder — aquí irá la lista/gestión de servicios)</p>
   <div class="home-actions"><button class="btn" id="asignVolverDesdeActivos">Volver</button></div>
@@ -3826,6 +3833,11 @@ function openOpDeleteModal(idx, label){
    
 </script>
 
+
+
+
+
+      
 <script> //Aqui empieza el modulo 4
 function showFrame(id){
     document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
@@ -3853,7 +3865,36 @@ function _readLS(key){
   try { return JSON.parse(localStorage.getItem(key) || '[]'); }
   catch { return []; }
 }
+function getClienteById(id){
+  for (const k of ASIG_CLIENT_KEYS){
+    const arr = _readLS(k);
+    if(Array.isArray(arr)){
+      const found = arr.find(c => String(c.id || c.clienteId || c.codigo || c.clave || '') === String(id));
+      if(found) return found;
+    }
+  }
+  return null;
+}
 
+function renderTipoUnidadOptions(cliente){
+  const sel = document.getElementById('asigTipoUnidad');
+  if(!sel) return;
+  if(!cliente){
+    sel.innerHTML = `<option value="">Selecciona un cliente</option>`;
+    sel.disabled = true;
+    return;
+  }
+  const tipos = Array.from(new Set((cliente.tarifas || []).map(t => t.tipoUnidad).filter(Boolean)));
+  if (tipos.length){
+    sel.innerHTML = ['<option value="">— Selecciona tipo —</option>', ...tipos.map(t => `<option value="${t}">${t}</option>`) ].join('');
+    sel.disabled = false;
+    const draft = JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}');
+    if (draft.tipoUnidad) sel.value = draft.tipoUnidad;
+  } else {
+    sel.innerHTML = `<option value="">— Sin tipos —</option>`;
+    sel.disabled = true;
+  }
+}
 // Normaliza un cliente cualquiera al shape {id, nombre, rfc}
 function _normCliente(c){
   return {
@@ -3875,11 +3916,13 @@ function getAllClientes(){
 
 // Pinta las opciones del <select> y maneja estados vacíos
 function renderClienteOptions(){
-  const sel  = document.getElementById('asigClienteSelect');
-  const msg  = document.getElementById('asigSinClientes');
-  if(!sel) return;
+    const sel  = document.getElementById('asigClienteSelect');
+    const msg  = document.getElementById('asigSinClientes');
+    if(!sel) return;
 
-  const clientes = getAllClientes();
+    renderTipoUnidadOptions(null);
+
+    const clientes = getAllClientes();
   if (!clientes.length){
     sel.innerHTML = `<option value="">— Sin clientes —</option>`;
     sel.disabled = true;
@@ -3893,6 +3936,13 @@ function renderClienteOptions(){
     `<option value="">— Selecciona un cliente —</option>`,
     ...clientes.map(c => `<option value="${c.id}">${c.nombre}${c.rfc ? ' ('+c.rfc+')' : ''}</option>`)
   ].join('');
+
+  const draft = JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}');
+  if (draft.cliente && sel.querySelector(`option[value="${draft.cliente.id}"]`)) {
+    sel.value = draft.cliente.id;
+    const full = getClienteById(draft.cliente.id);
+    renderTipoUnidadOptions(full);
+  }
 }
 
 // Guarda la selección del cliente en un “borrador” de servicio
@@ -3900,11 +3950,25 @@ function bindClienteChange(){
   const sel = document.getElementById('asigClienteSelect');
   if(!sel) return;
   sel.addEventListener('change', () => {
-    const clientes = getAllClientes();
-    const chosen = clientes.find(c => String(c.id) === String(sel.value));
+   const full = getClienteById(sel.value);
+    const chosen = full ? _normCliente(full) : null;
     const draft = {
       ...(JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}')),
-      cliente: chosen || null
+      cliente: chosen,
+      tipoUnidad: null
+    };
+    localStorage.setItem('sr_asign_borrador', JSON.stringify(draft));
+    renderTipoUnidadOptions(full);
+  });
+}
+
+function bindTipoUnidadChange(){
+  const sel = document.getElementById('asigTipoUnidad');
+  if(!sel) return;
+  sel.addEventListener('change', () => {
+    const draft = {
+      ...(JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}')),
+     tipoUnidad: sel.value || nul
     };
     localStorage.setItem('sr_asign_borrador', JSON.stringify(draft));
   });
@@ -3912,8 +3976,7 @@ function bindClienteChange(){
 
 // Botón “🔄 Refrescar”
 document.getElementById('btnAsignRefrescarClientes')
-  ?.addEventListener('click', renderClienteOptions);
-
+ ?.addEventListener('click', () => { renderClienteOptions(); bindClienteChange(); bindTipoUnidadChange(); });
 // Si otro tab/ventana modifica clientes, actualiza opciones aquí
 window.addEventListener('storage', (e) => {
   if (ASIG_CLIENT_KEYS.includes(e.key)) renderClienteOptions();
@@ -3925,11 +3988,12 @@ document.getElementById('asignNuevoBtn')
 
 // Por si navegas directo a #asignNuevo (F5 sobre esa vista)
 document.addEventListener('DOMContentLoaded', () => {
-  if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
-    renderClienteOptions();
-    bindClienteChange();
-  }
-});
+    if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
+      renderClienteOptions();
+      bindClienteChange();
+      bindTipoUnidadChange();
+    }
+  });
 
       
 </script>
