@@ -1654,19 +1654,20 @@ btn.primary { background:#efe9ff; border-color:#033552; }
       </select>
     </div>
 
-       <div class="form-row" id="filaTrayectoPrecio" style="grid-template-columns: minmax(320px, 1fr) 180px;">
-        <div class="form-group">
-       <label for="asigTrayecto">Trayecto (Origen — Destino)*</label>
-       <select id="asigTrayecto" disabled style="max-width:520px;">
+      <div class="form-row compact">
+  <div class="fld">
+    <label for="asigTrayecto">Trayecto (Origen — Destino)*</label>
+    <select id="asigTrayecto" disabled>
       <option value="">Selecciona cliente y tipo de unidad</option>
-       </select>
-      </div>
+    </select>
+  </div>
 
-      <div class="form-group">
-      <label for="asigPrecio">Precio (MXN)</label>
-      <input id="asigPrecio" type="text" placeholder="$0.00" readonly>
-       </div>
+  <div class="fld" style="max-width:220px">
+    <label for="asigPrecio">Precio (MXN)</label>
+    <input id="asigPrecio" type="text" placeholder="$0.00" readonly>
+  </div>
 </div>
+
 
     </div>
   </div>
@@ -3901,7 +3902,7 @@ function renderTipoUnidadOptions(cliente){
   }
   const tipos = Array.from(new Set((cliente.tarifas || []).map(t => t.tipoUnidad).filter(Boolean)));
   if (tipos.length){
-    sel.innerHTML = ['<option value="">— Selecciona tipo —</option>', ...tipos.map(t => `<option value="${t}">${t}</option>`) ].join('');
+   sel.innerHTML = ['<option value="">— Selecciona tipo —</option>', ...tipos.map(t => `<option value="${t}">${t}</option>`) ].join('');
     sel.disabled = false;
     const draft = JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}');
     if (draft.tipoUnidad) sel.value = draft.tipoUnidad;
@@ -4119,6 +4120,26 @@ document.addEventListener('DOMContentLoaded', () => {
       inpPrecio.value = '';
     }
   });
+const selCliente  = document.getElementById('asigClienteSelect');
+const selTipo     = document.getElementById('asigTipo');
+const selTrayecto = document.getElementById('asigTrayecto');
+const inpPrecio   = document.getElementById('asigPrecio');
+
+function fmtMXN(n){ return Number(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN'}); } // ya la tienes :contentReference[oaicite:8]{index=8}
+
+// Reinicia precio cuando cambian Cliente o Tipo
+selCliente?.addEventListener('change', () => { inpPrecio.value=''; });
+selTipo?.addEventListener('change',    () => { inpPrecio.value=''; });
+
+// Al elegir trayecto, toma el precio del value (JSON) y lo pinta:
+selTrayecto?.addEventListener('change', () => {
+  let precio = '';
+  try {
+    const data = selTrayecto.value ? JSON.parse(selTrayecto.value) : null;
+    precio = data ? Number(data.precio)||0 : '';
+  } catch {}
+  inpPrecio.value = precio === '' ? '' : fmtMXN(precio);
+});
 
   // API pública para reinicializar cuando entras a "Nuevo Servicio"
   window.initAsignacionNuevoServicio = function(){
