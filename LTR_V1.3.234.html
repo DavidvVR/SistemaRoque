@@ -1466,6 +1466,7 @@ btn.primary { background:#efe9ff; border-color:#033552; }
             <th>CURP</th>
             <th>Telefono</th>
             <th>NSS</th>
+            <th class="actions">Acciones</th>
           </tr>     
         </thead>
         <tbody><!-- filas dinámicas --></tbody>
@@ -1556,7 +1557,16 @@ btn.primary { background:#efe9ff; border-color:#033552; }
     </div>
     </div>
     </div>
-
+<div id="ltrOpDeleteModal" class="modal hidden">
+  <div class="modal-content" style="text-align:center; padding:36px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <p id="ltrOpDeleteMsg">¿Deseas eliminar este operador?</p>
+    <div class="modal-buttons" style="justify-content:center;">
+      <button id="ltrOpDelYes" class="btn primary">Sí</button>
+      <button id="ltrOpDelNo"  class="btn">No</button>
+    </div>
+  </div>
+</div>
 
   </div>
 
@@ -3069,21 +3079,21 @@ window.addEventListener('DOMContentLoaded', () => {
 function renderTablaLTROperadores(filtro=''){
   const tbody = document.querySelector('#tablaLTROperadores tbody');
   if(!tbody) return;
-  const data = getOps(); // usa la misma “BD” local sr_ltr_operadores
 
+  const data = getOps(); // tu "BD" local sr_ltr_operadores
   const q = (filtro || '').toLowerCase();
   const fil = data.filter(o =>
     !q || [o.nombre, o.numero, o.rfc].some(v => String(v||'').toLowerCase().includes(q))
   );
 
   tbody.innerHTML = fil.map(o => {
-    // mostramos el nombre del archivo si existe, o vacío
-    const licVis = o.licencia || '';
-    const aptoVis = o.apto || '';
-    // fechas legibles (si vienen en ISO yyyy-mm-dd)
+    // índice real en el arreglo original (sirve aunque filtres)
+    const idx = data.indexOf(o);
+
     const vtoLicVis  = o.vtoLic  ? new Date(o.vtoLic  + 'T00:00:00').toLocaleDateString('es-MX') : '';
     const vtoAptoVis = o.vtoApto ? new Date(o.vtoApto + 'T00:00:00').toLocaleDateString('es-MX') : '';
-    const licCell  = o.licenciaUrl
+
+    const licCell = o.licenciaUrl
       ? `<span class="icon-btn ltr-lic-lupa" title="${o.licencia||'Ver licencia'}" data-url="${o.licenciaUrl}">🔍</span>`
       : (o.licencia || '');
 
@@ -3092,19 +3102,23 @@ function renderTablaLTROperadores(filtro=''){
       : (o.apto || '');
 
     return `
-      <tr>
-              <td>${o.nombre || ''}</td>
-              <td>${o.numero || ''}</td>
-            <td>${licCell}</td>
-            <td>${vtoLicVis}</td>
-            <td>${aptoCell}</td>
-            <td>${vtoAptoVis}</td>
-              <td>${o.rfc || ''}</td>
-              <td>${o.curp || ''}</td>
-              <td>${o.telefono || ''}</td>
-              <td>${o.nss || ''}</td>
+      <tr data-idx="${idx}">
+        <td>${o.nombre || ''}</td>
+        <td>${o.numero || ''}</td>
+        <td>${licCell}</td>
+        <td>${vtoLicVis}</td>
+        <td>${aptoCell}</td>
+        <td>${vtoAptoVis}</td>
+        <td>${o.rfc || ''}</td>
+        <td>${o.curp || ''}</td>
+        <td>${o.telefono || ''}</td>
+        <td>${o.nss || ''}</td>
+        <td class="actions">
+          <span class="icon-btn op-edit" title="Editar" data-idx="${idx}">✏️</span>
+          <span class="icon-btn op-del"  title="Eliminar" data-idx="${idx}">🗑️</span>
+        </td>
       </tr>`;
-  }).join('') || `<tr><td colspan="10">Sin registros</td></tr>`;
+  }).join('') || `<tr><td colspan="11">Sin registros</td></tr>`;
 }
 // Delegado de clic para las lupas (Licencia / Apto) en la tabla LTR
 document.querySelector('#tablaLTROperadores tbody')?.addEventListener('click', (e) => {
@@ -3597,40 +3611,92 @@ function nextLTRId(){
     
     return ok;
   }
-
-  // Guardar: agrega a sr_ltr_operadores y re-render
-  btnGuardar?.addEventListener('click', () => {
+// botón Guardar
+ btnGuardar?.addEventListener('click', () => {
     if(!validar()) return;
-// Tomamos los archivos (si existen) y generamos URLs temporales
+
+    // archivos opcionales (si no cambian, conservamos las URLs previas)
     const licFile  = f.licFile?.files?.[0] || null;
     const aptoFile = f.aptoFile?.files?.[0] || null;
-    const licUrl   = licFile ? URL.createObjectURL(licFile) : '';
-    const aptoUrl  = aptoFile ? URL.createObjectURL(aptoFile) : '';
 
-    const datos = {
-      nombre:  f.nombre.value.trim(),
-      numero:  f.numero.value.trim(),
+    const up = {
+      nombre:   f.nombre.value.trim(),
+      numero:   f.numero.value.trim(),
       licencia: f.licName.value.trim(),
-      licenciaUrl: licUrl,
-      vtoLic:  f.vtoLic.value || '',
-      apto:    f.aptoName.value.trim(),
-      aptoUrl: aptoUrl,
-      vtoApto: f.vtoApto.value || '',
-      rfc:     f.rfc.value.trim(),
-      curp:    f.curp.value.trim(),
-      telefono:f.tel.value.trim(),
-      nss:     f.nss.value.trim()
+      vtoLic:   f.vtoLic.value || '',
+      apto:     f.aptoName.value.trim(),
+      vtoApto:  f.vtoApto.value || '',
+      rfc:      f.rfc.value.trim(),
+      curp:     f.curp.value.trim(),   // (recuerda: ya no es requerido)
+      telefono: f.tel.value.trim(),
+      nss:      f.nss.value.trim()
     };
 
-    const arr = getOps();   // sr_ltr_operadores
-    arr.push(datos);
-    setOps(arr);
+    if (licFile)  up.licenciaUrl = URL.createObjectURL(licFile);
+    if (aptoFile) up.aptoUrl     = URL.createObjectURL(aptoFile);
 
-    renderTablaLTROperadores(); // refresca la tabla
+    const arr = getOps();
+
+    if (typeof window.editingOpIndex === 'number' && window.editingOpIndex >= 0) {
+      const prev = arr[window.editingOpIndex] || {};
+      // si no re-subieron archivo, conserva las URLs existentes
+      if (!up.licenciaUrl) up.licenciaUrl = prev.licenciaUrl || '';
+      if (!up.aptoUrl)     up.aptoUrl     = prev.aptoUrl     || '';
+      arr[window.editingOpIndex] = up;
+      window.editingOpIndex = null;
+    } else {
+      arr.push(up);
+    }
+
+    setOps(arr);
+    renderTablaLTROperadores();
     ocultar();
     limpiar();
   });
 })();
+
+window.editingOpIndex = null;
+
+document.querySelector('#tablaLTROperadores tbody')?.addEventListener('click', (e) => {
+  const editBtn = e.target.closest('.op-edit');
+  const delBtn  = e.target.closest('.op-del');
+
+  if (editBtn) {
+    window.editingOpIndex = parseInt(editBtn.dataset.idx, 10);
+    const data = getOps();
+    const o = data[window.editingOpIndex];
+    if (!o) return;
+
+    const $ = (id) => document.getElementById(id);
+    $('opLTRNombre').value       = o.nombre   || '';
+    $('opLTRLicencia').value     = o.numero   || '';
+    $('opLicenciaName').value    = o.licencia || '';
+    $('opLicencia').value        = o.licencia || '';
+    $('opLTRVtoLicencia').value  = o.vtoLic   || '';
+    $('opAptoName').value        = o.apto     || '';
+    $('opAptoMedico').value      = o.apto     || '';
+    $('opVtoApto').value         = o.vtoApto  || '';
+    $('opRFC').value             = o.rfc      || '';
+    $('opLTRCURP').value         = o.curp     || '';
+    $('opLTRTelefono').value     = o.telefono || '';
+    $('opLTRNSS').value          = o.nss      || '';
+
+    // abre el modal existente de operadores LTR
+    const modal = document.getElementById('ltrOperadorModal');
+    modal?.classList.remove('hidden');
+    modal.style.display = 'flex';
+    return;
+  }
+
+  if (delBtn) {
+    const idx = parseInt(delBtn.dataset.idx, 10);
+    const data = getOps();
+    const o = data[idx];
+    openOpDeleteModal(idx, o?.nombre || o?.numero || 'este operador');
+    return;
+  }
+});
+
    
 </script>
 
