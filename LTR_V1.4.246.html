@@ -1633,25 +1633,36 @@ btn.primary { background:#efe9ff; border-color:#033552; }
   <div id="asignNuevoForm" class="card" style="padding:16px; margin:12px 0;">
       <h3 style="margin:0 0 12px;">Datos del servicio</h3>
 
-  <div class="form-row">
-    <div class="form-group">
+     <div class="form-row">
+      
+      <div class="form-group">
       <label for="asigClienteSelect">Cliente*</label>
       <div style="display:flex; gap:8px; align-items:center;">
-        <select id="asigClienteSelect" required style="min-width:320px;">
-          <option value="">Cargando clientes…</option>
-        </select>
+       <select id="asigClienteSelect" required style="min-width:320px;">
+      <option value="">Cargando clientes…</option>
+      </select>
       </div>
-      <small id="asigSinClientes" class="muted" style="display:none;">
+       <small id="asigSinClientes" class="muted" style="display:none;">
         No hay clientes registrados aún. Ve al módulo <strong>Clientes</strong> para dar de alta.
-      </small>
-      
-    </div>
-   <div class="form-group form-group-full">
+       </small>
+       </div>
+       
+        <div class="form-group form-group-full">
       <label for="asigTipoUnidad">Tipo de unidad*</label>
       <select id="asigTipoUnidad" required disabled>
         <option value="">Selecciona un cliente</option>
       </select>
     </div>
+
+       <div class="form-row">
+       <div class="form-group form-group-full">
+        <label for="asigTrayecto">Trayecto (Origen — Destino)*</label>
+       <select id="asigTrayecto" disabled>
+       <option value="">Selecciona primero el Tipo de unidad</option>
+       </select>
+       </div>
+       </div>    
+
     </div>
   </div>
   <div class="home-actions"><button class="btn" id="asignVolverDesdeNuevo">Volver</button></div>
@@ -3941,6 +3952,7 @@ function renderClienteOptions(){
     sel.value = draft.cliente.id;
     const full = getClienteById(draft.cliente.id);
     renderTipoUnidadOptions(full);
+     renderTrayectoOptions(null, null);
   }
 }
 
@@ -3965,13 +3977,18 @@ function bindTipoUnidadChange(){
   const sel = document.getElementById('asigTipoUnidad');
   if(!sel) return;
   sel.addEventListener('change', () => {
+    const cliSel  = document.getElementById('asigClienteSelect');
+    const cliente = getClienteById(cliSel?.value);
     const draft = {
       ...(JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}')),
-     tipoUnidad: sel.value || nul
+      tipoUnidad: sel.value || null,
+      trayecto: null
     };
     localStorage.setItem('sr_asign_borrador', JSON.stringify(draft));
+    renderTrayectoOptions(cliente, sel.value);  // ← encadenado cliente → tipo → trayecto
   });
 }
+
 
 // Botón “🔄 Refrescar”
 document.getElementById('btnAsignRefrescarClientes')
@@ -3993,7 +4010,70 @@ document.addEventListener('DOMContentLoaded', () => {
       bindTipoUnidadChange();
     }
   });
+// === Abreviaturas de estados (MX) ===
+const ESTADO_ABBR = {
+  'Aguascalientes':'AGS','Baja California':'BC','Baja California Sur':'BCS',
+  'Campeche':'CAMP','Coahuila':'COAH','Colima':'COL','Chiapas':'CHIS','Chihuahua':'CHIH',
+  'Ciudad de México':'CDMX','CDMX':'CDMX','Durango':'DGO','Guanajuato':'GTO','Guerrero':'GRO',
+  'Hidalgo':'HGO','Jalisco':'JAL','México':'MEX','Estado de México':'MEX','Michoacán':'MICH',
+  'Morelos':'MOR','Nayarit':'NAY','Nuevo León':'NL','Oaxaca':'OAX','Puebla':'PUE',
+  'Querétaro':'QRO','Queretaro':'QRO','Quintana Roo':'QROO','San Luis Potosí':'SLP',
+  'Sinaloa':'SIN','Sonora':'SON','Tabasco':'TAB','Tamaulipas':'TAMPS','Tlaxcala':'TLAX',
+  'Veracruz':'VER','Yucatán':'YUC','Yucatan':'YUC','Zacatecas':'ZAC'
+};
+const abrevEstado = s => ESTADO_ABBR[String(s||'').trim()] 
+                      || String(s||'').trim().slice(0,3).toUpperCase();
+function renderTrayectoOptions(cliente, tipoUnidad){
+  const sel = document.getElementById('asigTrayecto');
+  if(!sel) return;
 
+  // Reset si falta cliente o tipo
+  if(!cliente || !tipoUnidad){
+    sel.innerHTML = `<option value="">Selecciona cliente y tipo de unidad</option>`;
+    sel.disabled = true;
+    return;
+  }
+
+  // Filtra filas de tarifas por tipo de unidad
+  const filas = (cliente.tarifas || []).filter(t => String(t.tipoUnidad||'') === String(tipoUnidad||''));
+
+  // Unicos por Origen-Destino
+  const uniq = new Map();
+  filas.forEach((t, idx) => {
+    const key = `${t.estadoOrigen}|${t.estadoDestino}`;
+    if (uniq.has(key)) return;
+    const etiqueta = `${abrevEstado(t.estadoOrigen)} — ${abrevEstado(t.estadoDestino)}`;
+    // Guardamos valor serializado para poder recuperarlo después si hace falta
+    const value = JSON.stringify({ idx, estadoOrigen:t.estadoOrigen, estadoDestino:t.estadoDestino });
+    uniq.set(key, `<option value='${value.replace(/'/g, '&#39;')}'>${etiqueta}</option>`);
+  });
+
+  if(uniq.size){
+    sel.innerHTML = `<option value="">— Selecciona trayecto —</option>` + [...uniq.values()].join('');
+    sel.disabled = false;
+
+    // Restaura borrador si existiera
+    const draft = JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}');
+    if (draft.trayecto && sel.querySelector(`option[value='${draft.trayecto.replace(/'/g, '&#39;')}']`)){
+      sel.value = draft.trayecto;
+    }
+  } else {
+    sel.innerHTML = `<option value="">— Sin trayectos para este tipo —</option>`;
+    sel.disabled = true;
+  }
+}
+
+function bindTrayectoChange(){
+  const sel = document.getElementById('asigTrayecto');
+  if(!sel) return;
+  sel.addEventListener('change', () => {
+    const draft = {
+      ...(JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}')),
+      trayecto: sel.value || null
+    };
+    localStorage.setItem('sr_asign_borrador', JSON.stringify(draft));
+  });
+}      
       
 </script>
 
