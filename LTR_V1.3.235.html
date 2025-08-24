@@ -3696,7 +3696,41 @@ document.querySelector('#tablaLTROperadores tbody')?.addEventListener('click', (
     return;
   }
 });
+function openOpDeleteModal(idx, label){
+  const m   = document.getElementById('ltrOpDeleteModal');
+  const msg = document.getElementById('ltrOpDeleteMsg');
+  if (msg) msg.textContent = `¿Deseas eliminar ${label}?`;
+  if (m) { m.classList.remove('hidden'); m.style.display = 'flex'; m.dataset.idx = String(idx); }
+}
 
+(function(){
+  const m     = document.getElementById('ltrOpDeleteModal');
+  const yes   = document.getElementById('ltrOpDelYes');
+  const no    = document.getElementById('ltrOpDelNo');
+  const close = m?.querySelector('.close');
+
+  function cerrar(){
+    if(!m) return;
+    m.classList.add('hidden');
+    m.style.display = 'none';
+    m.dataset.idx = '';
+  }
+
+  yes?.addEventListener('click', () => {
+    const idx = parseInt(m?.dataset.idx || '-1', 10);
+    if (idx >= 0){
+      const arr = getOps();
+      arr.splice(idx, 1);
+      setOps(arr);
+      renderTablaLTROperadores();
+    }
+    cerrar();
+  });
+
+  no?.addEventListener('click', cerrar);
+  close?.addEventListener('click', cerrar);
+  m?.addEventListener('click', (e) => { if (e.target === m) cerrar(); });
+})();
    
 </script>
 
