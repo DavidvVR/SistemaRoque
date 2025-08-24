@@ -3042,7 +3042,28 @@ window.addEventListener('DOMContentLoaded', () => {
   function getOps(){ try { return JSON.parse(localStorage.getItem(srOpsKey)) || []; } catch { return []; } }
   function setOps(arr){ localStorage.setItem(srOpsKey, JSON.stringify(arr)); }
 
-      
+ // === Modal de previsualización de archivos ===
+  const fileModal = document.getElementById('filePreviewModal');
+  const fileFrame = document.getElementById('filePreviewFrame');
+  function showFile(url){
+    if(!fileModal || !fileFrame){ window.open(url,'_blank'); return; }
+    fileFrame.src = url;
+    fileModal.classList.remove('hidden');
+    fileModal.style.display = 'flex';
+  }
+  fileModal?.querySelector('.close')?.addEventListener('click', () => {
+    fileModal.classList.add('hidden');
+    fileModal.style.display = 'none';
+    fileFrame.src = '';
+  });
+  fileModal?.addEventListener('click', (e) => {
+    if(e.target === fileModal){
+      fileModal.classList.add('hidden');
+      fileModal.style.display = 'none';
+      fileFrame.src = '';
+    }
+  });
+
 
  // === Render Operadores
 function renderTablaLTROperadores(filtro=''){
@@ -3094,10 +3115,10 @@ document.querySelector('#tablaLTROperadores tbody')?.addEventListener('click', (
     const url = licBtn.dataset.url;
     if (url) window.open(url, '_blank'); else alert('No hay archivo adjunto');
     return;
-  }      
+  }
   if (aptoBtn) {
     const url = aptoBtn.dataset.url;
-    if (url) window.open(url, '_blank'); else alert('No hay archivo adjunto');
+   if (url) showFile(url); else alert('No hay archivo adjunto');
     return;
   }
 });
@@ -3514,8 +3535,8 @@ function nextLTRId(){
   const btnGuardar = document.getElementById('ltrOpGuardar');
   const btnCancelar= document.getElementById('ltrOpCancelar');
 
-  // Campos
-  const $ = (id) => document.getElementById(id);
+  // Campos (buscados dentro del modal para evitar conflictos de IDs)
+  const $ = (id) => modal.querySelector('#' + id);
   const f = {
     nombre: $('opLTRNombre'),
     numero: $('opLTRLicencia'),
@@ -3580,21 +3601,28 @@ function nextLTRId(){
   // Guardar: agrega a sr_ltr_operadores y re-render
   btnGuardar?.addEventListener('click', () => {
     if(!validar()) return;
+// Tomamos los archivos (si existen) y generamos URLs temporales
+    const licFile  = f.licFile?.files?.[0] || null;
+    const aptoFile = f.aptoFile?.files?.[0] || null;
+    const licUrl   = licFile ? URL.createObjectURL(licFile) : '';
+    const aptoUrl  = aptoFile ? URL.createObjectURL(aptoFile) : '';
 
     const datos = {
-      nombre: f.nombre.value.trim(),
-      numero: f.numero.value.trim(),
-      licencia: f.licName.value.trim(),     // solo nombre del archivo
-      vtoLic: f.vtoLic.value || '',         // ISO yyyy-mm-dd
-      apto: f.aptoName.value.trim(),        // solo nombre del archivo
+      nombre:  f.nombre.value.trim(),
+      numero:  f.numero.value.trim(),
+      licencia: f.licName.value.trim(),
+      licenciaUrl: licUrl,
+      vtoLic:  f.vtoLic.value || '',
+      apto:    f.aptoName.value.trim(),
+      aptoUrl: aptoUrl,
       vtoApto: f.vtoApto.value || '',
-      rfc: f.rfc.value.trim(),
-      curp: f.curp.value.trim(),
-      telefono: f.tel.value.trim(),
-      nss: f.nss.value.trim()
+      rfc:     f.rfc.value.trim(),
+      curp:    f.curp.value.trim(),
+      telefono:f.tel.value.trim(),
+      nss:     f.nss.value.trim()
     };
 
-    const arr = getOps();    // funciones ya existentes en el módulo LTR
+    const arr = getOps();   // sr_ltr_operadores
     arr.push(datos);
     setOps(arr);
 
@@ -3603,83 +3631,17 @@ function nextLTRId(){
     limpiar();
   });
 })();
-
-(function(){
-  function bindFilePicker(modalEl, pickId, fileId, nameId, hiddenId){
-    if (!modalEl) return;
-    const pickBtn = modalEl.querySelector('#' + pickId);
-    const fileInp = modalEl.querySelector('#' + fileId);
-    const nameInp = modalEl.querySelector('#' + nameId);
-    const hidInp  = modalEl.querySelector('#' + hiddenId);
-
-    if (!pickBtn || !fileInp) return;
-
-    // Limpia handlers previos, por si abres/cerras varias veces
-    pickBtn.onclick = null;
-    fileInp.onchange = null;
-
-    pickBtn.onclick = () => fileInp.click();
-    fileInp.onchange = () => {
-      const f = fileInp.files && fileInp.files[0];
-      if (nameInp) nameInp.value = f ? f.name : '';
-      if (hidInp)  hidInp.value  = f ? f.name : '';
-    };
-  }
-
-  // 1) Modal LTR
-  const ltrModal = document.getElementById('ltrOperadorModal'); // :contentReference[oaicite:7]{index=7}
-  bindFilePicker(ltrModal, 'btnOpLicenciaPick', 'opLicenciaFile', 'opLicenciaName', 'opLicencia');
-  bindFilePicker(ltrModal, 'btnOpAptoPick',    'opAptoFile',     'opAptoName',     'opAptoMedico');
-
-  // 2) Modal existente (Permisionarios)
-  const opModal = document.getElementById('operadorModal');      // :contentReference[oaicite:8]{index=8}
-  bindFilePicker(opModal, 'btnOpLicenciaPick', 'opLicenciaFile', 'opLicenciaName', 'opLicencia');
-  bindFilePicker(opModal, 'btnOpAptoPick',    'opAptoFile',     'opAptoName',     'opAptoMedico');
-})();    
-
- // Guardar: agrega a sr_ltr_operadores y re-render
-btnGuardar?.addEventListener('click', () => {
-  if(!validar()) return;
-
-  // TOMAMOS LOS FILES, SI EXISTEN, Y CREAMOS URLS TEMPORALES
-  const licFile  = f.licFile?.files?.[0] || null;
-  const aptoFile = f.aptoFile?.files?.[0] || null;
-  const licUrl   = licFile ? URL.createObjectURL(licFile) : '';
-  const aptoUrl  = aptoFile ? URL.createObjectURL(aptoFile) : '';
-
-  const datos = {
-    nombre:  f.nombre.value.trim(),
-    numero:  f.numero.value.trim(),
-    // guardamos el nombre (visible)…
-    licencia: f.licName.value.trim(),
-    // …y además la URL para poder abrir con 🔍
-    licenciaUrl: licUrl,
-    vtoLic:  f.vtoLic.value || '',
-
-    apto:    f.aptoName.value.trim(),
-    aptoUrl: aptoUrl,
-    vtoApto: f.vtoApto.value || '',
-
-    rfc:     f.rfc.value.trim(),
-    curp:    f.curp.value.trim(),
-    telefono:f.tel.value.trim(),
-    nss:     f.nss.value.trim()
-  };
-
-  const arr = getOps();   // sr_ltr_operadores
-  arr.push(datos);
-  setOps(arr);
-
-  renderTablaLTROperadores(); // refresca la tabla
-  ocultar();
-  limpiar();
-});
-     
-
-
    
 </script>
+
       
+      <!-- Op LTR -->
+      <div id="filePreviewModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-content" style="width:80vw;max-width:900px;max-height:90vh;">
+    <span class="close" title="Cerrar">&times;</span>
+    <iframe id="filePreviewFrame" style="width:100%;height:80vh;" src=""></iframe>
+  </div>
+</div>      
  <!-- Detalle unidad LTR -->
   <div id="ltrUnidadInfoModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
     <div class="modal-card"></div>
