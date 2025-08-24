@@ -3577,6 +3577,39 @@ function nextLTRId(){
   });
 })();
 
+(function(){
+  function bindFilePicker(modalEl, pickId, fileId, nameId, hiddenId){
+    if (!modalEl) return;
+    const pickBtn = modalEl.querySelector('#' + pickId);
+    const fileInp = modalEl.querySelector('#' + fileId);
+    const nameInp = modalEl.querySelector('#' + nameId);
+    const hidInp  = modalEl.querySelector('#' + hiddenId);
+
+    if (!pickBtn || !fileInp) return;
+
+    // Limpia handlers previos, por si abres/cerras varias veces
+    pickBtn.onclick = null;
+    fileInp.onchange = null;
+
+    pickBtn.onclick = () => fileInp.click();
+    fileInp.onchange = () => {
+      const f = fileInp.files && fileInp.files[0];
+      if (nameInp) nameInp.value = f ? f.name : '';
+      if (hidInp)  hidInp.value  = f ? f.name : '';
+    };
+  }
+
+  // 1) Modal LTR
+  const ltrModal = document.getElementById('ltrOperadorModal'); // :contentReference[oaicite:7]{index=7}
+  bindFilePicker(ltrModal, 'btnOpLicenciaPick', 'opLicenciaFile', 'opLicenciaName', 'opLicencia');
+  bindFilePicker(ltrModal, 'btnOpAptoPick',    'opAptoFile',     'opAptoName',     'opAptoMedico');
+
+  // 2) Modal existente (Permisionarios)
+  const opModal = document.getElementById('operadorModal');      // :contentReference[oaicite:8]{index=8}
+  bindFilePicker(opModal, 'btnOpLicenciaPick', 'opLicenciaFile', 'opLicenciaName', 'opLicencia');
+  bindFilePicker(opModal, 'btnOpAptoPick',    'opAptoFile',     'opAptoName',     'opAptoMedico');
+})();      
+
 
    
 </script>
