@@ -1595,6 +1595,39 @@ btn.primary { background:#efe9ff; border-color:#033552; }
 <!-- Aqui empieza el modulo 4-->
 <div id="asignMenu" class="frame hidden">
   <h2>Asignación</h2>
+  <div id="asignNuevo" class="frame hidden">
+  <h2>Nuevo Servicio</h2>
+  <p>(placeholder — aquí irá el formulario/flujo de alta)</p>
+  <div class="home-actions"><button class="btn" id="asignVolverDesdeNuevo">Volver</button></div>
+   </div>
+
+  <div id="asignActivos" class="frame hidden">
+  <h2>Nuevo Servicio</h2>
+   <h3>Asignación Cliente</h3> 
+  <p>(placeholder — aquí irá la lista/gestión de servicios)</p>
+  <div class="home-actions"><button class="btn" id="asignVolverDesdeActivos">Volver</button></div>
+
+      
+      <div id="asignNuevoForm" class="card" style="padding:16px; margin:12px 0;">
+      <h3 style="margin:0 0 12px;">Datos del servicio</h3>
+
+    <div class="form-row">
+    <div class="form-group">
+      <label for="asigClienteSelect">Cliente*</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <select id="asigClienteSelect" required style="min-width:320px;">
+          <option value="">Cargando clientes…</option>
+        </select>
+        <button type="button" id="btnAsignRefrescarClientes" class="icon-btn" title="Refrescar clientes">🔄</button>
+      </div>
+      <small id="asigSinClientes" class="muted" style="display:none;">
+        No hay clientes registrados aún. Ve al módulo <strong>Clientes</strong> para dar de alta.
+      </small>
+       </div>
+       </div>
+    </div>
+
+        
   <div class="asign-home">
     <div class="home-grid">
       <!-- Nuevo Servicio -->
@@ -1625,36 +1658,7 @@ btn.primary { background:#efe9ff; border-color:#033552; }
 </div>
 
 <!-- Placeholders (se muestran cuando das clic en cada tarjeta) -->
-<div id="asignNuevo" class="frame hidden">
-  <h2>Nuevo Servicio</h2>
-  <p>(placeholder — aquí irá el formulario/flujo de alta)</p>
-  <div class="home-actions"><button class="btn" id="asignVolverDesdeNuevo">Volver</button></div>
-</div>
 
-<div id="asignActivos" class="frame hidden">
-  <h2>Servicios activos</h2>
-  <p>(placeholder — aquí irá la lista/gestión de servicios)</p>
-  <div class="home-actions"><button class="btn" id="asignVolverDesdeActivos">Volver</button></div>
-
-      
-      <div id="asignNuevoForm" class="card" style="padding:16px; margin:12px 0;">
-      <h3 style="margin:0 0 12px;">Datos del servicio</h3>
-
-  <div class="form-row">
-    <div class="form-group">
-      <label for="asigClienteSelect">Cliente*</label>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <select id="asigClienteSelect" required style="min-width:320px;">
-          <option value="">Cargando clientes…</option>
-        </select>
-        <button type="button" id="btnAsignRefrescarClientes" class="icon-btn" title="Refrescar clientes">🔄</button>
-      </div>
-      <small id="asigSinClientes" class="muted" style="display:none;">
-        No hay clientes registrados aún. Ve al módulo <strong>Clientes</strong> para dar de alta.
-      </small>
-       </div>
-       </div>
-    </div>
 
 </div><!-- Aqui termina el modulo Asignación-->
 
