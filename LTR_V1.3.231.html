@@ -3062,6 +3062,13 @@ function renderTablaLTROperadores(filtro=''){
     // fechas legibles (si vienen en ISO yyyy-mm-dd)
     const vtoLicVis  = o.vtoLic  ? new Date(o.vtoLic  + 'T00:00:00').toLocaleDateString('es-MX') : '';
     const vtoAptoVis = o.vtoApto ? new Date(o.vtoApto + 'T00:00:00').toLocaleDateString('es-MX') : '';
+    const licCell  = o.licenciaUrl
+      ? `<span class="icon-btn ltr-lic-lupa" title="${o.licencia||'Ver licencia'}" data-url="${o.licenciaUrl}">🔍</span>`
+      : (o.licencia || '');
+
+    const aptoCell = o.aptoUrl
+      ? `<span class="icon-btn ltr-apto-lupa" title="${o.apto||'Ver apto médico'}" data-url="${o.aptoUrl}">🔍</span>`
+      : (o.apto || '');
 
     return `
       <tr>
@@ -3078,6 +3085,22 @@ function renderTablaLTROperadores(filtro=''){
       </tr>`;
   }).join('') || `<tr><td colspan="7">Sin registros</td></tr>`;
 }
+// Delegado de clic para las lupas (Licencia / Apto) en la tabla LTR
+document.querySelector('#tablaLTROperadores tbody')?.addEventListener('click', (e) => {
+  const licBtn  = e.target.closest('.ltr-lic-lupa');
+  const aptoBtn = e.target.closest('.ltr-apto-lupa');
+
+  if (licBtn) {
+    const url = licBtn.dataset.url;
+    if (url) window.open(url, '_blank'); else alert('No hay archivo adjunto');
+    return;
+  }
+  if (aptoBtn) {
+    const url = aptoBtn.dataset.url;
+    if (url) window.open(url, '_blank'); else alert('No hay archivo adjunto');
+    return;
+  }
+});
 
 
 window.getOps = getOps;
@@ -3612,7 +3635,46 @@ function nextLTRId(){
   const opModal = document.getElementById('operadorModal');      // :contentReference[oaicite:8]{index=8}
   bindFilePicker(opModal, 'btnOpLicenciaPick', 'opLicenciaFile', 'opLicenciaName', 'opLicencia');
   bindFilePicker(opModal, 'btnOpAptoPick',    'opAptoFile',     'opAptoName',     'opAptoMedico');
-})();      
+})();    
+
+ // Guardar: agrega a sr_ltr_operadores y re-render
+btnGuardar?.addEventListener('click', () => {
+  if(!validar()) return;
+
+  // TOMAMOS LOS FILES, SI EXISTEN, Y CREAMOS URLS TEMPORALES
+  const licFile  = f.licFile?.files?.[0] || null;
+  const aptoFile = f.aptoFile?.files?.[0] || null;
+  const licUrl   = licFile ? URL.createObjectURL(licFile) : '';
+  const aptoUrl  = aptoFile ? URL.createObjectURL(aptoFile) : '';
+
+  const datos = {
+    nombre:  f.nombre.value.trim(),
+    numero:  f.numero.value.trim(),
+    // guardamos el nombre (visible)…
+    licencia: f.licName.value.trim(),
+    // …y además la URL para poder abrir con 🔍
+    licenciaUrl: licUrl,
+    vtoLic:  f.vtoLic.value || '',
+
+    apto:    f.aptoName.value.trim(),
+    aptoUrl: aptoUrl,
+    vtoApto: f.vtoApto.value || '',
+
+    rfc:     f.rfc.value.trim(),
+    curp:    f.curp.value.trim(),
+    telefono:f.tel.value.trim(),
+    nss:     f.nss.value.trim()
+  };
+
+  const arr = getOps();   // sr_ltr_operadores
+  arr.push(datos);
+  setOps(arr);
+
+  renderTablaLTROperadores(); // refresca la tabla
+  ocultar();
+  limpiar();
+});
+     
 
 
    
