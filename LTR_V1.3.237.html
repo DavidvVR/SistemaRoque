@@ -534,7 +534,28 @@ btn.primary { background:#efe9ff; border-color:#033552; }
   #ltrUnitsList.clients-list, #ltrOpsList.clients-list { padding-top: 20px; }
       
 </style>
-
+<style>
+  /* === ASIGNACIÓN Menu  */
+  #asignMenu .asign-home{
+    margin:0 auto 12px; width:100%; max-width:860px;
+    background:#e9e9ec; border-radius:12px; padding:28px 24px;
+    outline:3px solid #033552; /* mismo tono que LTR */
+  }
+  #asignMenu .home-grid{
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:24px; align-items:center; justify-items:center;
+  }
+  #asignMenu .choice-card{
+    width:100%; min-height:220px; background:#efefef; border:2px solid #000; border-radius:12px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+    cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; user-select:none;
+  }
+  #asignMenu .choice-card:hover{ transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.15); }
+  #asignMenu .choice-card svg{ width:96px; height:96px; }
+  #asignMenu .choice-label{ font-weight:700; letter-spacing:.03em; }
+  #asignMenu .home-actions{ margin-top:20px; display:flex; justify-content:flex-end; }
+  @media (max-width:780px){ #asignMenu .home-grid{ grid-template-columns:1fr; } }
+</style>
 </head>
 <body>
 
@@ -1570,41 +1591,54 @@ btn.primary { background:#efe9ff; border-color:#033552; }
   </div>     
 </div><!-- Este cierra el Modulo 3 -->
 
-<!-- === SUBMENÚ: ASIGNACIÓN === -->
+
+<!-- Aqui empieza el modulo 4-->
 <div id="asignMenu" class="frame hidden">
   <h2>Asignación</h2>
+  <div class="asign-home">
+    <div class="home-grid">
+      <!-- Nuevo Servicio -->
+      <div id="asignNuevoBtn" class="choice-card" role="button" tabindex="0" aria-label="Nuevo servicio">
+        <!-- icono “plus/clipboard” -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="7" y="3" width="10" height="14" rx="2"></rect>
+          <path d="M9 7h6M12 11v6M9 14h6"></path>
+        </svg>
+        <div class="choice-label">NUEVO SERVICIO</div>
+      </div>
 
-  <div class="dashboard">
-    <!-- Botón: Nuevo Servicio -->
-    <div class="module" id="asignNuevoBtn">
-      <div class="module-icon">🆕</div>
-      <div class="module-label">Nuevo Servicio</div>
+      <!-- Servicios activos -->
+      <div id="asignActivosBtn" class="choice-card" role="button" tabindex="0" aria-label="Servicios activos">
+        <!-- icono “list/clipboard” -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="7" y="3" width="10" height="14" rx="2"></rect>
+          <path d="M9 7h6M9 11h6M9 15h6"></path>
+        </svg>
+        <div class="choice-label">SERVICIOS ACTIVOS</div>
+      </div>
     </div>
 
-    <!-- Botón: Servicios activos -->
-    <div class="module" id="asignActivosBtn">
-      <div class="module-icon">📋</div>
-      <div class="module-label">Servicios activos</div>
+    <div class="home-actions">
+      <button class="btn" id="asignVolverBtn">Volver</button>
     </div>
-  </div>
-
-  <div style="margin-top: 24px;">
-    <button id="asignVolverBtn" class="btn">Volver</button>
   </div>
 </div>
 
-<!-- (Opcional) Vistas “placeholder” para que los botones no queden muertos por ahora -->
+<!-- Placeholders (se muestran cuando das clic en cada tarjeta) -->
 <div id="asignNuevo" class="frame hidden">
   <h2>Nuevo Servicio</h2>
-  <p>Prototipo de pantalla. Aquí armaremos el formulario de alta.</p>
-  <button id="asignVolverDesdeNuevo" class="btn">Volver</button>
+  <p>(placeholder — aquí irá el formulario/flujo de alta)</p>
+  <div class="home-actions"><button class="btn" id="asignVolverDesdeNuevo">Volver</button></div>
 </div>
 
 <div id="asignActivos" class="frame hidden">
   <h2>Servicios activos</h2>
-  <p>Prototipo de pantalla. Aquí listaremos los servicios en curso.</p>
-  <button id="asignVolverDesdeActivos" class="btn">Volver</button>
+  <p>(placeholder — aquí irá la lista/gestión de servicios)</p>
+  <div class="home-actions"><button class="btn" id="asignVolverDesdeActivos">Volver</button></div>
 </div><!-- Aqui termina el modulo Asignación-->
+
+      
+
 
   
       
@@ -3770,39 +3804,23 @@ function openOpDeleteModal(idx, label){
 
 <script> //Aqui empieza el modulo 4
 function showFrame(id){
-  document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
-  const el = document.getElementById(id);
-  if (el){
-    el.classList.remove('hidden');
-    // si usas display:flex en frames, puedes forzar: el.style.display = 'block'/'flex' según tu layout
+    document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
+    document.getElementById(id)?.classList.remove('hidden');
   }
-}
 
-// --- ACTIVAR el botón del menú principal ---
-document.getElementById('modAsign')?.addEventListener('click', () => {
-  showFrame('asignMenu');
-});
+  // Entrar a Asignación desde el menú principal
+  document.getElementById('modAsign')?.addEventListener('click', () => {
+    showFrame('asignMenu');
+  });
 
-// --- Botones del submenú Asignación ---
-document.getElementById('asignVolverBtn')?.addEventListener('click', () => {
-  showFrame('dashboard');
-});
+  // Dentro del submenú Asignación
+  document.getElementById('asignVolverBtn')?.addEventListener('click', () => showFrame('dashboard'));
+  document.getElementById('asignNuevoBtn')?.addEventListener('click', () => showFrame('asignNuevo'));
+  document.getElementById('asignActivosBtn')?.addEventListener('click', () => showFrame('asignActivos'));
 
-document.getElementById('asignNuevoBtn')?.addEventListener('click', () => {
-  showFrame('asignNuevo'); // placeholder por ahora
-});
-
-document.getElementById('asignActivosBtn')?.addEventListener('click', () => {
-  showFrame('asignActivos'); // placeholder por ahora
-});
-
-// --- Botones Volver de las vistas placeholder ---
-document.getElementById('asignVolverDesdeNuevo')?.addEventListener('click', () => {
-  showFrame('asignMenu');
-});
-document.getElementById('asignVolverDesdeActivos')?.addEventListener('click', () => {
-  showFrame('asignMenu');
-});
+  // Botones volver en vistas internas
+  document.getElementById('asignVolverDesdeNuevo')?.addEventListener('click', () => showFrame('asignMenu'));
+  document.getElementById('asignVolverDesdeActivos')?.addEventListener('click', () => showFrame('asignMenu'));
 </script>
 
 
