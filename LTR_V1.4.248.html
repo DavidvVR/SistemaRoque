@@ -1654,14 +1654,19 @@ btn.primary { background:#efe9ff; border-color:#033552; }
       </select>
     </div>
 
-       <div class="form-row">
-       <div class="form-group form-group-full">
-        <label for="asigTrayecto">Trayecto (Origen — Destino)*</label>
-       <select id="asigTrayecto" disabled>
-       <option value="">Selecciona primero el Tipo de unidad</option>
+       <div class="form-row" id="filaTrayectoPrecio" style="grid-template-columns: minmax(320px, 1fr) 180px;">
+        <div class="form-group">
+       <label for="asigTrayecto">Trayecto (Origen — Destino)*</label>
+       <select id="asigTrayecto" disabled style="max-width:520px;">
+      <option value="">Selecciona cliente y tipo de unidad</option>
        </select>
+      </div>
+
+      <div class="form-group">
+      <label for="asigPrecio">Precio (MXN)</label>
+      <input id="asigPrecio" type="text" placeholder="$0.00" readonly>
        </div>
-       </div>    
+</div>
 
     </div>
   </div>
@@ -4011,14 +4016,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
       
-/* === ASIGNACIÓN: cascada Cliente -> Tipo de unidad -> Trayecto === */
+/* === ASIGNACIÓN: Cliente -> Tipo de unidad -> Trayecto -> Precio (solo lectura) === */
 window.addEventListener('DOMContentLoaded', () => {
   const selCliente  = document.getElementById('asigClienteSelect');
   const selTipo     = document.getElementById('asigTipoUnidad');
   const selTrayecto = document.getElementById('asigTrayecto');
+  const inpPrecio   = document.getElementById('asigPrecio');
   const STORE_KEY   = 'sr_clientes';
 
-  // Abreviaturas MX
+  // Abreviaturas de estados (para la etiqueta del trayecto)
   const MX = {
     'Aguascalientes':'AGS','Baja California':'BC','Baja California Sur':'BCS','Campeche':'CAMP',
     'Coahuila':'COAH','Colima':'COL','Chiapas':'CHIS','Chihuahua':'CHIH','Ciudad de México':'CDMX',
@@ -4029,70 +4035,61 @@ window.addEventListener('DOMContentLoaded', () => {
     'Veracruz':'VER','Yucatán':'YUC','Zacatecas':'ZAC'
   };
 
-  function getClientes(){
+  const getClientes = () => {
     try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
     catch { return []; }
+  };
+  const fmtMXN = (v) => {
+    const n = Number(String(v).toString().replace(/[^0-9.\-]/g, ''));
+    return isFinite(n) ? n.toLocaleString('es-MX', { style:'currency', currency:'MXN' }) : '';
+  };
+
+  function resetTrayectoYPrecio() {
+    selTrayecto.innerHTML = '<option value="">Selecciona primero el Tipo de unidad</option>';
+    selTrayecto.disabled = true;
+    if (inpPrecio) inpPrecio.value = '';
   }
 
-  function fillClientes(){
-    const data = getClientes();
-    if (!data.length){
-      selCliente.innerHTML = '<option value="">No hay clientes. Da de alta en el módulo Clientes.</option>';
-      selTipo.disabled = true; selTrayecto.disabled = true;
+  // Cuando cambia Cliente, reiniciamos Trayecto y Precio (tu otro script ya llena "Tipo de unidad")
+  selCliente?.addEventListener('change', () => {
+    resetTrayectoYPrecio();
+  });
+
+  // Cuando cambia Tipo de unidad, llenamos los trayectos disponibles (con su tarifa)
+  selTipo?.addEventListener('change', () => {
+    const cliente = getClientes().find(c => c.id === selCliente.value);
+    const tipoSel = selTipo.value;
+
+    // filtra tarifas por tipo
+    const rutas = (cliente?.tarifas || []).filter(t => (t.tipoUnidad || '') === tipoSel);
+
+    if (!rutas.length) {
+      resetTrayectoYPrecio();
       return;
     }
-    selCliente.innerHTML =
-      '<option value="">Selecciona…</option>' +
-      data.map(c => `<option value="${c.id}">${c.nombre} (${c.id})</option>`).join('');
-    selTipo.disabled = true;
-    selTrayecto.disabled = true;
-    selTrayecto.innerHTML = '<option value="">Selecciona primero el Tipo de unidad</option>';
-  }
 
-  function onClienteChange(){
-    const id = selCliente.value;
-    const cli = getClientes().find(c => c.id === id);
-    const tipos = [...new Set((cli?.tarifas || [])
-                    .map(t => t.tipoUnidad)
-                    .filter(Boolean))];
-
-    selTipo.innerHTML = tipos.length
-      ? '<option value="">Selecciona…</option>' + tipos.map(t => `<option>${t}</option>`).join('')
-      : '<option value="">Sin tipos configurados</option>';
-
-    selTipo.disabled = !tipos.length;
-
-    // reset trayecto
-    selTrayecto.innerHTML = '<option value="">Selecciona primero el Tipo de unidad</option>';
-    selTrayecto.disabled = true;
-  }
-
-  function onTipoChange(){
-    const id   = selCliente.value;
-    const tipo = selTipo.value;
-    const cli  = getClientes().find(c => c.id === id);
-
-    const rutas = (cli?.tarifas || []).filter(t => (t.tipoUnidad || '') === tipo);
-
-    const options = rutas.map(t => {
+    // arma opciones con abreviaturas y data-precio
+    const opts = rutas.map((t, i) => {
       const abO = MX[t.estadoOrigen]  || t.estadoOrigen  || '';
       const abD = MX[t.estadoDestino] || t.estadoDestino || '';
-      // value con texto completo; label con abreviaturas
-      const value = `${t.estadoOrigen} -> ${t.estadoDestino}`;
-      return `<option value="${value}">${abO} — ${abD}</option>`;
+      const precio = t.tarifa ?? '';
+      return `<option value="${i}" data-precio="${precio}" data-origen="${t.estadoOrigen}" data-destino="${t.estadoDestino}">
+                ${abO} — ${abD}
+              </option>`;
     });
 
-    selTrayecto.innerHTML = options.length
-      ? '<option value="">Selecciona…</option>' + options.join('')
-      : '<option value="">Sin trayectos para ese tipo</option>';
+    selTrayecto.innerHTML = '<option value="">Selecciona…</option>' + opts.join('');
+    selTrayecto.disabled = false;
+    if (inpPrecio) inpPrecio.value = '';
+  });
 
-    selTrayecto.disabled = !options.length;
-  }
-
-  // Wiring
-  fillClientes();
-  selCliente?.addEventListener('change', onClienteChange);
-  selTipo?.addEventListener('change', onTipoChange);
+  // Al elegir Trayecto, mostramos el Precio formateado
+  selTrayecto?.addEventListener('change', () => {
+    const opt = selTrayecto.selectedOptions[0];
+    if (!opt) { if (inpPrecio) inpPrecio.value = ''; return; }
+    const precio = opt.getAttribute('data-precio') || '';
+    if (inpPrecio) inpPrecio.value = precio ? fmtMXN(precio) : '';
+  });
 });
       
 </script>
