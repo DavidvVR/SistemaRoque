@@ -1564,14 +1564,48 @@ btn.primary { background:#efe9ff; border-color:#033552; }
     <div class="modal-buttons" style="justify-content:center;">
       <button id="ltrOpDelYes" class="btn primary">Sí</button>
       <button id="ltrOpDelNo"  class="btn">No</button>
+       </div>
+      </div>
     </div>
+  </div>     
+</div><!-- Este cierra el Modulo 3 -->
+
+<!-- === SUBMENÚ: ASIGNACIÓN === -->
+<div id="asignMenu" class="frame hidden">
+  <h2>Asignación</h2>
+
+  <div class="dashboard">
+    <!-- Botón: Nuevo Servicio -->
+    <div class="module" id="asignNuevoBtn">
+      <div class="module-icon">🆕</div>
+      <div class="module-label">Nuevo Servicio</div>
+    </div>
+
+    <!-- Botón: Servicios activos -->
+    <div class="module" id="asignActivosBtn">
+      <div class="module-icon">📋</div>
+      <div class="module-label">Servicios activos</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px;">
+    <button id="asignVolverBtn" class="btn">Volver</button>
   </div>
 </div>
 
-  </div>
+<!-- (Opcional) Vistas “placeholder” para que los botones no queden muertos por ahora -->
+<div id="asignNuevo" class="frame hidden">
+  <h2>Nuevo Servicio</h2>
+  <p>Prototipo de pantalla. Aquí armaremos el formulario de alta.</p>
+  <button id="asignVolverDesdeNuevo" class="btn">Volver</button>
+</div>
 
-      
-</div><!-- Este cierra el Modulo 3 -->
+<div id="asignActivos" class="frame hidden">
+  <h2>Servicios activos</h2>
+  <p>Prototipo de pantalla. Aquí listaremos los servicios en curso.</p>
+  <button id="asignVolverDesdeActivos" class="btn">Volver</button>
+</div><!-- Aqui termina el modulo Asignación-->
+
   
       
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -3733,6 +3767,44 @@ function openOpDeleteModal(idx, label){
 })();
    
 </script>
+
+<script> //Aqui empieza el modulo 4
+function showFrame(id){
+  document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
+  const el = document.getElementById(id);
+  if (el){
+    el.classList.remove('hidden');
+    // si usas display:flex en frames, puedes forzar: el.style.display = 'block'/'flex' según tu layout
+  }
+}
+
+// --- ACTIVAR el botón del menú principal ---
+document.getElementById('modAsign')?.addEventListener('click', () => {
+  showFrame('asignMenu');
+});
+
+// --- Botones del submenú Asignación ---
+document.getElementById('asignVolverBtn')?.addEventListener('click', () => {
+  showFrame('dashboard');
+});
+
+document.getElementById('asignNuevoBtn')?.addEventListener('click', () => {
+  showFrame('asignNuevo'); // placeholder por ahora
+});
+
+document.getElementById('asignActivosBtn')?.addEventListener('click', () => {
+  showFrame('asignActivos'); // placeholder por ahora
+});
+
+// --- Botones Volver de las vistas placeholder ---
+document.getElementById('asignVolverDesdeNuevo')?.addEventListener('click', () => {
+  showFrame('asignMenu');
+});
+document.getElementById('asignVolverDesdeActivos')?.addEventListener('click', () => {
+  showFrame('asignMenu');
+});
+</script>
+
 
       
       <!-- Op LTR -->
