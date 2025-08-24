@@ -3042,6 +3042,7 @@ window.addEventListener('DOMContentLoaded', () => {
   function getOps(){ try { return JSON.parse(localStorage.getItem(srOpsKey)) || []; } catch { return []; } }
   function setOps(arr){ localStorage.setItem(srOpsKey, JSON.stringify(arr)); }
 
+      
 
  // === Render Operadores
 function renderTablaLTROperadores(filtro=''){
@@ -3079,6 +3080,9 @@ function renderTablaLTROperadores(filtro=''){
 }
 
 
+window.getOps = getOps;
+window.setOps = setOps;
+window.renderTablaLTROperadores = renderTablaLTROperadores;
   // === Buscadores
   document.getElementById('searchUnits')?.addEventListener('input', e => renderTablaLTRUnidades(e.target.value));
   document.getElementById('searchOps')?.addEventListener('input',   e => renderTablaLTROperadores(e.target.value));
