@@ -4405,7 +4405,17 @@ document.getElementById('asignGuardarServicio')?.addEventListener('click', guard
     }
   });
 })();
-
+// Dentro de bindUnidadPermisionario():
+selUnidad.addEventListener('change', () => {
+  const d = (typeof getDraft === 'function' ? getDraft() : {});
+  d.origenUnidad = selUnidad.value;   // 'LTR' | 'PERM' | ''
+  setDraft && setDraft(d);
+});
+selPerm.addEventListener('change', () => {
+  const d = (typeof getDraft === 'function' ? getDraft() : {});
+  d.permisionarioId = selPerm.value || null;
+  setDraft && setDraft(d);
+});
   cargarClientes();
 })();    
       
