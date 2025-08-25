@@ -1676,7 +1676,23 @@ btn.primary { background:#efe9ff; border-color:#033552; }
 </div>
 
      <h3 id="asigInfoUnidadSub" class="section-subtitle">Info Unidad</h3>
-      
+<div id="asigInfoUnidadRow" class="form-row">
+  <div class="fld">
+    <label for="asigUnidadOrigen">Unidad</label>
+    <select id="asigUnidadOrigen">
+      <option value="">Selecciona…</option>
+      <option value="LTR">LTR</option>
+      <option value="PERM">Permisionario</option>
+    </select>
+  </div>
+
+  <div class="fld">
+    <label for="asigPermisionarioSelect">Permisionario</label>
+    <select id="asigPermisionarioSelect" disabled>
+      <option value="">Selecciona…</option>
+    </select>
+  </div>
+</div>      
 
     </div>
   </div>
@@ -4298,6 +4314,97 @@ function guardarNuevoServicio(){
 // Hook del botón "Guardar servicio"
 document.getElementById('asignGuardarServicio')?.addEventListener('click', guardarNuevoServicio);
 
+// === ASIGNACIÓN: Fila "Unidad" + "Permisionario" debajo de "Info Unidad" ===
+(function(){
+  const STORE_PERMS = 'sr_permisionarios'; // misma clave que el módulo Permisionarios
+
+  function getPerms(){
+    try { return JSON.parse(localStorage.getItem(STORE_PERMS)) || []; }
+    catch { return []; }
+  }
+
+  function ensureInfoUnidadRow(){
+    // Ubicamos el subtítulo "Info Unidad" (id sugerido previamente)
+    const h = document.getElementById('asigInfoUnidadSub');
+    if(!h) return;
+
+    // Evita duplicados
+    if(document.getElementById('asigInfoUnidadRow')) return;
+
+    const row = document.createElement('div');
+    row.id = 'asigInfoUnidadRow';
+    row.className = 'form-row';
+    row.innerHTML = `
+      <div class="fld">
+        <label for="asigUnidadOrigen">Unidad</label>
+        <select id="asigUnidadOrigen">
+          <option value="">Selecciona…</option>
+          <option value="LTR">LTR</option>
+          <option value="PERM">Permisionario</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label for="asigPermisionarioSelect">Permisionario</label>
+        <select id="asigPermisionarioSelect" disabled>
+          <option value="">Selecciona…</option>
+        </select>
+      </div>
+    `;
+    h.insertAdjacentElement('afterend', row);
+
+    bindUnidadPermisionario();
+  }
+
+  function bindUnidadPermisionario(){
+    const selUnidad = document.getElementById('asigUnidadOrigen');
+    const selPerm   = document.getElementById('asigPermisionarioSelect');
+    if(!selUnidad || !selPerm) return;
+
+    function llenarPermisionarios(){
+      const perms = getPerms(); // [{ id, nombre/razonSocial, ... }]
+      selPerm.innerHTML = '<option value="">Selecciona…</option>';
+      perms.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id || '';
+        opt.textContent = (p.nombre || p.razonSocial || p.id || 'Permisionario').toString();
+        selPerm.appendChild(opt);
+      });
+    }
+
+    function applyState(){
+      const v = selUnidad.value;
+      if(v === 'PERM'){
+        selPerm.disabled = false;
+        llenarPermisionarios();
+      }else{
+        selPerm.disabled = true;
+        selPerm.value = '';
+        // Si quieres limpiar también del borrador/estado, aquí lo puedes hacer
+      }
+    }
+
+    selUnidad.addEventListener('change', applyState);
+
+    // Estado inicial
+    applyState();
+  }
+
+  // --- Integración con tu init de "Nuevo Servicio"
+  (function patchInitAsignacion(){
+    const prevInit = window.initAsignacionNuevoServicio;
+    window.initAsignacionNuevoServicio = function(){
+      if (typeof prevInit === 'function') prevInit();
+      ensureInfoUnidadRow();                 // <- crea/inyecta la fila
+    };
+  })();
+
+  // Por si recargas directamente estando en #asignNuevo visible
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
+      ensureInfoUnidadRow();
+    }
+  });
+})();
 
   cargarClientes();
 })();    
