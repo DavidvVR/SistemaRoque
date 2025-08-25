@@ -577,6 +577,29 @@ btn.primary { background:#efe9ff; border-color:#033552; }
   border: 2px solid var(--input-border);
   border-radius: 8px;
 }
+/* === Fila Unidad + Permisionario (forzar distribución y ancho) === */
+#asigInfoUnidadRow{
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+  gap: 12px;
+  width: 100%;
+}
+
+#asigInfoUnidadRow .fld{
+  display: flex;
+  flex-direction: column;
+  min-width: 0;                 /* permite que el contenido se estire */
+}
+
+#asigInfoUnidadRow label{ margin-bottom: 6px; }
+
+#asigInfoUnidadRow .fld > select,
+#asigInfoUnidadRow .fld > input,
+#asigInfoUnidadRow .fld > textarea{
+  display: block;
+  width: 100% !important;       /* ocupa todo el ancho de la columna */
+  box-sizing: border-box;
+}      
 </style>
 </head>
 <body>
