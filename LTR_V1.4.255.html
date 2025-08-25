@@ -4375,6 +4375,28 @@ function ensureInfoUnidadSubtitle(){
   // Insertar inmediatamente DESPUÉS de la fila Ruta/Tarifa/Cita
   fila.insertAdjacentElement('afterend', h);
 }
+// === ASIGNACIÓN: Subtítulo "Info Unidad" debajo de Ruta/Tarifa/Cita ===
+function ensureInfoUnidadSubtitle(){
+  // Buscamos la fila (form-row) que contiene Ruta, Tarifa o Cita de carga
+  const trayecto = document.getElementById('asigTrayecto');
+  const precio   = document.getElementById('asigPrecio');
+  const cita     = document.getElementById('asigCitaCarga');
+
+  const fila = trayecto?.closest('.form-row')
+            || precio?.closest('.form-row')
+            || cita?.closest('.form-row');
+
+  if (!fila) return;                       // Si aún no existe el DOM, salimos
+  if (document.getElementById('asigInfoUnidadSub')) return; // Evita duplicados
+
+  const h = document.createElement('h3');
+  h.id = 'asigInfoUnidadSub';
+  h.className = 'section-subtitle';
+  h.textContent = 'Info Unidad';
+
+  // Insertar inmediatamente DESPUÉS de la fila Ruta/Tarifa/Cita
+  fila.insertAdjacentElement('afterend', h);
+}
      
       
 })();    
