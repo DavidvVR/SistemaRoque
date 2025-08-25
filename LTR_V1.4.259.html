@@ -555,6 +555,28 @@ btn.primary { background:#efe9ff; border-color:#033552; }
   #asignMenu .choice-label{ font-weight:700; letter-spacing:.03em; }
   #asignMenu .home-actions{ margin-top:20px; display:flex; justify-content:flex-end; }
   @media (max-width:780px){ #asignMenu .home-grid{ grid-template-columns:1fr; } }
+/* Distribución y ancho para la fila: Unidad + Permisionario */
+  #asigInfoUnidadRow{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  #asigInfoUnidadRow .fld{ display: flex; flex-direction: column; }
+  #asigInfoUnidadRow .fld > select,
+  #asigInfoUnidadRow .fld > input,
+  #asigInfoUnidadRow .fld > textarea{
+    width: 100%;
+  }
+
+  @media (max-width: 720px){
+    #asigInfoUnidadRow{ grid-template-columns: 1fr; }
+  }
+.form-row input, .form-row select, .form-row textarea{
+  width: 100%;
+  padding: 8px;
+  border: 2px solid var(--input-border);
+  border-radius: 8px;
+}
 </style>
 </head>
 <body>
