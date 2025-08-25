@@ -4126,7 +4126,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-      
+    // API pública para reinicializar cuando entras a "Nuevo Servicio"
+  window.initAsignacionNuevoServicio = function(){
+    cargarClientes();                // repinta clientes (por si importaste nuevos)
+    selCliente.dispatchEvent(new Event('change')); // deja todo coherente
+  };
+
+
+  cargarClientes();
+})();    
 </script>
 
 
