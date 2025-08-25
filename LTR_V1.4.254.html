@@ -555,6 +555,17 @@ btn.primary { background:#efe9ff; border-color:#033552; }
   #asignMenu .choice-label{ font-weight:700; letter-spacing:.03em; }
   #asignMenu .home-actions{ margin-top:20px; display:flex; justify-content:flex-end; }
   @media (max-width:780px){ #asignMenu .home-grid{ grid-template-columns:1fr; } }
+.section-subtitle{
+  margin: 12px 0 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-strong, #222);
+  border-left: 3px solid var(--accent, #7c3aed);
+  padding-left: 8px;
+  letter-spacing: .2px;
+}
+
+      
 </style>
 </head>
 <body>
@@ -4295,9 +4306,77 @@ function guardarNuevoServicio(){
 
 // Hook del botón "Guardar servicio"
 document.getElementById('asignGuardarServicio')?.addEventListener('click', guardarNuevoServicio);
+cargarClientes();
 
+// === ASIGNACIÓN: Subtítulo "Info Unidad" debajo de Ruta/Tarifa/Cita ===
+function ensureInfoUnidadSubtitle(){
+  // Buscamos la fila (form-row) que contiene Ruta, Tarifa o Cita de carga
+  const trayecto = document.getElementById('asigTrayecto');
+  const precio   = document.getElementById('asigPrecio');
+  const cita     = document.getElementById('asigCitaCarga');
 
-  cargarClientes();
+  const fila = trayecto?.closest('.form-row')
+            || precio?.closest('.form-row')
+            || cita?.closest('.form-row');
+
+  if (!fila) return;                       // Si aún no existe el DOM, salimos
+  if (document.getElementById('asigInfoUnidadSub')) return; // Evita duplicados
+
+  const h = document.createElement('h3');
+  h.id = 'asigInfoUnidadSub';
+  h.className = 'section-subtitle';
+  h.textContent = 'Info Unidad';
+
+  // Insertar inmediatamente DESPUÉS de la fila Ruta/Tarifa/Cita
+  fila.insertAdjacentElement('afterend', h);
+}
+// === ASIGNACIÓN: Subtítulo "Info Unidad" debajo de Ruta/Tarifa/Cita ===
+function ensureInfoUnidadSubtitle(){
+  // Buscamos la fila (form-row) que contiene Ruta, Tarifa o Cita de carga
+  const trayecto = document.getElementById('asigTrayecto');
+  const precio   = document.getElementById('asigPrecio');
+  const cita     = document.getElementById('asigCitaCarga');
+
+  const fila = trayecto?.closest('.form-row')
+            || precio?.closest('.form-row')
+            || cita?.closest('.form-row');
+
+  if (!fila) return;                       // Si aún no existe el DOM, salimos
+  if (document.getElementById('asigInfoUnidadSub')) return; // Evita duplicados
+
+  const h = document.createElement('h3');
+  h.id = 'asigInfoUnidadSub';
+  h.className = 'section-subtitle';
+  h.textContent = 'Info Unidad';
+
+  // Insertar inmediatamente DESPUÉS de la fila Ruta/Tarifa/Cita
+  fila.insertAdjacentElement('afterend', h);
+}
+
+ // === ASIGNACIÓN: Subtítulo "Info Unidad" debajo de Ruta/Tarifa/Cita ===
+function ensureInfoUnidadSubtitle(){
+  // Buscamos la fila (form-row) que contiene Ruta, Tarifa o Cita de carga
+  const trayecto = document.getElementById('asigTrayecto');
+  const precio   = document.getElementById('asigPrecio');
+  const cita     = document.getElementById('asigCitaCarga');
+
+  const fila = trayecto?.closest('.form-row')
+            || precio?.closest('.form-row')
+            || cita?.closest('.form-row');
+
+  if (!fila) return;                       // Si aún no existe el DOM, salimos
+  if (document.getElementById('asigInfoUnidadSub')) return; // Evita duplicados
+
+  const h = document.createElement('h3');
+  h.id = 'asigInfoUnidadSub';
+  h.className = 'section-subtitle';
+  h.textContent = 'Info Unidad';
+
+  // Insertar inmediatamente DESPUÉS de la fila Ruta/Tarifa/Cita
+  fila.insertAdjacentElement('afterend', h);
+}
+     
+      
 })();    
       
 </script>
