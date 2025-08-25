@@ -1668,9 +1668,17 @@ btn.primary { background:#efe9ff; border-color:#033552; }
   </div>
 </div>
 
+<div class="form-row compact">
+  <div class="fld" style="max-width:320px">
+    <label for="asigCitaCarga">Cita de Carga</label>
+    <input id="asigCitaCarga" type="datetime-local">
+  </div>
+</div>
+
 
     </div>
   </div>
+  <button class="btn primary" id="asignGuardarServicio">Guardar servicio</button>    
   <div class="home-actions"><button class="btn" id="asignVolverDesdeNuevo">Volver</button></div>
 </div>
 
@@ -4132,9 +4140,166 @@ document.addEventListener('DOMContentLoaded', () => {
     selCliente.dispatchEvent(new Event('change')); // deja todo coherente
   };
 
+// === ASIGNACIÓN: soporte a "Cita de Carga" + guardado de servicio ===
+
+// --- Helpers de almacenamiento ---
+const STORE_ASIGN_BORRADOR = 'sr_asign_borrador';     // borrador del formulario
+const STORE_ASIGN_SERVICIOS = 'sr_asign_servicios';   // servicios guardados
+
+function getDraft(){
+  try { return JSON.parse(localStorage.getItem(STORE_ASIGN_BORRADOR)) || {}; }
+  catch { return {}; }
+}
+function setDraft(obj){
+  localStorage.setItem(STORE_ASIGN_BORRADOR, JSON.stringify(obj || {}));
+}
+function getServicios(){
+  try { return JSON.parse(localStorage.getItem(STORE_ASIGN_SERVICIOS)) || []; }
+  catch { return []; }
+}
+function setServicios(arr){
+  localStorage.setItem(STORE_ASIGN_SERVICIOS, JSON.stringify(arr || []));
+}
+function genServicioId(arr){
+  const prefijo = 'LTR-SV-';
+  const maxNum = arr.reduce((max, s) => {
+    const m = (s.id || '').match(/^LTR-SV-(\d+)$/);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return n > max ? n : max;
+  }, 0);
+  return `${prefijo}${String(maxNum + 1).padStart(2, '0')}`;
+}
+
+// --- Enlazar "Cita de Carga" al borrador ---
+function bindCitaCargaChange(){
+  const cita = document.getElementById('asigCitaCarga');
+  if(!cita) return;
+  // 1) Rellenar desde el borrador si existiera
+  const draft = getDraft();
+  if (draft.citaCarga) {
+    // Si guardaste en ISO, puedes convertir a local para <input type="datetime-local">
+    // asumiendo draft.citaCarga ya viene en formato compatible (YYYY-MM-DDTHH:mm)
+    cita.value = draft.citaCarga;
+  }
+  // 2) Guardar cambios en borrador
+  cita.addEventListener('change', () => {
+    const d = getDraft();
+    d.citaCarga = cita.value || null;
+    setDraft(d);
+  });
+}
+
+// --- Cargar valores precargados de cliente/tipo/trayecto al entrar ---
+// Ya tienes window.initAsignacionNuevoServicio() definido que repinta selects y dispara change:contentReference[oaicite:5]{index=5}.
+// Amplíalo para que también precargue "Cita de Carga" si existe:
+(function patchInitAsignacion(){
+  const prevInit = window.initAsignacionNuevoServicio;
+  window.initAsignacionNuevoServicio = function(){
+    if (typeof prevInit === 'function') prevInit();
+    bindCitaCargaChange();
+  };
+})();
+
+// Si entras directo a la vista (F5) ya ejecutas render/binds en tu código actual:contentReference[oaicite:6]{index=6}.
+// Engancha también el bind de la cita:
+document.addEventListener('DOMContentLoaded', () => {
+  if (!document.getElementById('asignNuevo')?.classList.contains('hidden')) {
+    bindCitaCargaChange();
+  }
+});
+
+// --- Guardar el servicio completo ---
+function parsePrecioToNumber(txt){
+  // Convierte "$ 12,345.67" → 12345.67
+  const num = parseFloat(String(txt || '').replace(/[^0-9.-]/g, ''));
+  return Number.isFinite(num) ? num : 0;
+}
+
+function leerTrayectoSeleccionado(){
+  const selTray = document.getElementById('asigTrayecto');
+  if (!selTray || !selTray.value) return null;
+  try { return JSON.parse(selTray.value); }
+  catch { return null; }
+}
+
+function validarNuevoServicio(draft){
+  const selCliente  = document.getElementById('asigClienteSelect');
+  const selTipo     = document.getElementById('asigTipoUnidad');
+  const selTrayecto = document.getElementById('asigTrayecto');
+
+  const errores = [];
+  if (!selCliente?.value) errores.push('Cliente');
+  if (!selTipo?.value) errores.push('Tipo de unidad');
+  if (!selTrayecto?.value) errores.push('Trayecto');
+
+  // "Cita de Carga" puede ser opcional; si la quieres obligatoria, descomenta:
+  // if (!draft.citaCarga) errores.push('Cita de Carga');
+
+  return errores;
+}
+
+function guardarNuevoServicio(){
+  const draft = getDraft();
+  const selCliente  = document.getElementById('asigClienteSelect');
+  const selTipo     = document.getElementById('asigTipoUnidad');
+  const selTrayecto = document.getElementById('asigTrayecto');
+  const inpPrecio   = document.getElementById('asigPrecio');
+  const inpCita     = document.getElementById('asigCitaCarga');
+
+  const errores = validarNuevoServicio(draft);
+  if (errores.length){
+    alert('Faltan datos requeridos: ' + errores.join(', '));
+    return;
+  }
+
+  // Construir el objeto servicio
+  const servicios = getServicios();
+
+  const tray = leerTrayectoSeleccionado(); // { origen, destino, precio, credito, km, ... } como lo guardaste
+  const precioNumber = parsePrecioToNumber(inpPrecio?.value || (tray?.precio ?? 0));
+
+  const servicio = {
+    id: genServicioId(servicios),
+    createdAt: new Date().toISOString(),
+    estado: 'Activo',
+    // Cliente
+    cliente: draft.cliente || { id: selCliente.value, nombre: selCliente.options[selCliente.selectedIndex]?.text || '' },
+    // Tipo / Trayecto / Precio
+    tipoUnidad: draft.tipoUnidad || selTipo.value || null,
+    trayecto: tray,                     // guarda el objeto serializado desde el <select>
+    precio: precioNumber,               // número
+    precioFmt: (precioNumber || 0).toLocaleString('es-MX', { style:'currency', currency:'MXN' }),
+    // Cita de Carga
+    citaCarga: (inpCita?.value || null), // formato datetime-local (YYYY-MM-DDTHH:mm)
+  };
+
+  // Persistir
+  servicios.push(servicio);
+  setServicios(servicios);
+
+  // Limpiar borrador para el siguiente servicio
+  setDraft({});
+
+  // (Opcional) Reset visual mínimo
+  if (selCliente) selCliente.value = '';
+  if (selTipo) selTipo.value = '';
+  if (selTrayecto) selTrayecto.innerHTML = '<option value="">Selecciona cliente y tipo de unidad</option>', selTrayecto.disabled = true;
+  if (inpPrecio) inpPrecio.value = '';
+  if (inpCita) inpCita.value = '';
+
+  alert('Servicio guardado: ' + servicio.id);
+
+  // Redirige a "Servicios activos" (placeholder en tu HTML actual):contentReference[oaicite:7]{index=7}
+  if (typeof showSection === 'function') showSection('asignActivos');
+}
+
+// Hook del botón "Guardar servicio"
+document.getElementById('asignGuardarServicio')?.addEventListener('click', guardarNuevoServicio);
+
 
   cargarClientes();
 })();    
+      
 </script>
 
 
