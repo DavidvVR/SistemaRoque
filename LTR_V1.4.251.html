@@ -4115,41 +4115,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!selTrayecto.value){ inpPrecio.value = ''; return; }
     try{
       const { precio } = JSON.parse(selTrayecto.value);
-      inpPrecio.value = fmtMXN(precio);
+       const numero = parseFloat(String(precio).replace(/[^0-9.-]/g, ''));
+      if (Number.isFinite(numero)) {
+        inpPrecio.value = fmtMXN(numero);
+      } else {
+        inpPrecio.value = '';
+      }
     }catch{
       inpPrecio.value = '';
     }
   });
-const selCliente  = document.getElementById('asigClienteSelect');
-const selTipo     = document.getElementById('asigTipo');
-const selTrayecto = document.getElementById('asigTrayecto');
-const inpPrecio   = document.getElementById('asigPrecio');
 
-function fmtMXN(n){ return Number(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN'}); } // ya la tienes :contentReference[oaicite:8]{index=8}
-
-// Reinicia precio cuando cambian Cliente o Tipo
-selCliente?.addEventListener('change', () => { inpPrecio.value=''; });
-selTipo?.addEventListener('change',    () => { inpPrecio.value=''; });
-
-// Al elegir trayecto, toma el precio del value (JSON) y lo pinta:
-selTrayecto?.addEventListener('change', () => {
-  let precio = '';
-  try {
-    const data = selTrayecto.value ? JSON.parse(selTrayecto.value) : null;
-    precio = data ? Number(data.precio)||0 : '';
-  } catch {}
-  inpPrecio.value = precio === '' ? '' : fmtMXN(precio);
-});
-
-  // API pública para reinicializar cuando entras a "Nuevo Servicio"
-  window.initAsignacionNuevoServicio = function(){
-    cargarClientes();                // repinta clientes (por si importaste nuevos)
-    selCliente.dispatchEvent(new Event('change')); // deja todo coherente
-  };
-
-
-  cargarClientes();
-})();
       
 </script>
 
