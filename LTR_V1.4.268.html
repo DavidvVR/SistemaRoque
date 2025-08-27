@@ -4369,13 +4369,14 @@ getPerms().forEach(p => {
   
 }
 
-function initUnidadPermControls(){
-   const unidadSel = document.getElementById('unidadSel');        
-  const permSel   = document.getElementById('permisionario');    
-  if(!unidadSel || !permSel){
-    console.warn('No encontré los selects Unidad/Permisionario');
-    return;
-  }
+(function(){
+  const u = document.getElementById('ns-unidadTipo') || document.getElementById('unidadSel');
+  if(!u) return console.warn('No se encontró el select Unidad');
+  console.table(Array.from(u.options).map(o => ({
+    text: o.textContent.trim(),
+    value: o.value
+  })));
+})();
 
   populatePermsSelect();
 
@@ -4413,6 +4414,22 @@ function collectNuevoServicioData(){
 function onPermisionariosActualizados(){
   populatePermsSelect();
 }
+(function(){
+  const u = document.getElementById('ns-unidadTipo') || document.getElementById('unidadSel');
+  const p = document.getElementById('ns-permisionario') || document.getElementById('permisionario');
+
+  // Busca automáticamente la opción cuyo value comience con "permisionario"
+  const opt = Array.from(u?.options || []).find(o => (o.value||'').toLowerCase().startsWith('permisionario'));
+  if (!u || !p || !opt) return console.warn('Faltan elementos o no existe opción "Permisionario"');
+
+  u.value = opt.value;                                  // Cambia el valor
+  u.dispatchEvent(new Event('change', {bubbles:true})); // Dispara el listener
+
+  console.table({
+    valorUnidad: u.value,
+    permDeshabilitado: p.disabled
+  });
+})();      
       
 })();    
       
