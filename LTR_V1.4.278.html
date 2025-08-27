@@ -1851,6 +1851,10 @@ window.addEventListener('DOMContentLoaded', () => {
     el && el.classList.remove('hidden');
   }
 
+      function moduloVisible(id){
+  const el = document.getElementById(id);
+  return el && !el.classList.contains('hidden');
+}
   // === BD local de clientes
   function getClientes(){ try { return JSON.parse(localStorage.getItem(srStoreKey)) || []; } catch { return []; } }
   function setClientes(arr){ localStorage.setItem(srStoreKey, JSON.stringify(arr)); }
@@ -2417,6 +2421,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const permsMenu = document.getElementById('permsMenu');
   let editingPermId = null;
   const permInfoModal = document.getElementById('permInfoModal');
+
+function abrirModalPerm(modalEl){
+  if(!moduloVisible('permModule')) return; // evita abrir si NO estás en Permisionarios
+  abrirModalPerm(unidadModal);
+}
   
 
   // === BD local de permisionarios
@@ -2520,15 +2529,13 @@ window.addEventListener('DOMContentLoaded', migratePermsStorage);
     <h2>Detalle del permisionario</h2>
     ${html}
   `;
-  permInfoModal.classList.remove('hidden');
-  permInfoModal.style.display = 'flex';
+ if (permInfoModal) abrirModalPerm(permInfoModal);
   permInfoModal.querySelector('#permInfoCerrar').onclick = closePermDetalle;
 }
 
   function closePermDetalle(){
     if(!permInfoModal) return;
-    permInfoModal.classList.add('hidden');
-    permInfoModal.style.display = 'none';
+    cerrarModal(unidadModal);
   }
 
       
@@ -2573,12 +2580,11 @@ window.addEventListener('DOMContentLoaded', migratePermsStorage);
   let deletePermId = null;
   function openDeletePerm(id){
     deletePermId = id;
-    confirmDeleteModal.classList.remove('hidden');
-    confirmDeleteModal.style.display = 'flex';
+    const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+abrirModalPerm(confirmDeleteModal);
   }
   function closeDeletePermModal(){
-    confirmDeleteModal.classList.add('hidden');
-    confirmDeleteModal.style.display = 'none';
+   if (confirmDeleteModal) cerrarModal(confirmDeleteModal);
     deletePermId = null;
   }
   deleteConfirmYes?.addEventListener('click', () => {
@@ -2725,8 +2731,7 @@ document.querySelectorAll('.perm-view').forEach(btn => {
   function showSaveModal(id){
     if (permIDMostrado) permIDMostrado.textContent = id;
     buildPermResumen();
-    permSaveModal?.classList.remove('hidden');
-    if (permSaveModal) permSaveModal.style.display = 'flex';
+   if (permSaveModal) abrirModalPerm(permSaveModal);
   }
 
   function hideSaveModal(){
@@ -2847,13 +2852,8 @@ document.querySelectorAll('.perm-view').forEach(btn => {
     if (polName) polName.value = '';
   }
 
-  function mostrarUnidadModal(){
-    unidadModal.classList.remove('hidden');
-    unidadModal.style.display = 'flex';
-  }
-  function ocultarUnidadModal(){
-    unidadModal.classList.add('hidden');
-    unidadModal.style.display = 'none';
+  abrirModalPerm(unidadModal);
+  cerrarModal(unidadModal);
   }
 
   btnAddUnit?.addEventListener('click', () => {
@@ -3069,14 +3069,9 @@ window.addEventListener('DOMContentLoaded', () => {
   function limpiar(){
     Object.values(f).forEach(el => { if (el) el.value = ''; });
   }
+  abrirModalPerm(unidadModal);
+  cerrarModal(unidadModal);
 
-  function mostrar(){
-    operadorModal.classList.remove('hidden');
-    operadorModal.style.display = 'flex';
-  }
-  function ocultar(){
-    operadorModal.classList.add('hidden');
-    operadorModal.style.display = 'none';
   }
 
   btnAddOperator?.addEventListener('click', () => {
@@ -3214,6 +3209,16 @@ window.addEventListener('DOMContentLoaded', () => {
   // === Volver internos (listas) hacia Home LTR
   btnUnitsBack?.addEventListener('click', () => showInLTR(ltrHome));
   btnOpsBack?.addEventListener('click', () => showInLTR(ltrHome));
+  
+function abrirModalLTR(modalEl){
+  if(!moduloVisible('ltrModule')) return; // evita abrir si NO estás en LTR
+  modalEl.classList.remove('hidden');
+  modalEl.style.display = 'flex';
+  }
+function cerrarModal(modalEl){
+  modalEl.classList.add('hidden');
+  modalEl.style.display = 'none';
+  }
 
   // === Datos locales (puedes integrarlo con tu storage real)
   const srUnitsKey = 'sr_ltr_unidades';
@@ -3231,18 +3236,15 @@ window.addEventListener('DOMContentLoaded', () => {
   function showFile(url){
     if(!fileModal || !fileFrame){ window.open(url,'_blank'); return; }
     fileFrame.src = url;
-    fileModal.classList.remove('hidden');
-    fileModal.style.display = 'flex';
+    abrirModalLTR(modal);
   }
   fileModal?.querySelector('.close')?.addEventListener('click', () => {
-    fileModal.classList.add('hidden');
-    fileModal.style.display = 'none';
+  abrirModalLTR(modal);
     fileFrame.src = '';
   });
   fileModal?.addEventListener('click', (e) => {
     if(e.target === fileModal){
-      fileModal.classList.add('hidden');
-      fileModal.style.display = 'none';
+     abrirModalLTR(modal);
       fileFrame.src = '';
     }
   });
@@ -3475,8 +3477,7 @@ function openLTRUnidadDetalle(id){
       + '</div></div>';
     var card = modal.querySelector('.modal-card');
     card.innerHTML = '<span id="ltrUnidadInfoCerrar" class="close">&times;</span><h2>Detalle de la unidad</h2>' + html;
-    modal.classList.remove('hidden');
-    modal.style.display = 'flex';
+    abrirModalLTR(modal);
     modal.querySelector('#ltrUnidadInfoCerrar').onclick = closeLTRUnidadDetalle;
   }
 
@@ -3856,8 +3857,7 @@ document.querySelector('#tablaLTROperadores tbody')?.addEventListener('click', (
 
     // abre el modal existente de operadores LTR
     const modal = document.getElementById('ltrOperadorModal');
-    modal?.classList.remove('hidden');
-    modal.style.display = 'flex';
+    abrirModalLTR(modal);
     return;
   }
 
