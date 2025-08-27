@@ -4360,22 +4360,22 @@ function populatePermsSelect() {
   const sel = document.getElementById('ns-permisionario');
   if (!sel) return;
   sel.innerHTML = '<option value="" selected>Selecciona un permisionario…</option>';
-
-  const perms = getPerms();
-  perms.forEach(p => {
-    const opt = document.createElement('option');
-    // Ajusta estos campos a tu estructura real:
-    opt.value = p.id || p.codigo || p.clave || '';
-    const label = p.razonSocial || p.nombre || p.alias || opt.value || '(sin nombre)';
-    opt.textContent = label;
-    sel.appendChild(opt);
-  });
+getPerms().forEach(p => {
+  const opt = document.createElement('option');
+  opt.value = p.id || p.codigo || p.clave || '';
+  opt.textContent = p.razonSocial || p.nombre || p.alias || opt.value || '(sin nombre)';
+  sel.appendChild(opt);
+});
+  
 }
 
 function initUnidadPermControls(){
-  const unidadSel = document.getElementById('ns-unidadTipo');
-  const permSel   = document.getElementById('ns-permisionario');
-  if(!unidadSel || !permSel) return;
+   const unidadSel = document.getElementById('unidadSel');        
+  const permSel   = document.getElementById('permisionario');    
+  if(!unidadSel || !permSel){
+    console.warn('No encontré los selects Unidad/Permisionario');
+    return;
+  }
 
   populatePermsSelect();
 
