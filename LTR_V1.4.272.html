@@ -4309,31 +4309,78 @@ document.getElementById('asignGuardarServicio')?.addEventListener('click', guard
 
   cargarClientes();
 
-// === Enlace select Unidad con módulos ===
-document.addEventListener("DOMContentLoaded", () => {
-  const selUnidad = document.getElementById("ns-unidadTipo");
+// ==== Data Source para "Unidad" (LTR / Permisionario) ====
+// Requiere que existan getUnits(), getOps() (LTR) y getPerms() (Permisionarios)
 
-  selUnidad?.addEventListener("change", (e) => {
-    const val = e.target.value;
+(function(){
+  const sel = document.getElementById('ns-unidadTipo');
+  if (!sel) return;
 
-    if (val === "LTR") {
-      console.log("🔗 Seleccionaste LTR, enlazando con módulo LTR...");
-      // Aquí mostramos el módulo LTR
-      showSection("modLTR");  // usa el ID real del módulo de LTR
-      // Más adelante puedes llamar funciones como getUnidadesLTR(), etc.
-    } 
-    else if (val === "Permisionario") {
-      console.log("🔗 Seleccionaste Permisionario, enlazando con módulo Permisionarios...");
-      // Aquí mostramos el módulo de Permisionarios
-      showSection("permModule"); // ya existe <div id="permModule">
-      // Más adelante podrías cargar datos: renderTablaPerms(), getPermisionarios(), etc.
-    } 
-    else {
-      console.log("⚪ No se ha seleccionado unidad");
-      // Opcional: ocultar ambos módulos si no se elige nada
-    }
-  });
-});
+  // Exponemos un objeto global para que todo el sistema lea desde aquí
+  // sin importar la opción actual del select.
+  window.UnidadDataSource = {
+    tipo: '',                 // 'LTR' | 'Permisionario' | ''
+    // Getters unificados:
+    getUnidades: () => [],    // para LTR: retorna getUnits()
+    getOperadores: () => [],  // para LTR: retorna getOps()
+    getPermisionarios: () => [], // para Permisionarios: retorna getPerms()
+    // Helpers comunes para consumir datos de Permisionarios:
+    getTodasUnidadesPerm: () => [],   // concatena p.unidades
+    getTodosOperadoresPerm: () => [], // concatena p.operadores
+  };
+
+  function setSourceLTR(){
+    window.UnidadDataSource.tipo = 'LTR';
+    window.UnidadDataSource.getUnidades = () => (typeof getUnits === 'function' ? getUnits() : []);
+    window.UnidadDataSource.getOperadores = () => (typeof getOps === 'function' ? getOps() : []);
+    window.UnidadDataSource.getPermisionarios = () => [];
+    window.UnidadDataSource.getTodasUnidadesPerm = () => [];
+    window.UnidadDataSource.getTodosOperadoresPerm = () => [];
+  }
+
+  function setSourcePerm(){
+    window.UnidadDataSource.tipo = 'Permisionario';
+    window.UnidadDataSource.getPermisionarios = () => (typeof getPerms === 'function' ? getPerms() : []);
+    // Helpers: aplanar unidades/operadores de todos los permisionarios
+    window.UnidadDataSource.getTodasUnidadesPerm = () => {
+      const perms = window.UnidadDataSource.getPermisionarios();
+      return perms.flatMap(p => Array.isArray(p.unidades) ? p.unidades.map(u => ({...u, _permId:p.id, _permNombre:p.nombre})) : []);
+    };
+    window.UnidadDataSource.getTodosOperadoresPerm = () => {
+      const perms = window.UnidadDataSource.getPermisionarios();
+      return perms.flatMap(p => Array.isArray(p.operadores) ? p.operadores.map(o => ({...o, _permId:p.id, _permNombre:p.nombre})) : []);
+    };
+    // En modo Permisionario, estos getters LTR devuelven vacío (por consistencia)
+    window.UnidadDataSource.getUnidades = () => [];
+    window.UnidadDataSource.getOperadores = () => [];
+  }
+
+  function resetSource(){
+    window.UnidadDataSource.tipo = '';
+    window.UnidadDataSource.getUnidades = () => [];
+    window.UnidadDataSource.getOperadores = () => [];
+    window.UnidadDataSource.getPermisionarios = () => [];
+    window.UnidadDataSource.getTodasUnidadesPerm = () => [];
+    window.UnidadDataSource.getTodosOperadoresPerm = () => [];
+  }
+
+  function applyFromSelect(){
+    const v = sel.value;
+    if (v === 'LTR') setSourceLTR();
+    else if (v === 'Permisionario') setSourcePerm();
+    else resetSource();
+
+    // Notificamos al resto de la app que cambió la fuente
+    document.dispatchEvent(new CustomEvent('unidad:source-changed', {
+      detail: { tipo: window.UnidadDataSource.tipo }
+    }));
+  }
+
+  // Vincular cambio y aplicar estado inicial
+  sel.addEventListener('change', applyFromSelect);
+  applyFromSelect(); // por si ya tiene valor al entrar
+
+})();
 
       
 })();    
