@@ -4051,7 +4051,12 @@ window.addEventListener('storage', (e) => {
 
 // Llama a render cuando entras a “Nuevo Servicio”
 document.getElementById('asignNuevoBtn')
-  ?.addEventListener('click', () => { renderClienteOptions(); bindClienteChange(); });
+  ?.addEventListener('click', () => {
+    renderClienteOptions();
+    bindClienteChange();
+    bindTipoUnidadChange();
+    afterRenderNuevoServicio();
+  });
 
 // Por si navegas directo a #asignNuevo (F5 sobre esa vista)
 document.addEventListener('DOMContentLoaded', () => {
