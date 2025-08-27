@@ -1698,23 +1698,22 @@ btn.primary { background:#efe9ff; border-color:#033552; }
 </div>
    <h3 id="asigInfoUnidadSub" class="section-subtitle">Info Unidad</h3>
      
-      <div class="ns-row-2" id="ns-unidad-perm-row">
-      <div class="form-field">
-       <label for="ns-unidadTipo">Unidad</label>
-       <select id="ns-unidadTipo" name="unidadTipo" required>
-      <option value="" selected disabled>Selecciona…</option>
+     <div class="ns-row-2">
+  <div class="form-field">
+    <label for="ns-unidadTipo">Unidad</label>
+    <select id="ns-unidadTipo">
+      <option value="">Selecciona…</option>
       <option value="LTR">LTR</option>
       <option value="Permisionario">Permisionario</option>
-      </select>
-      </div>
+    </select>
+  </div>
 
   <div class="form-field">
     <label for="ns-permisionario">Permisionario</label>
-    <select id="ns-permisionario" name="permisionario" disabled>
-      <option value="" selected>Selecciona un permisionario…</option>
-    </select>
+    <select id="ns-permisionario" disabled></select>
   </div>
-</div>      
+</div>
+        
   </div>
   <button class="btn primary" id="asignGuardarServicio">Guardar servicio</button>    
   <div class="home-actions"><button class="btn" id="asignVolverDesdeNuevo">Volver</button></div>
@@ -4060,6 +4059,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderClienteOptions();
       bindClienteChange();
       bindTipoUnidadChange();
+      afterRenderNuevoServicio();
     }
   });
       
@@ -4375,10 +4375,11 @@ function initUnidadPermControls(){
   populatePermsSelect();
 
   const applyState = () => {
-    const isPerm = unidadSel.value === 'Permisionario';
-    permSel.disabled = !isPerm;
-    if (!isPerm) permSel.value = '';
-  };
+  const v = (unidadSel.value || '').toLowerCase();
+  const isPerm = v.startsWith('permisionario'); // admite “permisionario”, “permisionarios”
+  permSel.disabled = !isPerm;
+  if (!isPerm) permSel.value = '';
+};
 
   unidadSel.addEventListener('change', applyState);
   applyState();
