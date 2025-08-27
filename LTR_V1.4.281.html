@@ -1717,7 +1717,14 @@ btn.primary { background:#efe9ff; border-color:#033552; }
          </select>
          <div class="field-error" data-for="ns-eco"></div>
       </div> 
-
+   
+    <div class="form-group">
+      <label for="ns-operador">Operador</label>
+      <select id="ns-operador" disabled>
+      <option value="">Selecciona…</option>
+      </select>
+      <div class="field-error" data-for="ns-operador"></div>
+     </div>
           
 </div>
      
@@ -4346,72 +4353,72 @@ document.getElementById('asignGuardarServicio')?.addEventListener('click', guard
 // Cunado se selecciona aqui empieza (LTR) o (Permisionarios)
 
 (function(){
-  const sel = document.getElementById('ns-unidadTipo');
-  if (!sel) return;
-
-  // Exponemos un objeto global para que todo el sistema lea desde aquí
-  // sin importar la opción actual del select.
-  window.UnidadDataSource = {
-    tipo: '',                 // 'LTR' | 'Permisionario' | ''
-    // Getters unificados:
-    getUnidades: () => [],    // para LTR: retorna getUnits()
-    getOperadores: () => [],  // para LTR: retorna getOps()
-    getPermisionarios: () => [], // para Permisionarios: retorna getPerms()
-    // Helpers comunes para consumir datos de Permisionarios:
-    getTodasUnidadesPerm: () => [],   // concatena p.unidades
-    getTodosOperadoresPerm: () => [], // concatena p.operadores
-  };
-
-  function setSourceLTR(){
-    window.UnidadDataSource.tipo = 'LTR';
-    window.UnidadDataSource.getUnidades = () => (typeof getUnits === 'function' ? getUnits() : []);
-    window.UnidadDataSource.getOperadores = () => (typeof getOps === 'function' ? getOps() : []);
-    window.UnidadDataSource.getPermisionarios = () => [];
-    window.UnidadDataSource.getTodasUnidadesPerm = () => [];
-    window.UnidadDataSource.getTodosOperadoresPerm = () => [];
-  }
-
-  function setSourcePerm(){
-    window.UnidadDataSource.tipo = 'Permisionario';
-    window.UnidadDataSource.getPermisionarios = () => (typeof getPerms === 'function' ? getPerms() : []);
-    // Helpers: aplanar unidades/operadores de todos los permisionarios
-    window.UnidadDataSource.getTodasUnidadesPerm = () => {
-      const perms = window.UnidadDataSource.getPermisionarios();
-      return perms.flatMap(p => Array.isArray(p.unidades) ? p.unidades.map(u => ({...u, _permId:p.id, _permNombre:p.nombre})) : []);
-    };
-    window.UnidadDataSource.getTodosOperadoresPerm = () => {
-      const perms = window.UnidadDataSource.getPermisionarios();
-      return perms.flatMap(p => Array.isArray(p.operadores) ? p.operadores.map(o => ({...o, _permId:p.id, _permNombre:p.nombre})) : []);
-    };
-    // En modo Permisionario, estos getters LTR devuelven vacío (por consistencia)
-    window.UnidadDataSource.getUnidades = () => [];
-    window.UnidadDataSource.getOperadores = () => [];
-  }
-
-  function resetSource(){
-    window.UnidadDataSource.tipo = '';
-    window.UnidadDataSource.getUnidades = () => [];
-    window.UnidadDataSource.getOperadores = () => [];
-    window.UnidadDataSource.getPermisionarios = () => [];
-    window.UnidadDataSource.getTodasUnidadesPerm = () => [];
-    window.UnidadDataSource.getTodosOperadoresPerm = () => [];
-  }
-
-  function applyFromSelect(){
-    const v = sel.value;
-    if (v === 'LTR') setSourceLTR();
-    else if (v === 'Permisionario') setSourcePerm();
-    else resetSource();
-
-    // Notificamos al resto de la app que cambió la fuente
-    document.dispatchEvent(new CustomEvent('unidad:source-changed', {
-      detail: { tipo: window.UnidadDataSource.tipo }
-    }));
-  }
-
-  // Vincular cambio y aplicar estado inicial
-  sel.addEventListener('change', applyFromSelect);
-  applyFromSelect(); // por si ya tiene valor al entrar
+        const sel = document.getElementById('ns-unidadTipo');
+        if (!sel) return;
+      
+        // Exponemos un objeto global para que todo el sistema lea desde aquí
+        // sin importar la opción actual del select.
+        window.UnidadDataSource = {
+          tipo: '',                 // 'LTR' | 'Permisionario' | ''
+          // Getters unificados:
+          getUnidades: () => [],    // para LTR: retorna getUnits()
+          getOperadores: () => [],  // para LTR: retorna getOps()
+          getPermisionarios: () => [], // para Permisionarios: retorna getPerms()
+          // Helpers comunes para consumir datos de Permisionarios:
+          getTodasUnidadesPerm: () => [],   // concatena p.unidades
+          getTodosOperadoresPerm: () => [], // concatena p.operadores
+        };
+      
+        function setSourceLTR(){
+          window.UnidadDataSource.tipo = 'LTR';
+          window.UnidadDataSource.getUnidades = () => (typeof getUnits === 'function' ? getUnits() : []);
+          window.UnidadDataSource.getOperadores = () => (typeof getOps === 'function' ? getOps() : []);
+          window.UnidadDataSource.getPermisionarios = () => [];
+          window.UnidadDataSource.getTodasUnidadesPerm = () => [];
+          window.UnidadDataSource.getTodosOperadoresPerm = () => [];
+        }
+      
+        function setSourcePerm(){
+          window.UnidadDataSource.tipo = 'Permisionario';
+          window.UnidadDataSource.getPermisionarios = () => (typeof getPerms === 'function' ? getPerms() : []);
+          // Helpers: aplanar unidades/operadores de todos los permisionarios
+          window.UnidadDataSource.getTodasUnidadesPerm = () => {
+            const perms = window.UnidadDataSource.getPermisionarios();
+            return perms.flatMap(p => Array.isArray(p.unidades) ? p.unidades.map(u => ({...u, _permId:p.id, _permNombre:p.nombre})) : []);
+          };
+          window.UnidadDataSource.getTodosOperadoresPerm = () => {
+            const perms = window.UnidadDataSource.getPermisionarios();
+            return perms.flatMap(p => Array.isArray(p.operadores) ? p.operadores.map(o => ({...o, _permId:p.id, _permNombre:p.nombre})) : []);
+          };
+          // En modo Permisionario, estos getters LTR devuelven vacío (por consistencia)
+          window.UnidadDataSource.getUnidades = () => [];
+          window.UnidadDataSource.getOperadores = () => [];
+        }
+      
+        function resetSource(){
+          window.UnidadDataSource.tipo = '';
+          window.UnidadDataSource.getUnidades = () => [];
+          window.UnidadDataSource.getOperadores = () => [];
+          window.UnidadDataSource.getPermisionarios = () => [];
+          window.UnidadDataSource.getTodasUnidadesPerm = () => [];
+          window.UnidadDataSource.getTodosOperadoresPerm = () => [];
+        }
+      
+        function applyFromSelect(){
+          const v = sel.value;
+          if (v === 'LTR') setSourceLTR();
+          else if (v === 'Permisionario') setSourcePerm();
+          else resetSource();
+      
+          // Notificamos al resto de la app que cambió la fuente
+          document.dispatchEvent(new CustomEvent('unidad:source-changed', {
+            detail: { tipo: window.UnidadDataSource.tipo }
+          }));
+        }
+      
+        // Vincular cambio y aplicar estado inicial
+        sel.addEventListener('change', applyFromSelect);
+        applyFromSelect(); // por si ya tiene valor al entrar
 
 })();
 
@@ -4470,425 +4477,477 @@ document.getElementById('asignGuardarServicio')?.addEventListener('click', guard
 })();
 //Aqui empieza lo label de placa 
 (function(){
-  const selUnidad = document.getElementById('ns-unidadTipo');      // LTR | Permisionario
-  const selPerm   = document.getElementById('ns-permisionario');    // Permisionario seleccionado
-  const selPlaca  = document.getElementById('ns-placa');
-  if(!selUnidad || !selPerm || !selPlaca) return;
-  function resetPlacas(){
-    selPlaca.innerHTML = '<option value="">Selecciona…</option>';
-    selPlaca.disabled = true;
-  }
-  function setPlacas(opciones){
-    const uniques = Array.from(new Set((opciones || []).filter(Boolean)));
-    selPlaca.innerHTML = '<option value="">Selecciona…</option>';
-    uniques.forEach(placa => {
-      const opt = document.createElement('option');
-      opt.value = placa;
-      opt.textContent = placa;
-      selPlaca.appendChild(opt);
-    });
-    selPlaca.disabled = uniques.length === 0;
-  }
-function obtenerUnidadesLTR(){
-  if (typeof getUnits === 'function') return getUnits();
-  try{
-    const raw = localStorage.getItem('sr_ltr_unidades');
-    return raw ? JSON.parse(raw) : [];
-  }catch(e){ return []; }
-}
-
-function fillFromLTR(){
-  try{
-    const units = obtenerUnidadesLTR();
-    const placas = units.map(u => u.placas).filter(Boolean);
-    setPlacas(placas);
-  }catch{ resetPlacas(); }
-}
-  // Llenado desde LTR (sr_ltr_unidades) usando getUnits()
-  function fillFromLTR(){
-    try{
-      const units = (typeof getUnits === 'function') ? getUnits() : [];
-      const placas = units.map(u => u.placas).filter(Boolean);
-      setPlacas(placas);
-    }catch{ resetPlacas(); }
-  }
-  // Llenado desde Permisionarios (sr_permisionarios) usando getPerms()
-  function fillFromPerm(){
-    try{
-      const perms = (typeof getPerms === 'function') ? getPerms() : [];
-      const sel = selPerm.value;
-      // Puede que el <option> de Permisionario lleve id o nombre; comparamos ambos.
-      const p = perms.find(pp => (pp.id && String(pp.id) === String(sel)) ||
-                                 (pp.nombre && String(pp.nombre) === String(sel)) ||
-                                 (pp.razon && String(pp.razon) === String(sel)));
-      const placas = (p?.unidades || []).map(u => u.placas).filter(Boolean);
-      setPlacas(placas);
-    }catch{ resetPlacas(); }
-  }
-  function refreshPlacas(){
-    const tipo = selUnidad.value;
-    if (tipo === 'LTR'){
-      fillFromLTR();
-    } else if (tipo === 'Permisionario'){
-      if (selPerm.disabled || !selPerm.value) {
-        resetPlacas(); // no hay permisionario aún
-      } else {
-        fillFromPerm();
+        const selUnidad = document.getElementById('ns-unidadTipo');      // LTR | Permisionario
+        const selPerm   = document.getElementById('ns-permisionario');    // Permisionario seleccionado
+        const selPlaca  = document.getElementById('ns-placa');
+        if(!selUnidad || !selPerm || !selPlaca) return;
+        function resetPlacas(){
+          selPlaca.innerHTML = '<option value="">Selecciona…</option>';
+          selPlaca.disabled = true;
+        }
+        function setPlacas(opciones){
+          const uniques = Array.from(new Set((opciones || []).filter(Boolean)));
+          selPlaca.innerHTML = '<option value="">Selecciona…</option>';
+          uniques.forEach(placa => {
+            const opt = document.createElement('option');
+            opt.value = placa;
+            opt.textContent = placa;
+            selPlaca.appendChild(opt);
+          });
+          selPlaca.disabled = uniques.length === 0;
+        }
+      function obtenerUnidadesLTR(){
+        if (typeof getUnits === 'function') return getUnits();
+        try{
+          const raw = localStorage.getItem('sr_ltr_unidades');
+          return raw ? JSON.parse(raw) : [];
+        }catch(e){ return []; }
       }
-    } else {
-      resetPlacas();
-    }
-  }
-  // Listeners directos
-  selUnidad.addEventListener('change', refreshPlacas);
-  selPerm.addEventListener('change', refreshPlacas);
-  // Listeners a tus eventos globales ya existentes
-  document.addEventListener('unidad:source-changed', refreshPlacas);   // ya se dispara cuando cambias LTR/Permisionario :contentReference[oaicite:5]{index=5}
-  document.addEventListener('permisionario:selected', refreshPlacas);  // ya se dispara al elegir el permisionario :contentReference[oaicite:6]{index=6}
-  // Estado inicial (por si entras a #asignNuevo con valores precargados)
-  document.addEventListener('DOMContentLoaded', () => {
-    if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
-      refreshPlacas();
-    }
-  });
-})();  
+      
+      function fillFromLTR(){
+        try{
+          const units = obtenerUnidadesLTR();
+          const placas = units.map(u => u.placas).filter(Boolean);
+          setPlacas(placas);
+        }catch{ resetPlacas(); }
+      }
+        // Llenado desde LTR (sr_ltr_unidades) usando getUnits()
+        function fillFromLTR(){
+          try{
+            const units = (typeof getUnits === 'function') ? getUnits() : [];
+            const placas = units.map(u => u.placas).filter(Boolean);
+            setPlacas(placas);
+          }catch{ resetPlacas(); }
+        }
+        // Llenado desde Permisionarios (sr_permisionarios) usando getPerms()
+        function fillFromPerm(){
+          try{
+            const perms = (typeof getPerms === 'function') ? getPerms() : [];
+            const sel = selPerm.value;
+            // Puede que el <option> de Permisionario lleve id o nombre; comparamos ambos.
+            const p = perms.find(pp => (pp.id && String(pp.id) === String(sel)) ||
+                                       (pp.nombre && String(pp.nombre) === String(sel)) ||
+                                       (pp.razon && String(pp.razon) === String(sel)));
+            const placas = (p?.unidades || []).map(u => u.placas).filter(Boolean);
+            setPlacas(placas);
+          }catch{ resetPlacas(); }
+        }
+        function refreshPlacas(){
+          const tipo = selUnidad.value;
+          if (tipo === 'LTR'){
+            fillFromLTR();
+          } else if (tipo === 'Permisionario'){
+            if (selPerm.disabled || !selPerm.value) {
+              resetPlacas(); // no hay permisionario aún
+            } else {
+              fillFromPerm();
+            }
+          } else {
+            resetPlacas();
+          }
+        }
+        // Listeners directos
+        selUnidad.addEventListener('change', refreshPlacas);
+        selPerm.addEventListener('change', refreshPlacas);
+        // Listeners a tus eventos globales ya existentes
+        document.addEventListener('unidad:source-changed', refreshPlacas);   // ya se dispara cuando cambias LTR/Permisionario :contentReference[oaicite:5]{index=5}
+        document.addEventListener('permisionario:selected', refreshPlacas);  // ya se dispara al elegir el permisionario :contentReference[oaicite:6]{index=6}
+        // Estado inicial (por si entras a #asignNuevo con valores precargados)
+        document.addEventListener('DOMContentLoaded', () => {
+          if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
+            refreshPlacas();
+          }
+        });
+      })();  
+      (function(){
+        const selUnidad = document.getElementById('ns-unidadTipo');      // "LTR" | "Permisionario"
+        const selPerm   = document.getElementById('ns-permisionario');    // id o nombre del permisionario
+        const selPlaca  = document.getElementById('ns-placa');
+      
+        if(!selUnidad || !selPerm || !selPlaca) return;
+      
+        // --- utilidades ---
+        function resetPlacas(){
+          selPlaca.innerHTML = '<option value="">Selecciona…</option>';
+          selPlaca.disabled = true;
+        }
+        function setPlacas(opciones){
+          const list = Array.from(new Set((opciones||[]).filter(Boolean)));
+          selPlaca.innerHTML = '<option value="">Selecciona…</option>';
+          for (const placa of list){
+            const opt = document.createElement('option');
+            opt.value = placa;
+            opt.textContent = placa;
+            selPlaca.appendChild(opt);
+          }
+          selPlaca.disabled = list.length === 0;
+        }
+      
+        // --- extractores desde localStorage ---
+        function getLTRPlates(){
+          try{
+            const arr = JSON.parse(localStorage.getItem('sr_ltr_unidades') || '[]');
+            return Array.isArray(arr) ? arr.map(u => u.placas).filter(Boolean) : [];
+          }catch{ return []; }
+        }
+      
+      // idOrName: valor actual del <select id="ns-permisionario"> (puede ser id o nombre)
+        function getPermPlates(idOrName){
+          if(!idOrName) return [];
+          try{
+            const perms = JSON.parse(localStorage.getItem('sr_permisionarios') || '[]');
+            if(!Array.isArray(perms)) return [];
+            const p = perms.find(pp =>
+              String(pp?.id) === String(idOrName) ||
+              String(pp?.nombre) === String(idOrName) ||
+              String(pp?.razon) === String(idOrName) ||
+              String(pp?.razonSocial) === String(idOrName)
+            );
+            const unidades = Array.isArray(p?.unidades) ? p.unidades : [];
+            return unidades.map(u => u.placas).filter(Boolean);
+          }catch{ return []; }
+        }
+      
+      // --- refresco principal ---
+        function refreshPlacas(){
+          const tipo = selUnidad.value;
+          if (tipo === 'LTR'){
+            setPlacas(getLTRPlates());
+          } else if (tipo === 'Permisionario'){
+            const valorPerm = selPerm.value;     // OJO: puede ser id o nombre según cómo llenaste ese select
+            if (!valorPerm){
+              resetPlacas();
+            } else {
+              setPlacas(getPermPlates(valorPerm));
+            }
+          } else {
+            resetPlacas();
+          }
+        }
+      
+      // --- listeners ---
+        selUnidad.addEventListener('change', refreshPlacas);
+        selPerm.addEventListener('change', refreshPlacas);
+      
+      // Si ya tienes eventos personalizados en tu app, puedes engancharlos también:
+        document.addEventListener('unidad:source-changed', refreshPlacas);
+        document.addEventListener('permisionario:selected',  refreshPlacas);
+      
+      // estado inicial (si la vista ya está visible y con valores)
+        document.addEventListener('DOMContentLoaded', () => {
+          if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
+            refreshPlacas();
+          }
+        });
+})(); 
+//Label Eco Info Unodad
 (function(){
-  const selUnidad = document.getElementById('ns-unidadTipo');      // "LTR" | "Permisionario"
-  const selPerm   = document.getElementById('ns-permisionario');    // id o nombre del permisionario
-  const selPlaca  = document.getElementById('ns-placa');
-
-  if(!selUnidad || !selPerm || !selPlaca) return;
-
-  // --- utilidades ---
-  function resetPlacas(){
-    selPlaca.innerHTML = '<option value="">Selecciona…</option>';
-    selPlaca.disabled = true;
-  }
-  function setPlacas(opciones){
-    const list = Array.from(new Set((opciones||[]).filter(Boolean)));
-    selPlaca.innerHTML = '<option value="">Selecciona…</option>';
-    for (const placa of list){
-      const opt = document.createElement('option');
-      opt.value = placa;
-      opt.textContent = placa;
-      selPlaca.appendChild(opt);
-    }
-    selPlaca.disabled = list.length === 0;
-  }
-
-  // --- extractores desde localStorage ---
-  function getLTRPlates(){
-    try{
-      const arr = JSON.parse(localStorage.getItem('sr_ltr_unidades') || '[]');
-      return Array.isArray(arr) ? arr.map(u => u.placas).filter(Boolean) : [];
-    }catch{ return []; }
-  }
-
-// idOrName: valor actual del <select id="ns-permisionario"> (puede ser id o nombre)
-  function getPermPlates(idOrName){
-    if(!idOrName) return [];
-    try{
-      const perms = JSON.parse(localStorage.getItem('sr_permisionarios') || '[]');
-      if(!Array.isArray(perms)) return [];
-      const p = perms.find(pp =>
-        String(pp?.id) === String(idOrName) ||
-        String(pp?.nombre) === String(idOrName) ||
-        String(pp?.razon) === String(idOrName) ||
-        String(pp?.razonSocial) === String(idOrName)
-      );
-      const unidades = Array.isArray(p?.unidades) ? p.unidades : [];
-      return unidades.map(u => u.placas).filter(Boolean);
-    }catch{ return []; }
-  }
-
-// --- refresco principal ---
-  function refreshPlacas(){
-    const tipo = selUnidad.value;
-    if (tipo === 'LTR'){
-      setPlacas(getLTRPlates());
-    } else if (tipo === 'Permisionario'){
-      const valorPerm = selPerm.value;     // OJO: puede ser id o nombre según cómo llenaste ese select
-      if (!valorPerm){
-        resetPlacas();
-      } else {
-        setPlacas(getPermPlates(valorPerm));
-      }
-    } else {
-      resetPlacas();
-    }
-  }
-
-// --- listeners ---
-  selUnidad.addEventListener('change', refreshPlacas);
-  selPerm.addEventListener('change', refreshPlacas);
-
-// Si ya tienes eventos personalizados en tu app, puedes engancharlos también:
-  document.addEventListener('unidad:source-changed', refreshPlacas);
-  document.addEventListener('permisionario:selected',  refreshPlacas);
-
-// estado inicial (si la vista ya está visible y con valores)
-  document.addEventListener('DOMContentLoaded', () => {
-    if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
-      refreshPlacas();
-    }
-  });
+        const selUnidad = document.getElementById('ns-unidadTipo');      // "LTR" | "Permisionario"
+        const selPerm   = document.getElementById('ns-permisionario');    // id o nombre
+        const selPlaca  = document.getElementById('ns-placa');            // placa seleccionada
+        const selEco    = document.getElementById('ns-eco');
+      
+        if(!selUnidad || !selPerm || !selPlaca || !selEco) return;
+      
+      // --- utils ---
+        function resetEco(){
+          selEco.innerHTML = '<option value="">Selecciona…</option>';
+          selEco.disabled = true;
+        }
+        function setEco(opciones){
+          const list = Array.from(new Set((opciones||[]).filter(Boolean)));
+          selEco.innerHTML = '<option value="">Selecciona…</option>';
+          for(const eco of list){
+            const opt = document.createElement('option');
+            opt.value = eco;
+            opt.textContent = eco;
+            selEco.appendChild(opt);
+          }
+          selEco.disabled = list.length === 0;
+        }
+      
+       // helpers para leer storage (mismos que usaste para Placa)
+        function readLTRUnits(){
+          try{
+            const arr = JSON.parse(localStorage.getItem('sr_ltr_unidades') || '[]');
+            return Array.isArray(arr) ? arr : [];
+          }catch{ return []; }
+        }
+        function readPerms(){
+          try{
+            const arr = JSON.parse(localStorage.getItem('sr_permisionarios') || '[]');
+            return Array.isArray(arr) ? arr : [];
+          }catch{ return []; }
+        }
+        function findPermByIdOrName(idOrName){
+          const perms = readPerms();
+          return perms.find(pp =>
+            String(pp?.id) === String(idOrName) ||
+            String(pp?.nombre) === String(idOrName) ||
+            String(pp?.razon) === String(idOrName) ||
+            String(pp?.razonSocial) === String(idOrName)
+          );
+        }
+      
+      // --- llenado desde LTR ---
+        function fillEcoFromLTR(){
+          const units = readLTRUnits();
+          const placaSel = selPlaca.value;
+          let ecos;
+          if (placaSel){
+            const u = units.find(x => String(x.placas) === String(placaSel));
+            ecos = u && u.eco ? [u.eco] : [];
+          } else {
+            ecos = units.map(u => u.eco).filter(Boolean);
+          }
+          setEco(ecos);
+        }
+      
+      // --- llenado desde Permisionarios ---
+        function fillEcoFromPerm(){
+          const idOrName = selPerm.value;
+          if(!idOrName){ resetEco(); return; }
+          const perm = findPermByIdOrName(idOrName);
+          const unidades = Array.isArray(perm?.unidades) ? perm.unidades : [];
+          const placaSel = selPlaca.value;
+          let ecos;
+          if (placaSel){
+            const u = unidades.find(x => String(x.placas) === String(placaSel));
+            ecos = u && u.eco ? [u.eco] : [];
+          } else {
+            ecos = unidades.map(u => u.eco).filter(Boolean);
+          }
+          setEco(ecos);
+        }
+      
+        function refreshEco(){
+          const tipo = selUnidad.value;
+          if (tipo === 'LTR'){
+            fillEcoFromLTR();
+          } else if (tipo === 'Permisionario'){
+            fillEcoFromPerm();
+          } else {
+            resetEco();
+          }
+        }
+      
+      // --- listeners ---
+        selUnidad.addEventListener('change', refreshEco);
+        selPerm  .addEventListener('change', refreshEco);
+        selPlaca .addEventListener('change', refreshEco);
+      
+      // Si tu app emite estos eventos personalizados, también nos enganchamos:
+        document.addEventListener('unidad:source-changed', refreshEco);
+        document.addEventListener('permisionario:selected',  refreshEco);
+      
+      // Estado inicial si la vista ya está visible
+        document.addEventListener('DOMContentLoaded', () => {
+          if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
+            refreshEco();
+          }
+        });
 })(); 
 (function(){
-  const selUnidad = document.getElementById('ns-unidadTipo');      // "LTR" | "Permisionario"
-  const selPerm   = document.getElementById('ns-permisionario');    // id o nombre
-  const selPlaca  = document.getElementById('ns-placa');            // placa seleccionada
-  const selEco    = document.getElementById('ns-eco');
+        const selUnidad = document.getElementById('ns-unidadTipo');      // "LTR" | "Permisionario"
+        const selPerm   = document.getElementById('ns-permisionario');    // id o nombre
+        const selPlaca  = document.getElementById('ns-placa');            // placas
+        const selEco    = document.getElementById('ns-eco');              // eco
+      
+        if(!selUnidad || !selPerm || !selPlaca || !selEco) return;
+      
+        // ====== utilidades genéricas ======
+        let _syncing = false; // evita ciclos (placa->eco->placa...)
+        function setOptions(selectEl, values, selected){
+          const uniques = Array.from(new Set((values||[]).filter(Boolean)));
+          const prev = selectEl.value;
+          selectEl.innerHTML = '<option value="">Selecciona…</option>';
+          for(const v of uniques){
+            const opt = document.createElement('option');
+            opt.value = v; opt.textContent = v;
+            selectEl.appendChild(opt);
+          }
+          selectEl.disabled = uniques.length === 0;
+          if (selected && uniques.includes(String(selected))){
+            selectEl.value = String(selected);
+          } else if (uniques.length === 1){
+            selectEl.value = uniques[0];
+          } else {
+            // conserva selección previa si sigue existiendo
+            if (uniques.includes(prev)) selectEl.value = prev;
+          }
+        }
+      
+        // ====== lectores de datos (mismos formatos que ya tienes) ======
+        function readLTRUnits(){
+          try{
+            const arr = JSON.parse(localStorage.getItem('sr_ltr_unidades') || '[]');
+            return Array.isArray(arr) ? arr : [];
+          }catch{ return []; }
+        }
+        function readPerms(){
+          try{
+            const arr = JSON.parse(localStorage.getItem('sr_permisionarios') || '[]');
+            return Array.isArray(arr) ? arr : [];
+          }catch{ return []; }
+        }
+        function findPerm(idOrName){
+          const perms = readPerms();
+          return perms.find(pp =>
+            String(pp?.id) === String(idOrName) ||
+            String(pp?.nombre) === String(idOrName) ||
+            String(pp?.razon) === String(idOrName) ||
+            String(pp?.razonSocial) === String(idOrName)
+          );
+        }
+      
+        // Devuelve SIEMPRE una lista de unidades {placas, eco, ...} según la fuente elegida
+        function currentUnits(){
+          const tipo = selUnidad.value;
+          if (tipo === 'LTR'){
+            return readLTRUnits();
+          }
+          if (tipo === 'Permisionario'){
+            const p = findPerm(selPerm.value);
+            return Array.isArray(p?.unidades) ? p.unidades : [];
+          }
+          return [];
+        }
+      
+        // ====== refrescos básicos existentes (reutilizados) ======
+        function refreshPlacas(){
+          const units = currentUnits();
+          setOptions(selPlaca, units.map(u => u.placas), /*selected*/ null);
+        }
+        function refreshEco(){
+          const units = currentUnits();
+          const placaSel = selPlaca.value;
+          if (placaSel){
+            const u = units.find(x => String(x.placas) === String(placaSel));
+            setOptions(selEco, u && u.eco ? [u.eco] : [], u?.eco);
+          } else {
+            setOptions(selEco, units.map(u => u.eco), /*selected*/ null);
+          }
+        }
+      
+        // ====== sincronización bidireccional ======
+        function syncFromPlaca(){
+          if(_syncing) return;
+          _syncing = true;
+          try{
+            const units = currentUnits();
+            const placa = selPlaca.value;
+      
+            // 1) Ajusta ECO según la Placa (si hay coincidencia única)
+            if (placa){
+              const u = units.find(x => String(x.placas) === String(placa));
+              if (u && u.eco){
+                setOptions(selEco, [u.eco], u.eco);   // Eco queda fijo en esa unidad
+              } else {
+                // si no hay eco en la unidad, ofrece todos los ecos de la fuente
+                setOptions(selEco, units.map(x => x.eco), /*selected*/ null);
+              }
+            } else {
+              // sin placa → listar todos los ecos
+              setOptions(selEco, units.map(x => x.eco), /*selected*/ null);
+            }
+          } finally { _syncing = false; }
+        }
+      
+        function syncFromEco(){
+          if(_syncing) return;
+          _syncing = true;
+          try{
+            const units = currentUnits();
+            const eco = selEco.value;
+      
+            if (eco){
+              const matches = units.filter(x => String(x.eco) === String(eco));
+              if (matches.length === 1 && matches[0].placas){
+                // 1) Coincidencia única: fija Placa de esa unidad
+                setOptions(selPlaca, [matches[0].placas], matches[0].placas);
+              } else if (matches.length > 1){
+                // 2) Varias unidades con el mismo eco (raro): muestra solo las placas válidas
+                setOptions(selPlaca, matches.map(m => m.placas), /*selected*/ selPlaca.value);
+              } else {
+                // 3) Sin coincidencias: regresar a todas las placas disponibles de la fuente
+                setOptions(selPlaca, units.map(x => x.placas), /*selected*/ null);
+              }
+            } else {
+              // sin eco → todas las placas disponibles
+              setOptions(selPlaca, units.map(x => x.placas), /*selected*/ null);
+            }
+          } finally { _syncing = false; }
+        }
+      
+        // ====== listeners ======
+        selUnidad.addEventListener('change', () => { refreshPlacas(); refreshEco(); });
+        selPerm  .addEventListener('change', () => { refreshPlacas(); refreshEco(); });
+        selPlaca .addEventListener('change', syncFromPlaca);
+        selEco   .addEventListener('change',  syncFromEco);
+      
+        // eventos personalizados de tu app (si ya los emites)
+        document.addEventListener('unidad:source-changed', () => { refreshPlacas(); refreshEco(); });
+        document.addEventListener('permisionario:selected',  () => { refreshPlacas(); refreshEco(); });
+      
+        // estado inicial
+        document.addEventListener('DOMContentLoaded', () => {
+          if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
+            refreshPlacas();
+            refreshEco();
+          }
+        });
+})();
 
-  if(!selUnidad || !selPerm || !selPlaca || !selEco) return;
-
-// --- utils ---
-  function resetEco(){
-    selEco.innerHTML = '<option value="">Selecciona…</option>';
-    selEco.disabled = true;
-  }
-  function setEco(opciones){
-    const list = Array.from(new Set((opciones||[]).filter(Boolean)));
-    selEco.innerHTML = '<option value="">Selecciona…</option>';
-    for(const eco of list){
-      const opt = document.createElement('option');
-      opt.value = eco;
-      opt.textContent = eco;
-      selEco.appendChild(opt);
-    }
-    selEco.disabled = list.length === 0;
-  }
-
- // helpers para leer storage (mismos que usaste para Placa)
-  function readLTRUnits(){
-    try{
-      const arr = JSON.parse(localStorage.getItem('sr_ltr_unidades') || '[]');
-      return Array.isArray(arr) ? arr : [];
-    }catch{ return []; }
-  }
-  function readPerms(){
-    try{
-      const arr = JSON.parse(localStorage.getItem('sr_permisionarios') || '[]');
-      return Array.isArray(arr) ? arr : [];
-    }catch{ return []; }
-  }
-  function findPermByIdOrName(idOrName){
-    const perms = readPerms();
-    return perms.find(pp =>
-      String(pp?.id) === String(idOrName) ||
-      String(pp?.nombre) === String(idOrName) ||
-      String(pp?.razon) === String(idOrName) ||
-      String(pp?.razonSocial) === String(idOrName)
-    );
-  }
-
-// --- llenado desde LTR ---
-  function fillEcoFromLTR(){
-    const units = readLTRUnits();
-    const placaSel = selPlaca.value;
-    let ecos;
-    if (placaSel){
-      const u = units.find(x => String(x.placas) === String(placaSel));
-      ecos = u && u.eco ? [u.eco] : [];
-    } else {
-      ecos = units.map(u => u.eco).filter(Boolean);
-    }
-    setEco(ecos);
-  }
-
-// --- llenado desde Permisionarios ---
-  function fillEcoFromPerm(){
-    const idOrName = selPerm.value;
-    if(!idOrName){ resetEco(); return; }
-    const perm = findPermByIdOrName(idOrName);
-    const unidades = Array.isArray(perm?.unidades) ? perm.unidades : [];
-    const placaSel = selPlaca.value;
-    let ecos;
-    if (placaSel){
-      const u = unidades.find(x => String(x.placas) === String(placaSel));
-      ecos = u && u.eco ? [u.eco] : [];
-    } else {
-      ecos = unidades.map(u => u.eco).filter(Boolean);
-    }
-    setEco(ecos);
-  }
-
-  function refreshEco(){
-    const tipo = selUnidad.value;
-    if (tipo === 'LTR'){
-      fillEcoFromLTR();
-    } else if (tipo === 'Permisionario'){
-      fillEcoFromPerm();
-    } else {
-      resetEco();
-    }
-  }
-
-// --- listeners ---
-  selUnidad.addEventListener('change', refreshEco);
-  selPerm  .addEventListener('change', refreshEco);
-  selPlaca .addEventListener('change', refreshEco);
-
-// Si tu app emite estos eventos personalizados, también nos enganchamos:
-  document.addEventListener('unidad:source-changed', refreshEco);
-  document.addEventListener('permisionario:selected',  refreshEco);
-
-// Estado inicial si la vista ya está visible
-  document.addEventListener('DOMContentLoaded', () => {
-    if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
-      refreshEco();
-    }
-  });
-})(); 
+//Label operador Info Unidad 
 (function(){
-  const selUnidad = document.getElementById('ns-unidadTipo');      // "LTR" | "Permisionario"
-  const selPerm   = document.getElementById('ns-permisionario');    // id o nombre
-  const selPlaca  = document.getElementById('ns-placa');            // placas
-  const selEco    = document.getElementById('ns-eco');              // eco
-
-  if(!selUnidad || !selPerm || !selPlaca || !selEco) return;
-
-  // ====== utilidades genéricas ======
-  let _syncing = false; // evita ciclos (placa->eco->placa...)
-  function setOptions(selectEl, values, selected){
-    const uniques = Array.from(new Set((values||[]).filter(Boolean)));
-    const prev = selectEl.value;
-    selectEl.innerHTML = '<option value="">Selecciona…</option>';
-    for(const v of uniques){
-      const opt = document.createElement('option');
-      opt.value = v; opt.textContent = v;
-      selectEl.appendChild(opt);
-    }
-    selectEl.disabled = uniques.length === 0;
-    if (selected && uniques.includes(String(selected))){
-      selectEl.value = String(selected);
-    } else if (uniques.length === 1){
-      selectEl.value = uniques[0];
-    } else {
-      // conserva selección previa si sigue existiendo
-      if (uniques.includes(prev)) selectEl.value = prev;
-    }
-  }
-
-  // ====== lectores de datos (mismos formatos que ya tienes) ======
-  function readLTRUnits(){
-    try{
-      const arr = JSON.parse(localStorage.getItem('sr_ltr_unidades') || '[]');
-      return Array.isArray(arr) ? arr : [];
-    }catch{ return []; }
-  }
-  function readPerms(){
-    try{
-      const arr = JSON.parse(localStorage.getItem('sr_permisionarios') || '[]');
-      return Array.isArray(arr) ? arr : [];
-    }catch{ return []; }
-  }
-  function findPerm(idOrName){
-    const perms = readPerms();
-    return perms.find(pp =>
-      String(pp?.id) === String(idOrName) ||
-      String(pp?.nombre) === String(idOrName) ||
-      String(pp?.razon) === String(idOrName) ||
-      String(pp?.razonSocial) === String(idOrName)
-    );
-  }
-
-  // Devuelve SIEMPRE una lista de unidades {placas, eco, ...} según la fuente elegida
-  function currentUnits(){
-    const tipo = selUnidad.value;
-    if (tipo === 'LTR'){
-      return readLTRUnits();
-    }
-    if (tipo === 'Permisionario'){
-      const p = findPerm(selPerm.value);
-      return Array.isArray(p?.unidades) ? p.unidades : [];
-    }
-    return [];
-  }
-
-  // ====== refrescos básicos existentes (reutilizados) ======
-  function refreshPlacas(){
-    const units = currentUnits();
-    setOptions(selPlaca, units.map(u => u.placas), /*selected*/ null);
-  }
-  function refreshEco(){
-    const units = currentUnits();
-    const placaSel = selPlaca.value;
-    if (placaSel){
-      const u = units.find(x => String(x.placas) === String(placaSel));
-      setOptions(selEco, u && u.eco ? [u.eco] : [], u?.eco);
-    } else {
-      setOptions(selEco, units.map(u => u.eco), /*selected*/ null);
-    }
-  }
-
-  // ====== sincronización bidireccional ======
-  function syncFromPlaca(){
-    if(_syncing) return;
-    _syncing = true;
-    try{
-      const units = currentUnits();
-      const placa = selPlaca.value;
-
-      // 1) Ajusta ECO según la Placa (si hay coincidencia única)
-      if (placa){
-        const u = units.find(x => String(x.placas) === String(placa));
-        if (u && u.eco){
-          setOptions(selEco, [u.eco], u.eco);   // Eco queda fijo en esa unidad
-        } else {
-          // si no hay eco en la unidad, ofrece todos los ecos de la fuente
-          setOptions(selEco, units.map(x => x.eco), /*selected*/ null);
+        const selUnidad   = document.getElementById('ns-unidadTipo');
+        const selPerm     = document.getElementById('ns-permisionario');
+        const selPlaca    = document.getElementById('ns-placa');
+        const selEco      = document.getElementById('ns-eco');
+        const selOperador = document.getElementById('ns-operador');
+      
+        function resetSelect(sel, msg="Selecciona…") {
+          if (!sel) return;
+          sel.innerHTML = `<option value="">${msg}</option>`;
+          sel.disabled = true;
         }
-      } else {
-        // sin placa → listar todos los ecos
-        setOptions(selEco, units.map(x => x.eco), /*selected*/ null);
-      }
-    } finally { _syncing = false; }
-  }
-
-  function syncFromEco(){
-    if(_syncing) return;
-    _syncing = true;
-    try{
-      const units = currentUnits();
-      const eco = selEco.value;
-
-      if (eco){
-        const matches = units.filter(x => String(x.eco) === String(eco));
-        if (matches.length === 1 && matches[0].placas){
-          // 1) Coincidencia única: fija Placa de esa unidad
-          setOptions(selPlaca, [matches[0].placas], matches[0].placas);
-        } else if (matches.length > 1){
-          // 2) Varias unidades con el mismo eco (raro): muestra solo las placas válidas
-          setOptions(selPlaca, matches.map(m => m.placas), /*selected*/ selPlaca.value);
-        } else {
-          // 3) Sin coincidencias: regresar a todas las placas disponibles de la fuente
-          setOptions(selPlaca, units.map(x => x.placas), /*selected*/ null);
-        }
-      } else {
-        // sin eco → todas las placas disponibles
-        setOptions(selPlaca, units.map(x => x.placas), /*selected*/ null);
-      }
-    } finally { _syncing = false; }
-  }
-
-  // ====== listeners ======
-  selUnidad.addEventListener('change', () => { refreshPlacas(); refreshEco(); });
-  selPerm  .addEventListener('change', () => { refreshPlacas(); refreshEco(); });
-  selPlaca .addEventListener('change', syncFromPlaca);
-  selEco   .addEventListener('change',  syncFromEco);
-
-  // eventos personalizados de tu app (si ya los emites)
-  document.addEventListener('unidad:source-changed', () => { refreshPlacas(); refreshEco(); });
-  document.addEventListener('permisionario:selected',  () => { refreshPlacas(); refreshEco(); });
-
-  // estado inicial
-  document.addEventListener('DOMContentLoaded', () => {
-    if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
-      refreshPlacas();
-      refreshEco();
-    }
-  });
-})();    
+      
+      // Encadenado: Eco → Operador
+        selEco?.addEventListener('change', () => {
+          resetSelect(selOperador);
+      
+          if (!selEco.value) return;
+      
+          let ops = [];
+      
+          if (selUnidad.value === 'LTR') {
+            const ecoSel = selEco.value;
+            const units = getUnits();
+            const u = units.find(x => x.eco === ecoSel);
+            if (u) {
+              ops = getOps().filter(o => o.asignadoEco === ecoSel || !o.asignadoEco);
+            }
+          }
+      
+          if (selUnidad.value === 'Permisionario') {
+            const permId = selPerm.value;
+            const ecoSel = selEco.value;
+            const perm = getPerms().find(p => p.id === permId);
+            if (perm) {
+              ops = (perm.operadores || []).filter(o => o.eco === ecoSel || !o.eco);
+            }
+          }
+      
+          if (ops.length) {
+            selOperador.innerHTML = [
+              `<option value="">Selecciona…</option>`,
+              ...ops.map(o => `<option value="${o.nombre}">${o.nombre}</option>`)
+            ].join('');
+            selOperador.disabled = false;
+          }
+        });
+})();
+      
 //Hasta aqui sin modificar ek script       
 })();    
       
