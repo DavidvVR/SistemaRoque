@@ -4738,7 +4738,157 @@ function fillFromLTR(){
       refreshEco();
     }
   });
-})();     
+})(); 
+(function(){
+  const selUnidad = document.getElementById('ns-unidadTipo');      // "LTR" | "Permisionario"
+  const selPerm   = document.getElementById('ns-permisionario');    // id o nombre
+  const selPlaca  = document.getElementById('ns-placa');            // placas
+  const selEco    = document.getElementById('ns-eco');              // eco
+
+  if(!selUnidad || !selPerm || !selPlaca || !selEco) return;
+
+  // ====== utilidades genéricas ======
+  let _syncing = false; // evita ciclos (placa->eco->placa...)
+  function setOptions(selectEl, values, selected){
+    const uniques = Array.from(new Set((values||[]).filter(Boolean)));
+    const prev = selectEl.value;
+    selectEl.innerHTML = '<option value="">Selecciona…</option>';
+    for(const v of uniques){
+      const opt = document.createElement('option');
+      opt.value = v; opt.textContent = v;
+      selectEl.appendChild(opt);
+    }
+    selectEl.disabled = uniques.length === 0;
+    if (selected && uniques.includes(String(selected))){
+      selectEl.value = String(selected);
+    } else if (uniques.length === 1){
+      selectEl.value = uniques[0];
+    } else {
+      // conserva selección previa si sigue existiendo
+      if (uniques.includes(prev)) selectEl.value = prev;
+    }
+  }
+
+  // ====== lectores de datos (mismos formatos que ya tienes) ======
+  function readLTRUnits(){
+    try{
+      const arr = JSON.parse(localStorage.getItem('sr_ltr_unidades') || '[]');
+      return Array.isArray(arr) ? arr : [];
+    }catch{ return []; }
+  }
+  function readPerms(){
+    try{
+      const arr = JSON.parse(localStorage.getItem('sr_permisionarios') || '[]');
+      return Array.isArray(arr) ? arr : [];
+    }catch{ return []; }
+  }
+  function findPerm(idOrName){
+    const perms = readPerms();
+    return perms.find(pp =>
+      String(pp?.id) === String(idOrName) ||
+      String(pp?.nombre) === String(idOrName) ||
+      String(pp?.razon) === String(idOrName) ||
+      String(pp?.razonSocial) === String(idOrName)
+    );
+  }
+
+  // Devuelve SIEMPRE una lista de unidades {placas, eco, ...} según la fuente elegida
+  function currentUnits(){
+    const tipo = selUnidad.value;
+    if (tipo === 'LTR'){
+      return readLTRUnits();
+    }
+    if (tipo === 'Permisionario'){
+      const p = findPerm(selPerm.value);
+      return Array.isArray(p?.unidades) ? p.unidades : [];
+    }
+    return [];
+  }
+
+  // ====== refrescos básicos existentes (reutilizados) ======
+  function refreshPlacas(){
+    const units = currentUnits();
+    setOptions(selPlaca, units.map(u => u.placas), /*selected*/ null);
+  }
+  function refreshEco(){
+    const units = currentUnits();
+    const placaSel = selPlaca.value;
+    if (placaSel){
+      const u = units.find(x => String(x.placas) === String(placaSel));
+      setOptions(selEco, u && u.eco ? [u.eco] : [], u?.eco);
+    } else {
+      setOptions(selEco, units.map(u => u.eco), /*selected*/ null);
+    }
+  }
+
+  // ====== sincronización bidireccional ======
+  function syncFromPlaca(){
+    if(_syncing) return;
+    _syncing = true;
+    try{
+      const units = currentUnits();
+      const placa = selPlaca.value;
+
+      // 1) Ajusta ECO según la Placa (si hay coincidencia única)
+      if (placa){
+        const u = units.find(x => String(x.placas) === String(placa));
+        if (u && u.eco){
+          setOptions(selEco, [u.eco], u.eco);   // Eco queda fijo en esa unidad
+        } else {
+          // si no hay eco en la unidad, ofrece todos los ecos de la fuente
+          setOptions(selEco, units.map(x => x.eco), /*selected*/ null);
+        }
+      } else {
+        // sin placa → listar todos los ecos
+        setOptions(selEco, units.map(x => x.eco), /*selected*/ null);
+      }
+    } finally { _syncing = false; }
+  }
+
+  function syncFromEco(){
+    if(_syncing) return;
+    _syncing = true;
+    try{
+      const units = currentUnits();
+      const eco = selEco.value;
+
+      if (eco){
+        const matches = units.filter(x => String(x.eco) === String(eco));
+        if (matches.length === 1 && matches[0].placas){
+          // 1) Coincidencia única: fija Placa de esa unidad
+          setOptions(selPlaca, [matches[0].placas], matches[0].placas);
+        } else if (matches.length > 1){
+          // 2) Varias unidades con el mismo eco (raro): muestra solo las placas válidas
+          setOptions(selPlaca, matches.map(m => m.placas), /*selected*/ selPlaca.value);
+        } else {
+          // 3) Sin coincidencias: regresar a todas las placas disponibles de la fuente
+          setOptions(selPlaca, units.map(x => x.placas), /*selected*/ null);
+        }
+      } else {
+        // sin eco → todas las placas disponibles
+        setOptions(selPlaca, units.map(x => x.placas), /*selected*/ null);
+      }
+    } finally { _syncing = false; }
+  }
+
+  // ====== listeners ======
+  selUnidad.addEventListener('change', () => { refreshPlacas(); refreshEco(); });
+  selPerm  .addEventListener('change', () => { refreshPlacas(); refreshEco(); });
+  selPlaca .addEventListener('change', syncFromPlaca);
+  selEco   .addEventListener('change',  syncFromEco);
+
+  // eventos personalizados de tu app (si ya los emites)
+  document.addEventListener('unidad:source-changed', () => { refreshPlacas(); refreshEco(); });
+  document.addEventListener('permisionario:selected',  () => { refreshPlacas(); refreshEco(); });
+
+  // estado inicial
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
+      refreshPlacas();
+      refreshEco();
+    }
+  });
+})();    
 //Hasta aqui sin modificar ek script       
 })();    
       
