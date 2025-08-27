@@ -509,7 +509,8 @@ btn.primary { background:#efe9ff; border-color:#033552; }
   cursor: pointer;
   padding: 0;
   font: inherit;
-}      
+}  
+    
 </style>
 
 <style>
@@ -555,6 +556,26 @@ btn.primary { background:#efe9ff; border-color:#033552; }
   #asignMenu .choice-label{ font-weight:700; letter-spacing:.03em; }
   #asignMenu .home-actions{ margin-top:20px; display:flex; justify-content:flex-end; }
   @media (max-width:780px){ #asignMenu .home-grid{ grid-template-columns:1fr; } }
+.ns-row-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 720px) {
+  .ns-row-2 { grid-template-columns: 1fr; }
+}
+.form-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.form-field select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+      
 </style>
 </head>
 <body>
@@ -1676,6 +1697,25 @@ btn.primary { background:#efe9ff; border-color:#033552; }
 </div>
 
      <h3 id="asigInfoUnidadSub" class="section-subtitle">Info Unidad</h3>
+     
+      <div class="ns-row-2" id="ns-unidad-perm-row">
+      <div class="form-field">
+       <label for="ns-unidadTipo">Unidad</label>
+       <select id="ns-unidadTipo" name="unidadTipo" required>
+      <option value="" selected disabled>Selecciona…</option>
+      <option value="LTR">LTR</option>
+      <option value="Permisionario">Permisionario</option>
+      </select>
+      </div>
+
+  <div class="form-field">
+    <label for="ns-permisionario">Permisionario</label>
+    <select id="ns-permisionario" name="permisionario" disabled>
+      <option value="" selected>Selecciona un permisionario…</option>
+    </select>
+  </div>
+</div>
+           
       
 
     </div>
@@ -4300,6 +4340,78 @@ document.getElementById('asignGuardarServicio')?.addEventListener('click', guard
 
 
   cargarClientes();
+
+// --- Configuración / helpers ---
+const srPermKey = window.srPermKey || 'srPerms'; // usa tu clave si ya existe
+
+function getPerms(){
+  try {
+    const raw = localStorage.getItem(srPermKey);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch(e) {
+    console.warn('No se pudieron leer permisionarios de localStorage', e);
+    return [];
+  }
+}
+
+function populatePermsSelect() {
+  const sel = document.getElementById('ns-permisionario');
+  if (!sel) return;
+  sel.innerHTML = '<option value="" selected>Selecciona un permisionario…</option>';
+
+  const perms = getPerms();
+  perms.forEach(p => {
+    const opt = document.createElement('option');
+    // Ajusta estos campos a tu estructura real:
+    opt.value = p.id || p.codigo || p.clave || '';
+    const label = p.razonSocial || p.nombre || p.alias || opt.value || '(sin nombre)';
+    opt.textContent = label;
+    sel.appendChild(opt);
+  });
+}
+
+function initUnidadPermControls(){
+  const unidadSel = document.getElementById('ns-unidadTipo');
+  const permSel   = document.getElementById('ns-permisionario');
+  if(!unidadSel || !permSel) return;
+
+  populatePermsSelect();
+
+  const applyState = () => {
+    const isPerm = unidadSel.value === 'Permisionario';
+    permSel.disabled = !isPerm;
+    if (!isPerm) permSel.value = '';
+  };
+
+  unidadSel.addEventListener('change', applyState);
+  applyState();
+}
+
+// Llama esto inmediatamente después de renderizar la vista de "Nuevo Servicio"
+function afterRenderNuevoServicio(){
+  initUnidadPermControls();
+}
+
+// Ejemplo de cómo recolectar estos valores al guardar el servicio:
+function collectNuevoServicioData(){
+  const data = { /* ...otros campos... */ };
+  const unidad = document.getElementById('ns-unidadTipo')?.value || null;
+  let permId   = document.getElementById('ns-permisionario')?.value || null;
+
+  if (unidad !== 'Permisionario') permId = null;
+
+  data.unidadTipo = unidad;          // "LTR" | "Permisionario" | null
+  data.permisionarioId = permId;     // string | null
+
+  return data;
+}
+
+// Si en algún punto agregas/editar permisionarios, vuelve a llamar:
+function onPermisionariosActualizados(){
+  populatePermsSelect();
+}
+      
 })();    
       
 </script>
