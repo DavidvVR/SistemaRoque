@@ -1698,8 +1698,7 @@ btn.primary { background:#efe9ff; border-color:#033552; }
         <select id="ns-permisionario" disabled>
           <option value="">Selecciona…</option>
         </select>
-        <!-- Etiquetas con los nombres/razón social (se muestran solo cuando Unidad=Permisionario) -->
-        <div id="perm-labels" class="perm-labels hidden" aria-live="polite"></div>
+       
       </div>
      
 
@@ -4401,80 +4400,56 @@ document.getElementById('asignGuardarServicio')?.addEventListener('click', guard
 (function(){
   const selUnidad = document.getElementById('ns-unidadTipo');      // <select Unidad>
   const selPerm   = document.getElementById('ns-permisionario');    // <select Permisionario>
-  const labelsBox = document.getElementById('perm-labels');         // contenedor de etiquetas
+  if(!selUnidad || !selPerm) return;
 
-  if(!selUnidad || !selPerm || !labelsBox) return;
-
-  // Helper para obtener lista de Permisionarios desde tu “BD” local
   function obtenerPermisionarios(){
-    if (typeof getPerms === 'function') {
-      return getPerms();  // [{id, nombre, estatus, ...}, ...]
-    }
-    // Fallback por si no existe getPerms(): intenta desde localStorage
+    if (typeof getPerms === 'function') return getPerms();
     try{
       const raw = localStorage.getItem('sr_permisionarios');
       return raw ? JSON.parse(raw) : [];
     }catch(e){ return []; }
   }
 
-  // Rellena el <select> y las etiquetas con los nombres/razón social
   function pintarPermisionarios(){
     const perms = obtenerPermisionarios();
-    // Vaciar select (dejando el placeholder)
     selPerm.innerHTML = '<option value="">Selecciona…</option>';
-
-    // Construir opciones de select
     perms.forEach(p => {
       const opt = document.createElement('option');
-      opt.value = p.id || p.nombre || '';         // prioriza ID si existe
+      opt.value = p.id || p.nombre || '';
       opt.textContent = p.nombre || p.razon || 'Sin nombre';
       selPerm.appendChild(opt);
     });
-
-    // Construir etiquetas (badges)
-    labelsBox.innerHTML = '';
-    perms.forEach(p => {
-      const badge = document.createElement('span');
-      badge.className = 'badge';
-      badge.textContent = p.nombre || p.razon || 'Sin nombre';
-      labelsBox.appendChild(badge);
-    });
   }
 
-  // Habilita/inhabilita el campo dependiendo del valor de “Unidad”
   function syncEstadoPermField(){
     const esPerm = selUnidad.value === 'Permisionario';
     selPerm.disabled = !esPerm;
-    labelsBox.classList.toggle('hidden', !esPerm);
     if (!esPerm){
       selPerm.value = '';
     } else {
-      // cuando se habilita, aseguramos que la data esté fresca
-      pintarPermisionarios();
+      pintarPermisionarios(); // refresca cuando se habilita
     }
-    // Notificación opcional al resto del sistema
     document.dispatchEvent(new CustomEvent('permisionario:field-toggle', {
       detail: { enabled: esPerm }
     }));
   }
 
-  // Al cambiar “Unidad”, sincroniza estado
   selUnidad.addEventListener('change', syncEstadoPermField);
 
-  // Si alguien guardó un nuevo permisionario en caliente, puedes repintar así:
-  document.addEventListener('permisionarios:updated', pintarPermisionarios);
+  // repintar si se agregan permisionarios en caliente (opcional)
+  document.addEventListener('permisionarios:updated', () => {
+    if (!selPerm.disabled) pintarPermisionarios();
+  });
 
-  // Cambio del select de Permisionario (por si quieres escuchar en otros lados)
   selPerm.addEventListener('change', () => {
     document.dispatchEvent(new CustomEvent('permisionario:selected', {
       detail: { value: selPerm.value, label: selPerm.options[selPerm.selectedIndex]?.text || '' }
     }));
   });
 
-  // Estado inicial al cargar
+  // estado inicial
   syncEstadoPermField();
 })();
-
 //Hasta aqui sin modificar ek script       
 })();    
       
