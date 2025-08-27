@@ -4224,8 +4224,7 @@ function bindCitaCargaChange(){
 }
 
 // --- Cargar valores precargados de cliente/tipo/trayecto al entrar ---
-// Ya tienes window.initAsignacionNuevoServicio() definido que repinta selects y dispara change:contentReference[oaicite:5]{index=5}.
-// Amplíalo para que también precargue "Cita de Carga" si existe:
+
 (function patchInitAsignacion(){
   const prevInit = window.initAsignacionNuevoServicio;
   window.initAsignacionNuevoServicio = function(){
@@ -4333,6 +4332,9 @@ document.getElementById('asignGuardarServicio')?.addEventListener('click', guard
 
   cargarClientes();
 
+
+      
+      
 
 // Cunado se selecciona aqui empieza (LTR) o (Permisionarios)
 
@@ -4537,6 +4539,87 @@ function fillFromLTR(){
   document.addEventListener('unidad:source-changed', refreshPlacas);   // ya se dispara cuando cambias LTR/Permisionario :contentReference[oaicite:5]{index=5}
   document.addEventListener('permisionario:selected', refreshPlacas);  // ya se dispara al elegir el permisionario :contentReference[oaicite:6]{index=6}
   // Estado inicial (por si entras a #asignNuevo con valores precargados)
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
+      refreshPlacas();
+    }
+  });
+})();  
+(function(){
+  const selUnidad = document.getElementById('ns-unidadTipo');      // "LTR" | "Permisionario"
+  const selPerm   = document.getElementById('ns-permisionario');    // id o nombre del permisionario
+  const selPlaca  = document.getElementById('ns-placa');
+
+  if(!selUnidad || !selPerm || !selPlaca) return;
+
+  // --- utilidades ---
+  function resetPlacas(){
+    selPlaca.innerHTML = '<option value="">Selecciona…</option>';
+    selPlaca.disabled = true;
+  }
+  function setPlacas(opciones){
+    const list = Array.from(new Set((opciones||[]).filter(Boolean)));
+    selPlaca.innerHTML = '<option value="">Selecciona…</option>';
+    for (const placa of list){
+      const opt = document.createElement('option');
+      opt.value = placa;
+      opt.textContent = placa;
+      selPlaca.appendChild(opt);
+    }
+    selPlaca.disabled = list.length === 0;
+  }
+
+  // --- extractores desde localStorage ---
+  function getLTRPlates(){
+    try{
+      const arr = JSON.parse(localStorage.getItem('sr_ltr_unidades') || '[]');
+      return Array.isArray(arr) ? arr.map(u => u.placas).filter(Boolean) : [];
+    }catch{ return []; }
+  }
+
+  // idOrName: valor actual del <select id="ns-permisionario"> (puede ser id o nombre)
+  function getPermPlates(idOrName){
+    if(!idOrName) return [];
+    try{
+      const perms = JSON.parse(localStorage.getItem('sr_permisionarios') || '[]');
+      if(!Array.isArray(perms)) return [];
+      const p = perms.find(pp =>
+        String(pp?.id) === String(idOrName) ||
+        String(pp?.nombre) === String(idOrName) ||
+        String(pp?.razon) === String(idOrName) ||
+        String(pp?.razonSocial) === String(idOrName)
+      );
+      const unidades = Array.isArray(p?.unidades) ? p.unidades : [];
+      return unidades.map(u => u.placas).filter(Boolean);
+    }catch{ return []; }
+  }
+
+  // --- refresco principal ---
+  function refreshPlacas(){
+    const tipo = selUnidad.value;
+    if (tipo === 'LTR'){
+      setPlacas(getLTRPlates());
+    } else if (tipo === 'Permisionario'){
+      const valorPerm = selPerm.value;     // OJO: puede ser id o nombre según cómo llenaste ese select
+      if (!valorPerm){
+        resetPlacas();
+      } else {
+        setPlacas(getPermPlates(valorPerm));
+      }
+    } else {
+      resetPlacas();
+    }
+  }
+
+  // --- listeners ---
+  selUnidad.addEventListener('change', refreshPlacas);
+  selPerm.addEventListener('change', refreshPlacas);
+
+  // Si ya tienes eventos personalizados en tu app, puedes engancharlos también:
+  document.addEventListener('unidad:source-changed', refreshPlacas);
+  document.addEventListener('permisionario:selected',  refreshPlacas);
+
+  // estado inicial (si la vista ya está visible y con valores)
   document.addEventListener('DOMContentLoaded', () => {
     if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
       refreshPlacas();
