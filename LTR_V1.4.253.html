@@ -1,0 +1,4360 @@
+      <!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SF LTR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --panel-bg: #fff;
+      --frame-border: #000;
+      --text: #222;
+      --font: "Segoe UI", Tahoma, sans-serif;
+      --input-border: #808000;
+      --section-bg: #f3fbf7;
+      --tab-bg: #ddd;
+      --tab-active: #fff;
+      --tab-border: #000;
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { background: var(--bg); font-family: var(--font); color: var(--text); }
+    .hidden { display: none; }
+    .frame {
+      position: relative;
+      margin: 50px auto; padding: 40px 20px 20px; max-width: 920px;
+      background: var(--panel-bg);
+      border: 4px solid var(--frame-border);
+      border-radius: 12px;
+    }
+    /* Login */
+    #loginFrame { text-align:center; }
+    #loginFrame input {
+      width: calc(100% - 16px); padding: 8px; margin: 6px 0;
+      border: 2px solid #ccc; border-radius: 6px;
+      font-size: .9rem;
+    }
+    #loginFrame button {
+      padding: 8px 16px; margin: 8px 4px;
+      border:2px solid var(--frame-border); background:#e5e5e5; cursor:pointer; font-weight:700; border-radius:8px;
+    }
+    /* Dashboard */
+    #dashboard h2 { text-align:center; margin-bottom:16px; }
+    .dashboard { display:grid; grid-template-columns:repeat(5,1fr); gap:20px; justify-items:center; }
+    .module { width:100px; height:100px; background:var(--panel-bg);
+      border:2px solid var(--frame-border); border-radius:8px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      cursor:pointer; transition:transform .1s;
+    }
+    .module:hover { transform:translateY(-3px); }
+    .module-icon { font-size:2rem; }
+    .module-label { margin-top:8px; font-weight:bold; font-size:.9rem; text-align:center; }
+    /* clientsModule */
+    .clients-menu {
+      margin: 0 auto; width: 100%; max-width:860px; background:var(--section-bg);
+      border-radius:12px; padding:20px;
+    }
+    /* Sub-tabs */
+    .sub-tabs { display:flex; border-bottom:2px solid var(--tab-border); margin-bottom:16px; }
+    .sub-tab {
+      padding:8px 16px; cursor:pointer;
+      background: var(--tab-bg); border:2px solid var(--tab-border); border-bottom:none;
+      margin-right:4px; border-radius:8px 8px 0 0;
+    }
+
+    .btn {
+  padding: 8px 16px;
+  margin: 8px 4px;
+  border: 2px solid #000;    /* Puedes usar var(--frame-border) si tienes variables CSS */
+  background: #e5e5e5;
+  cursor: pointer;
+  font-weight: 700;
+  border-radius: 8px;
+    }
+  
+    .sub-tab.active { background: var(--tab-active); }
+    .sub-content { display:none; }
+    .sub-content.active { display:block; }
+    .form-group { display:grid; grid-template-columns:220px 1fr; align-items:center; gap:12px; margin:8px 0; }
+    h3.section-title { margin-top:16px; font-size:1.1rem; border-bottom:1px solid #000; padding-bottom:4px; }
+    .button-row { display:flex; justify-content:center; gap:12px; margin-top:16px; }
+    /* Documentation table */
+    .doc-table-wrapper { border:2px dashed var(--input-border); padding:12px; }
+    table.doc-table { width:100%; border-collapse: collapse; }
+    table.doc-table th, table.doc-table td { border:1px solid var(--input-border); padding:8px; text-align:center; }
+    table.doc-table th { background:#eee; }
+    .icon-btn { cursor:pointer; margin: 0 4px; font-size:1.2rem; }
+    .btnDelete { color: #d00; }
+    .status-no { color: red; font-weight:bold; }
+    .status-yes { color: green; font-weight:bold; }
+    input[type="file"] { display: none; }
+    /* Modal */
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-content {
+      background-color: var(--panel-bg);
+      padding: 20px;
+      border: 2px solid var(--frame-border);
+      border-radius: 8px;
+      width: max-content;
+      max-width: 96vw;
+      max-height: 90vh;
+      overflow: auto;
+      position: relative;
+    }
+    .close {
+      position: absolute;
+      right: 10px;
+      top: 5px;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .form-group-full {
+      grid-column: span 2;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 8px;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+     /* --- Selector inicial de Clientes --- */
+.clients-home{
+  margin:0 auto 12px; width:100%; max-width:860px;
+  background:#7c95aac; border-radius:12px; padding:28px 24px;
+  outline:3px solid #033552; /* morado */
+}
+.home-grid{display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:center; justify-items:center;}
+.choice-card{
+  width:100%; min-height:220px; background:#efefef; border:2px solid #000; border-radius:12px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+  cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; user-select:none;
+}
+.choice-card:hover{ transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.15);}
+.choice-card svg{ width:96px; height:96px;}
+.choice-label{ font-weight:700; letter-spacing:.03em;}
+@media (max-width:780px){ .home-grid{grid-template-columns:1fr;} }
+    
+#clientsModule{
+  display:flex;
+  flex-direction:column;
+}
+    #clientsModule.hidden {
+  display:none;
+}
+.h
+.home-actions{
+  
+  margin-top:auto;
+  display:flex;
+  justify-content:flex-end;
+}
+  /* --- Lista de clientes (nueva ventana) --- */
+.clients-list .list-toolbar{
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:12px;
+}
+.clients-list .list-actions{ display:flex; gap:8px; }
+.clients-list .search{ display:flex; gap:8px; align-items:center; }
+.clients-list .search input{
+  padding:8px; border:2px solid var(--input-border); border-radius:8px; min-width:220px;
+}
+.btn { padding:8px 16px; border:2px solid var(--frame-border); background:#e5e5e5; border-radius:8px; cursor:pointer; }
+btn.primary { background:#efe9ff; border-color:#033552; }
+
+.client-id-link { color:#000; text-decoration:underline; cursor:pointer; }
+
+
+ /* --- te ayuda a que no se baje nada de esa celda --- */
+    .doc-table td.actions { white-space: nowrap; }
+
+    .confirm-cliente {
+  background-color: #666; /* gris oscuro */
+  color: #fff;
+  text-align: center;
+}
+
+.confirm-cliente h3 {
+  margin-bottom: 8px;
+}
+
+.confirm-cliente .id-cliente {
+  color: red;
+  font-weight: bold;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+
+.confirm-cliente .datos-cliente {
+  text-align: left;
+  background-color: rgba(255,255,255,0.1);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.confirm-cliente .datos-cliente p {
+  margin: 4px 0;
+}
+    
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:12px;
+}
+.perms-list .list-actions{ display:flex; gap:8px; }
+.perms-list .search{ display:flex; gap:8px; align-items:center; }
+.perms-list .search input{
+  padding:8px; border:2px solid var(--input-border); border-radius:8px; min-width:220px;
+}
+  /* --- Botón + Nuevo Permisionario --- */
+.btn.primary { background:#efe9ff; border-color:#033552; }
+
+/* --- Formulario: Nuevo Permisionario --- */
+#permsMenu { background: var(--section-bg); }
+
+/* --- Sub-tabs Permisionarios --- */
+.subtabs { display:flex; gap:8px; margin: 12px 0; border-bottom: 2px solid var(--input-border); }
+.subtabs .subtab {
+  padding: 8px 12px; cursor:pointer; border-radius: 8px 8px 0 0;
+}
+.subtabs .subtab.active {
+  background: var(--chip-bg, #f0f3f7);
+  font-weight: 600;
+}
+.subcontent { display:none; }
+.subcontent.active { display:block; }
+
+.form-row { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px; }
+.form-row .fld { display:flex; flex-direction:column; gap:6px; }
+.form-row input, .form-row select, .form-row textarea {
+  padding: 8px; border: 2px solid var(--input-border); border-radius: 8px;
+}
+.actions-bar { display:flex; gap:8px; justify-content:flex-end; margin-top: 12px; 
+}
+    
+    
+  /* V1.2.48.2 UX refinements */
+.icon-btn{ cursor:pointer; display:inline-flex; align-items:center; justify-content:center; line-height:1; }
+.field-error{ color:#c62828; font-size:.85rem; margin-top:4px; }
+.form-group.error input,
+.form-group.error select{ border:1px solid #c62828 !important; outline-color:#c62828; }
+.file-row input[type="text"]{ flex:1; }
+</style>
+
+<!-- THEME 1.2.70 OVERRIDES: visual only -->
+<style id="theme-1270-overrides">
+  :root{
+    /* keep 1.2.68 palette and add panel color */
+    --accent:#1f7a4f;
+    --accent-2:#22a06b;
+    --accent-soft:#e9f7f1;
+    --panel:#f3fbf7; /* NEW: soft green panel for first-level cards/frames */
+    --danger:#c0392b;
+    --text:#1e1e1e;
+    --muted:#6b7280;
+    --bg:#f7f9f8;
+    --white:#ffffff;
+    --shadow:0 14px 30px rgba(0,0,0,.10);
+    --radius:18px;
+  }
+
+  /* App background */
+  body{ background:var(--bg); color:var(--text); }
+
+  /* FIRST-LEVEL CONTAINERS: switch from white to soft green panel */
+  .frame,
+  .clients-menu,
+  .clients-home,
+  .clients-list,
+  #permModule .clients-menu,
+  #permsMenu.frame,
+  .content, .wrapper, .panel, .card.frame {
+    background:var(--panel) !important;
+    border:none !important;
+    border-radius:var(--radius) !important;
+    box-shadow:var(--shadow) !important;
+  }
+
+  /* Inner cards (keep white to preserve contrast inside panels) */
+  .inner-card, .section, .tab-content, .box, .card, .table-wrapper, .doc-table-wrapper {
+    background:var(--white) !important;
+    border-radius:16px !important;
+    box-shadow:0 6px 16px rgba(0,0,0,.05);
+  }
+
+  /* Tables */
+  .doc-table, table.doc-table{ width:100%; border-collapse:collapse; overflow:hidden; }
+  .doc-table th, table.doc-table th{
+    text-align:left; font-size:.9rem; color:#334155;
+    background:#eef5f1; /* slightly greenish header */
+    padding:12px 10px; border-bottom:1px solid #e2e8f0;
+  }
+  .doc-table td, table.doc-table td{ padding:12px 10px; border-bottom:1px solid #eef2f7; }
+  .doc-table tr:hover{ background:#f8fbf9; }
+
+  /* Buttons */
+  .btn, button, .button-row button, .list-actions .btn {
+    border:none !important;
+    border-radius:999px !important;
+    padding:12px 18px !important;
+    background:var(--accent) !important;
+    color:#fff !important;
+    font-weight:700 !important;
+    cursor:pointer;
+    transition:.2s transform ease,.2s opacity ease,.2s box-shadow ease;
+    box-shadow:0 6px 14px rgba(31,122,79,.22);
+  }
+  .btn:hover, button:hover{ opacity:.95; transform:translateY(-1px); box-shadow:0 10px 22px rgba(31,122,79,.28); }
+  .btn.primary{ background:var(--accent-2) !important; }
+  .btn.ghost{ background:transparent !important; color:var(--accent) !important; border:2px solid var(--accent) !important; box-shadow:none !important; }
+  .btn.danger{ background:var(--danger) !important; }
+
+  /* Inputs */
+  input, select, textarea{
+    border:1.5px solid #d9dde3 !important;
+    border-radius:12px !important;
+    padding:10px 12px !important;
+    background:#fff;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  input:focus, select:focus, textarea:focus{
+    border-color:var(--accent) !important;
+    box-shadow:0 0 0 3px rgba(34,160,107,.14);
+  }
+
+  /* Sub-tabs */
+  .sub-tabs, .subtabs{ border-bottom:1px solid #e5e7eb !important; gap:8px; }
+  .sub-tab, .subtabs .subtab{
+    background:#f2f6f4 !important;
+    border:none !important;
+    color:#0f172a;
+    border-radius:12px 12px 0 0 !important;
+    padding:12px 16px !important;
+  }
+  .sub-tab.active, .subtabs .subtab.active{ background:#fff !important; box-shadow:inset 0 -3px 0 var(--accent); font-weight:800; }
+
+  /* MODALS: WIDER WINDOWS */
+  .modal{ background:rgba(0,0,0,.38) !important; padding:20px !important; }
+  .modal .modal-content{
+    background:#fff !important;
+    border:none !important;
+    border-radius:22px !important;
+    box-shadow:0 20px 48px rgba(0,0,0,.18) !important;
+    width:min(880px, 96vw) !important;   /* wider */
+    max-height:90vh !important;
+    padding:32px !important;
+    position:relative;
+  }
+  /* In case some modals use different class names */
+  .modal .content, .modal .card{ width:min(880px,96vw) !important; }
+
+  .modal .close{ position:absolute; right:12px; top:10px; font-size:28px; cursor:pointer; color:#0f172a; }
+
+  /* Confirmation modal top border accent */
+  .confirm-cliente, .modal-content.confirm-cliente{ border-top:6px solid var(--accent) !important; }
+  .id-cliente{
+    background:var(--accent-soft); color:var(--accent);
+    border:1px dashed var(--accent);
+    border-radius:12px; padding:10px 12px; font-weight:800; letter-spacing:.4px;
+    display:inline-block;
+  }
+
+  /* Utilities */
+  @media (max-width:760px){
+    .form-row{ grid-template-columns:1fr !important; }
+    .modal .modal-content{ width:96vw !important; }
+  }
+</style>
+
+
+<!-- THEME-->
+<style id="theme-1271-overrides">
+  .modal .modal-content{
+    width:min(960px, 96vw) !important;  /* expanded width */
+    padding:36px !important;
+  }
+  .modal .content, .modal .card{ width:min(960px,96vw) !important; }
+  @media (max-width:760px){
+    .modal .modal-content{ width:96vw !important; padding:24px !important; }
+  }
+</style>
+<style>
+.modal-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 14px 30px rgba(0,0,0,.13);
+  padding: 32px 30px;
+  width: max-content;
+  max-width: 96vw;
+  max-height: 90vh;
+  overflow: auto;
+  color: #1e1e1e;
+  position: relative;
+}
+.modal-card h2 {
+  font-size: 1.38rem;
+  margin-bottom: 18px;
+  color: #1f7a4f;
+  font-weight: 700;
+  text-align: left;
+}
+.modal-section {
+  margin-bottom: 26px;
+}
+.modal-section h3 {
+  font-size: 1.05rem;
+  color: #22a06b;
+  margin-bottom: 8px;
+  font-weight: 600;
+  border-bottom: 1px solid #e9f7f1;
+  padding-bottom: 3px;
+}
+.modal-fields p {
+  margin: 3px 0 8px 0;
+  font-size: 1rem;
+  display: flex;
+  gap: 12px;
+}
+.modal-fields label {
+  font-weight: 600;
+  color: #334155;
+  min-width: 120px;
+  display: inline-block;
+}
+.doc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.doc-list li {
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: .97rem;
+}
+.doc-list .status-yes {
+  color: #1f7a4f;
+  font-weight:700;
+}
+.doc-list .status-no {
+  color: #c0392b;
+  font-weight:700;
+}
+.modal-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 6px;
+  font-size: .97rem;
+}
+.modal-table th, .modal-table td {
+  padding: 8px 7px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+.modal-table th {
+  background: #e9f7f1;
+  color: #1f7a4f;
+  font-weight: 600;
+}
+.modal-comments {
+  background: #f3fbf7;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 1rem;
+  color: #334155;
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .modal-card {padding:16px 6vw;}
+}
+.perm-id-link {
+  background: none;
+  border: none;
+  color: #c0392b;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+.ltr-id-link {
+  background: none;
+  border: none;
+  color: #c0392b;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}      
+</style>
+
+<style>
+  /* === LTR Menu === */
+  #ltrModule .ltr-home { /* mismo layout que clientsHome */
+    margin:0 auto 12px; width:100%; max-width:860px;
+    background:#7c95aac; border-radius:12px; padding:28px 24px;
+    outline:3px solid #033552;
+  }
+  #ltrModule .home-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:center; justify-items:center; }
+  #ltrModule .choice-card{
+    width:100%; min-height:220px; background:#efefef; border:2px solid #000; border-radius:12px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+    cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; user-select:none;
+  }
+  #ltrModule .choice-card:hover{ transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.15);}
+  #ltrModule .choice-card svg{ width:96px; height:96px;}
+  #ltrModule .choice-label{ font-weight:700; letter-spacing:.03em;}
+  @media (max-width:780px){ #ltrModule .home-grid{grid-template-columns:1fr;} }
+
+  /* Vistas internas de LTR (reutiliza “clients-list”) */
+  #ltrUnitsList.clients-list, #ltrOpsList.clients-list { padding-top: 20px; }
+      
+</style>
+<style>
+  /* === ASIGNACIÓN Menu  */
+  #asignMenu .asign-home{
+    margin:0 auto 12px; width:100%; max-width:860px;
+    background:#e9e9ec; border-radius:12px; padding:28px 24px;
+    outline:3px solid #033552; /* mismo tono que LTR */
+  }
+  #asignMenu .home-grid{
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:24px; align-items:center; justify-items:center;
+  }
+  #asignMenu .choice-card{
+    width:100%; min-height:220px; background:#efefef; border:2px solid #000; border-radius:12px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+    cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; user-select:none;
+  }
+  #asignMenu .choice-card:hover{ transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.15); }
+  #asignMenu .choice-card svg{ width:96px; height:96px; }
+  #asignMenu .choice-label{ font-weight:700; letter-spacing:.03em; }
+  #asignMenu .home-actions{ margin-top:20px; display:flex; justify-content:flex-end; }
+  @media (max-width:780px){ #asignMenu .home-grid{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+  <!-- Modales (movidos dentro de <body>) -->
+<!-- Modal de confirmación de cliente -->
+<div id="clienteModal" class="modal hidden">
+  <div class="modal-content" style="text-align:center; padding: 40px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <h2>¡Felicidades, agregaste un nuevo cliente!</h2>
+    <div class="id-cliente">ID CLIENTE: <span id="idClienteTexto">LTR-CL-01</span></div>
+    <div class="datos-cliente">
+      <p><strong>Cliente:</strong> <span id="nombreCliente"></span></p>
+      <p><strong>RFC:</strong> <span id="rfcCliente"></span></p>
+      <p><strong>Domicilio:</strong> <span id="domicilioCliente"></span></p>
+    </div>
+    <div class="modal-buttons">
+      <button type="button" class="btn-cerrar">Cerrar</button>
+  </div>
+  </div>
+  <!-- Modal de confirmación de eliminación -->
+</div>
+
+<div id="confirmDeleteModal" class="modal hidden">
+  <div class="modal-content" style="text-align:center; padding: 40px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <p>¿Desea eliminar este cliente?</p>
+    <div class="modal-buttons" style="justify-content:center;">
+      <button id="deleteConfirmYes" class="btn primary">Sí</button>
+      <button id="deleteConfirmNo" class="btn">No</button>
+    </div>
+  </div>
+</div>
+<!-- Modal para ver detalles del cliente -->
+<div id="detalleClienteModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close" title="Cerrar">&times;</span>
+    <div id="detalleClienteContenido"></div>
+  </div>
+</div>
+
+    
+    
+
+    <!-- Aqui acaba el .css y empieza el html la segunda parte para que sea mas facil ubicarlo -->
+
+
+    
+    
+  <!-- LOGIN -->
+  <div id="loginFrame" class="frame">
+    <input type="text" id="usuario" placeholder="David Vargas R.">
+    <input type="password" id="password" placeholder="1234">
+    <div>
+      <button id="btnGuardar">Guardar</button>
+      <button id="btnEntrar">Entrar</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="frame hidden">
+    <h2>Menú Principal</h2>
+    <div class="dashboard">
+      <div class="module" id="modClientes"><div class="module-icon">📋</div><div class="module-label">Clientes</div></div>
+      <div class="module" id="modPerm"><div class="module-icon">🚚</div><div class="module-label">Permisionarios</div></div>
+       <div class="module" id="modLTR"><div class="module-icon">🚛</div><div class="module-label">LTR</div></div>    
+      <div class="module" id="modAsign"><div class="module-icon">📅</div><div class="module-label">Asignación</div></div>
+      <div class="module" id="modMonit"><div class="module-icon">📡</div><div class="module-label">Monitoreo</div></div>
+      <div class="module" id="modCoord"><div class="module-icon">🔧</div><div class="module-label">Coordinación</div></div>
+      <div class="module" id="modCCP"><div class="module-icon">💰</div><div class="module-label">Ctas Cob/PP</div></div>
+      <div class="module" id="modLiq"><div class="module-icon">📊</div><div class="module-label">Liquidación</div></div>
+      <div class="module" id="modMant"><div class="module-icon">🛠️</div><div class="module-label">Mantenimiento</div></div>
+      <div class="module" id="modAdmin"><div class="module-icon">🗄️</div><div class="module-label">Administración</div></div>
+      
+    </div>
+  </div>
+
+  <!-- clientsModule -->
+  <div id="clientsModule" class="frame hidden">
+    <!-- Selector inicial -->
+<div id="clientsHome" class="clients-home">
+  <div class="home-grid">
+    <!-- Nuevo Cliente -->
+    <div id="btnNuevoCliente" class="choice-card" role="button" tabindex="0" aria-label="Nuevo cliente">
+      <!-- icono apretón de manos -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 12l3 3a2 2 0 1 1-3 3l-2-2-1 1a2 2 0 1 1-3-3l1-1-1-1a2 2 0 0 1 3-3l1 1 1-1a2 2 0 1 1 3 3l-2 2z"/>
+        <path d="M18 8l3-3M6 8 3 5"/>
+      </svg>
+      <div class="choice-label">NUEVO CLIENTE</div>
+    </div>
+
+    <!-- Clientes -->
+    <div id="btnVerClientes" class="choice-card" role="button" tabindex="0" aria-label="Clientes">
+      <!-- icono grupo de personas -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="3"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a3 3 0 0 1 0 5.75"/>
+      </svg>
+      <div class="choice-label">CLIENTES</div>
+    </div>
+  </div>
+</div>
+ <div class="home-actions">
+    <button id="btnClientesBack" class="btn">Volver</button>
+  </div>
+  <div id="clientsMenu" class="clients-menu hidden">
+     <h2 id="tituloCliente" style="text-align:center;margin-bottom:16px;">Nuevo Cliente</h2>
+      <div class="sub-tabs">
+        <div class="sub-tab active" data-content="tab-datos">Datos Generales</div>
+        <div class="sub-tab" data-content="tab-docs">Documentación</div>
+        <div class="sub-tab" data-content="tab-tarifas">Tarifas</div>
+        <div class="sub-tab" data-content="tab-comentario">Comentarios</div>
+      </div>
+
+      <div id="tab-datos" class="sub-content active">
+        <h3 class="section-title">Datos Generales</h3>
+        <div class="form-group"><label>Nombre / Razón Social</label><input type="text" id="inpNombre"></div>
+        <div class="form-group"><label>Estatus</label><select id="selEstatus"><option>Activo</option><option>Inactivo</option></select></div>
+        <div class="form-group"><label>RFC</label><input type="text" id="inpRFC"></div>
+        <div class="form-group"><label>Dirección</label><textarea id="txtDireccion" style="width:100%;height:70px;border:2px solid #ccc;border-radius:6px;"></textarea></div>
+        <h3 class="section-title">Contactos</h3>
+<div class="form-group">
+  <label>Operaciones</label>
+  <input type="text" placeholder="Email">
+  <input type="email" placeholder="Nombre">
+  <input type="text" placeholder="Tel.">
+</div>
+<div class="form-group">
+  <label>Administración</label>
+  <input type="text" placeholder="Email">
+  <input type="email" placeholder="Nombre">
+  <input type="text" placeholder="Tel.">
+</div>
+<div class="form-group">
+  <label>Comercial</label>
+  <input type="text" placeholder="Email">
+  <input type="email" placeholder="Nombre">
+  <input type="text" placeholder="Tel.">
+</div>
+ </div>       
+
+      <div id="tab-docs" class="sub-content">
+        <h3 class="section-title">Documentación</h3>
+        <div class="doc-table-wrapper">
+          <table class="doc-table">
+            <thead>
+              <tr><th>Comprobante</th><th>Estatus</th><th>Documento</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="icon-btn folder" data-row="1">📁</span><span class="icon-btn view" data-row="1">🔍</span><input type="file" id="file1"/></td>
+                <td id="status1" class="status-no">❌ No</td><td>Acta Constitutiva</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="2">📁</span><span class="icon-btn view" data-row="2">🔍</span><input type="file" id="file2"/></td>
+                <td id="status2" class="status-no">❌ No</td><td>Poder Rep. Legal</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="3">📁</span><span class="icon-btn view" data-row="3">🔍</span><input type="file" id="file3"/></td>
+                <td id="status3" class="status-no">❌ No</td><td>Comprobante de Domicilio</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="4">📁</span><span class="icon-btn view" data-row="4">🔍</span><input type="file" id="file4"/></td>
+                <td id="status4" class="status-no">❌ No</td><td>Constancia de Situación Fiscal</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="5">📁</span><span class="icon-btn view" data-row="5">🔍</span><input type="file" id="file5"/></td>
+                <td id="status5" class="status-no">❌ No</td><td>INE Rep. Legal</td>
+              </tr>
+              <tr>
+                <td><span class="icon-btn folder" data-row="6">📁</span><span class="icon-btn view" data-row="6">🔍</span><input type="file" id="file6"/></td>
+                <td id="status6" class="status-no">❌ No</td><td>Contrato</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-tarifas" class="sub-content"><h3 class="section-title">Tarifas</h3>
+        <button class="btn add-route">+ Agregar Ruta/Tarifa</button>
+        <div class="doc-table-wrapper" style="max-height:250px; overflow-y:auto;">
+          <table class="doc-table" id="tablaTarifas">
+            <thead>
+              <tr>
+                <th>Origen - Destino</th>
+                <th>Tipo de Unidad</th>
+                <th>Tarifa</th>
+                <th>Días de Crédito</th>
+                <th>Km a recorrer</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Filas generadas dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Modal -->
+        <div id="tarifaModal" class="modal hidden">
+          <div class="modal-content">
+            <span class="close" title="Cerrar">&times;</span>
+            <h3>Agregar Nueva Ruta/Tarifa</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="estadoOrigen">Estado de Origen*</label>
+                <select id="estadoOrigen" name="estadoOrigen" required>
+                  <option value="">Seleccione un estado...</option>
+                  <option value="Aguascalientes">Aguascalientes</option>
+                  <option value="Baja California">Baja California</option>
+                  <option value="Baja California Sur">Baja California Sur</option>
+                  <option value="Campeche">Campeche</option>
+                  <option value="Coahuila">Coahuila</option>
+                  <option value="Colima">Colima</option>
+                  <option value="Chiapas">Chiapas</option>
+                  <option value="Chihuahua">Chihuahua</option>
+                  <option value="Ciudad de México">Ciudad de México</option>
+                  <option value="Durango">Durango</option>
+                  <option value="Guanajuato">Guanajuato</option>
+                  <option value="Guerrero">Guerrero</option>
+                  <option value="Hidalgo">Hidalgo</option>
+                  <option value="Jalisco">Jalisco</option>
+                  <option value="Estado de México">Estado de México</option>
+                  <option value="Michoacán">Michoacán</option>
+                  <option value="Morelos">Morelos</option>
+                  <option value="Nayarit">Nayarit</option>
+                  <option value="Nuevo León">Nuevo León</option>
+                  <option value="Oaxaca">Oaxaca</option>
+                  <option value="Puebla">Puebla</option>
+                  <option value="Querétaro">Querétaro</option>
+                  <option value="Quintana Roo">Quintana Roo</option>
+                  <option value="San Luis Potosí">San Luis Potosí</option>
+                  <option value="Sinaloa">Sinaloa</option>
+                  <option value="Sonora">Sonora</option>
+                  <option value="Tabasco">Tabasco</option>
+                  <option value="Tamaulipas">Tamaulipas</option>
+                  <option value="Tlaxcala">Tlaxcala</option>
+                  <option value="Veracruz">Veracruz</option>
+                  <option value="Yucatán">Yucatán</option>
+                  <option value="Zacatecas">Zacatecas</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="municipioOrigen">Municipio de Origen</label>
+                <input type="text" id="municipioOrigen" placeholder="Opcional">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="estadoDestino">Estado de Destino*</label>
+                <select id="estadoDestino" name="estadoDestino" required>
+                  <option value="">Seleccione un estado...</option>
+                  <option value="Aguascalientes">Aguascalientes</option>
+                  <option value="Baja California">Baja California</option>
+                  <option value="Baja California Sur">Baja California Sur</option>
+                  <option value="Campeche">Campeche</option>
+                  <option value="Coahuila">Coahuila</option>
+                  <option value="Colima">Colima</option>
+                  <option value="Chiapas">Chiapas</option>
+                  <option value="Chihuahua">Chihuahua</option>
+                  <option value="Ciudad de México">Ciudad de México</option>
+                  <option value="Durango">Durango</option>
+                  <option value="Guanajuato">Guanajuato</option>
+                  <option value="Guerrero">Guerrero</option>
+                  <option value="Hidalgo">Hidalgo</option>
+                  <option value="Jalisco">Jalisco</option>
+                  <option value="Estado de México">Estado de México</option>
+                  <option value="Michoacán">Michoacán</option>
+                  <option value="Morelos">Morelos</option>
+                  <option value="Nayarit">Nayarit</option>
+                  <option value="Nuevo León">Nuevo León</option>
+                  <option value="Oaxaca">Oaxaca</option>
+                  <option value="Puebla">Puebla</option>
+                  <option value="Querétaro">Querétaro</option>
+                  <option value="Quintana Roo">Quintana Roo</option>
+                  <option value="San Luis Potosí">San Luis Potosí</option>
+                  <option value="Sinaloa">Sinaloa</option>
+                  <option value="Sonora">Sonora</option>
+                  <option value="Tabasco">Tabasco</option>
+                  <option value="Tamaulipas">Tamaulipas</option>
+                  <option value="Tlaxcala">Tlaxcala</option>
+                  <option value="Veracruz">Veracruz</option>
+                  <option value="Yucatán">Yucatán</option>
+                  <option value="Zacatecas">Zacatecas</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="municipioDestino">Municipio de Destino</label>
+                <input type="text" id="municipioDestino" placeholder="Opcional">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group form-group-full">
+                <label for="tipoUnidad">Tipo de unidad*</label>
+                <select id="tipoUnidad" required>
+                  <option value="">Seleccione...</option>
+                  <option value="Unidad seca de 53">Unidad seca de 53"</option>
+                  <option value="Refrigerada de 53">Refrigerada de 53"</option>
+                  <option value="Thorton">Thorton</option>
+                  <option value="3.5">3.5</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="diasCredito">Días de Crédito</label>
+                <input type="number" id="diasCredito" min="0" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label for="kmRecorrer">Km a recorrer</label>
+                <input type="number" id="kmRecorrer" min="0" placeholder="0">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="tarifa">Tarifa*</label>
+                <input type="number" id="tarifa" min="0" step="0.01" required placeholder="0.00">
+              </div>
+            </div>
+
+            <div class="modal-buttons">
+              <button type="button" class="btn-cancelar">Cancelar</button>
+              <button type="button" class="btn-guardar">Guardar</button>
+            </div>
+          </div>
+        </div>
+        <!-- /Modal -->
+      </div>
+
+      <div id="tab-comentario" class="sub-content">
+        <h3 class="section-title">Comentarios</h3>
+            <div class="form-group"><label>Comentario</label><textarea id="txtComentario" style="width:100%;height:120px;border:2px solid #ccc;border-radius:6px;"></textarea></div>
+      </div>
+
+      <div class="button-row">
+  <button id="saveClient">Guardar</button>
+  <button id="exitClient">Salir</button>
+</div>
+    </div>
+    <!-- NUEVA VENTANA: Lista de Clientes -->
+<div id="clientsList" class="clients-menu clients-list hidden" aria-label="Lista de clientes">
+  <div class="list-toolbar">
+    <div><h3>Clientes registrados</h3></div>
+    <div class="search">
+      <label for="searchCli">Buscar:</label>
+      <input id="searchCli" type="text" placeholder="Nombre, RFC…">
+    </div>
+    <div class="list-actions">
+      <button id="btnNuevoDesdeLista" class="btn primary">+ Nuevo Cliente</button>
+      <button id="btnVolverHome" class="btn">Volver</button>
+      <button id="btnImportExcel" class="btn">Importar Excel</button>
+      <input id="excelInput" type="file" accept=".xlsx,.xls" style="display:none">
+    </div>
+  </div>
+
+  <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
+    <table class="doc-table" id="tablaClientes">
+      <thead>
+        <tr>
+          <th>ID Cliente</th>
+          <th>Nombre/Razón Social</th>
+          <th>RFC</th>
+          <th>Estatus</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody><!-- filas dinámicas --></tbody>
+    </table>
+  </div>
+</div>
+
+  </div>
+
+
+
+      
+<!-- Inicio Mod 2 -->
+<div id="permModule" class="frame hidden" aria-label="Módulo Permisionarios">
+
+  <!-- Ventana: Permisionarios registrados -->
+
+<div id="permsList" class="clients-menu perms-list" aria-label="Permisionarios registrados">
+  <div class="list-toolbar">
+    <div><h3>Permisionarios registrados</h3></div>
+    <div class="search">
+      <label for="searchPerm">Buscar:</label>
+     <input id="searchPerm" type="text" placeholder="ID, Nombre o RFC…">
+    </div>
+    <div class="list-actions">
+   <button id="btnPermNuevo" class="btn primary">+ Nuevo Permisionario</button>
+      <button id="btnPermVolver" class="btn">Volver</button>
+    </div>
+  </div>
+
+  
+  <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
+    <table class="doc-table" id="tablaPerms">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre/Razón Social</th>
+          <th>Estatus</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody><!-- filas dinámicas --></tbody>
+    </table>
+  </div>
+</div>
+  <!-- Menú/Formulario: Nuevo Permisionario -->
+<div id="permsMenu" class="hidden" aria-label="Nuevo Permisionario">
+  <h3>Nuevo Permisionario</h3>
+
+  <div class="subtabs" role="tablist" aria-label="Subpestañas Permisionarios">
+    <div class="subtab active" data-target="perm-datos" role="tab" aria-selected="true">Datos</div>
+    <div class="subtab" data-target="perm-docs" role="tab">Documentos</div>
+    <div class="subtab" data-target="perm-unidades" role="tab">Unidades</div>
+    <div class="subtab" data-target="perm-coment" role="tab">Operadores</div>
+  </div>
+
+
+
+  <!-- Subcontenido: Datos -->
+  <div id="perm-datos" class="subcontent active">
+    <div class="form-row">
+      <div class="fld">
+        <label for="permNombre">Nombre/Razón social</label>
+        <input id="permNombre" type="text" placeholder="Permisionario S.A. de C.V.">
+      </div>
+      <div class="fld">
+        <label for="permRFC">RFC</label>
+        <input id="permRFC" type="text" placeholder="XXXX010101XXX">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="fld">
+        <label for="permEstatus">Estatus</label>
+        <select id="permEstatus">
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label for="permContacto">Domicilio</label>
+        <input id="permContacto" type="text" placeholder="Nombre de contacto">
+      </div>
+    </div>
+    <h3 class="section-title">Contactos</h3>
+    <div class="form-group">
+      <label>Operaciones</label>
+      <input type="text" placeholder="Email">
+      <input type="email" placeholder="Nombre">
+      <input type="text" placeholder="Tel.">
+    </div>
+    <div class="form-group">
+      <label>Administración</label>
+      <input type="text" placeholder="Email">
+      <input type="email" placeholder="Nombre">
+      <input type="text" placeholder="Tel.">
+    </div>
+    <div class="form-group">
+      <label>Comercial</label>
+      <input type="text" placeholder="Email">
+      <input type="email" placeholder="Nombre">
+      <input type="text" placeholder="Tel.">
+    </div>
+  </div>
+
+  <!-- Subcontenido: Documentos -->
+  <div id="perm-docs" class="subcontent">
+       <h3 class="section-title">Documentación</h3>
+    <div class="doc-table-wrapper">
+      <table class="doc-table">
+        <thead>
+          <tr><th>Comprobante</th><th>Estatus</th><th>Documento</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="1">📁</span><span class="icon-btn perm-view" data-row="1">🔍</span><input type="file" id="permFile1"/></td>
+            <td id="permStatus1" class="status-no">❌ No</td><td>Acta Constitutiva</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="2">📁</span><span class="icon-btn perm-view" data-row="2">🔍</span><input type="file" id="permFile2"/></td>
+            <td id="permStatus2" class="status-no">❌ No</td><td>Poder Rep. Legal</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="3">📁</span><span class="icon-btn perm-view" data-row="3">🔍</span><input type="file" id="permFile3"/></td>
+            <td id="permStatus3" class="status-no">❌ No</td><td>Comprobante de Domicilio</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="4">📁</span><span class="icon-btn perm-view" data-row="4">🔍</span><input type="file" id="permFile4"/></td>
+            <td id="permStatus4" class="status-no">❌ No</td><td>Constancia de Situación Fiscal</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="5">📁</span><span class="icon-btn perm-view" data-row="5">🔍</span><input type="file" id="permFile5"/></td>
+            <td id="permStatus5" class="status-no">❌ No</td><td>INE Rep. Legal</td>
+          </tr>
+          <tr>
+            <td><span class="icon-btn perm-folder" data-row="6">📁</span><span class="icon-btn perm-view" data-row="6">🔍</span><input type="file" id="permFile6"/></td>
+            <td id="permStatus6" class="status-no">❌ No</td><td>Contrato</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Subcontenido: Unidades -->
+  <div id="perm-unidades" class="subcontent">
+    <h3 class="section-title">Unidades</h3>
+    <button class="btn add-unit">+ Agregar Unidad</button>
+
+  <div class="doc-table-wrapper" style="max-height:250px; overflow-y:auto;">
+    <table class="doc-table" id="tablaUnidades">
+      <thead>
+        <tr>
+          <th>Tarjeta de Circulación</th>
+          <th>Placas</th>
+          <th>Eco</th>
+          <th>Tipo</th>
+          <th>Vencimiento Poliza</th>
+          <th>Aseguradora</th>
+          <th>Marca</th>
+          <th>Año</th>
+          <th>Permiso SCT</th>
+          <th>Acciones</th>    
+          
+          
+          
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Filas generadas dinámicamente -->
+
+      
+      </tbody>
+    </table>
+    <div id="unidadModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-content" style="min-width: 720px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <h3>Alta de Unidad Vehicular</h3>
+
+    <div class="form-row">
+      <div class="form-group">
+  <label for="uTarjetaName">Tarjeta de Circulación*</label>
+  <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+    <button type="button" id="btnUTarjetaPick" class="icon-btn" title="Adjuntar">📁</button>
+    <input id="uTarjetaFile" type="file" accept=".pdf,.jpg,.jpeg,.png" required>
+    <input id="uTarjetaName" type="text" placeholder="Selecciona un archivo…" readonly required>
+    <!-- compatibilidad con código previo: refleja el nombre en un input oculto con id=uTarjeta -->
+    <input id="uTarjeta" type="hidden" value="">
+  
+<div class="field-error" data-for="uTarjetaName"></div></div>
+</div>
+      <div class="form-group">
+        <label for="uPlacas">Placas*</label>
+        <input id="uPlacas" type="text" placeholder="ABC123A" required>
+      </div>
+    </div>
+        
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="uEco">Eco</label>
+        <input id="uEco" type="text" placeholder="Económico interno">
+      </div>
+      <div class="form-group">
+        <label for="uTipo">Tipo*</label>
+        <select id="uTipo" required>
+          <option value="">Seleccione…</option>
+          <option>Tractor</option>
+          <option>Unidad seca 53"</option>
+          <option>Refrigerada 53"</option>
+          <option>Thorton</option>
+          <option>3.5</option>
+          <option>Torton</option>
+          <option>Rabón</option>
+        </select>
+      
+<div class="field-error" data-for="uTipo"></div></div>
+    </div>
+
+        
+    <div class="form-row">
+        <div class="form-group">
+        <label for="uAseguradora">Aseguradora</label>
+        <input id="uAseguradora" type="text" placeholder="Nombre de aseguradora">
+      </div>
+      <div class="form-group">
+        <label for="uVencePoliza">Vencimiento Póliza</label>
+        <input id="uVencePoliza" type="date">
+      </div>
+<div class="form-group">
+  <label for="uPolizaName">Póliza de Seguro</label>
+  <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+    <button type="button" id="btnUPolizaPick" class="icon-btn" title="Adjuntar póliza" aria-label="Adjuntar póliza">📁</button>
+    <input id="uPolizaFile" type="file" accept="application/pdf,image/*" required style="display:none">
+    <input id="uPolizaName" type="text" placeholder="Selecciona un archivo…" readonly autocomplete="off">
+    <input id="uPoliza" type="hidden" value="">
+  
+<div class="field-error" data-for="uPolizaName"></div></div>
+</div>
+      <div class="form-group">
+        <label for="uAseguradora">Aseguradora</label>
+        <input id="uAseguradora" type="text" placeholder="Nombre de aseguradora">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="uMarca">Marca</label>
+        <input id="uMarca" type="text" placeholder="Kenworth / Freightliner…">
+      </div>
+      <div class="form-group">
+        <label for="uAnio">Año</label>
+        <input id="uAnio" type="number" min="1980" max="2100" placeholder="2022">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group form-group-full">
+        <label for="uPermisoSCT">Permiso SCT</label>
+        <input id="uPermisoSCT" type="text" placeholder="Número de permiso SCT">
+      </div>
+    </div>
+
+    <div class="modal-buttons">
+      <button type="button" class="btn-cancelar">Cancelar</button>
+      <button type="button" class="btn-guardar">Guardar</button>
+    </div>
+  </div>
+</div>
+  </div>
+
+  </div>
+
+  <!-- Subcontenido: Operadores -->
+  <div id="perm-coment" class="subcontent">
+    <h3 class="section-title">Operadores</h3>
+    <button class="btn add-operator">+ Agregar Operador</button>
+
+    <div class="doc-table-wrapper" style="max-height:250px; overflow-y:auto;">
+      <table class="doc-table" id="tablaOperadores">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Número de Licencia</th>
+            <th>Licencia</th>
+            <th>Vto de Licencia</th>
+            <th>Apto Médico</th>
+            <th>Vto de apto.</th>
+            <th>RFC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Filas generadas dinámicamente -->
+        </tbody>
+      </table>
+     
+      <div id="operadorModal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content" style="min-width:480px;">
+          <span class="close" title="Cerrar">&times;</span>
+          <h3>Agregar Operador</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="opNombre">Nombre</label>
+              <input id="opNombre" type="text">
+            </div>
+            <div class="form-group">
+              <label for="opNumeroLicencia">Número de Licencia</label>
+              <input id="opNumeroLicencia" type="text">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+             <label for="opLicenciaName">Licencia</label>
+              <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+                <button type="button" id="btnOpLicenciaPick" class="icon-btn" title="Adjuntar licencia">📁</button>
+                <input id="opLicenciaFile" type="file" accept="application/pdf,image/*">
+                <input id="opLicenciaName" type="text" placeholder="Selecciona un archivo…" readonly>
+                <input id="opLicencia" type="hidden" value="">
+                <div class="field-error" data-for="opLicenciaName"></div>
+              </div> 
+            </div>
+            <div class="form-group">
+              <label for="opVtoLicencia">Vto de Licencia</label>
+              <input id="opVtoLicencia" type="date">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+            <label for="opAptoName">Apto Médico</label>
+              <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+                <button type="button" id="btnOpAptoPick" class="icon-btn" title="Adjuntar apto médico">📁</button>
+                <input id="opAptoFile" type="file" accept="application/pdf,image/*">
+                <input id="opAptoName" type="text" placeholder="Selecciona un archivo…" readonly>
+                <input id="opAptoMedico" type="hidden" value="">
+                <div class="field-error" data-for="opAptoName">     
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="opVtoApto">Vto apto</label>
+              <input id="opVtoApto" type="date">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-group-full">
+              <label for="opRFC">RFC</label>
+              <input id="opRFC" type="text">
+            </div>
+          </div>
+
+          <div class="modal-buttons">
+            <button type="button" class="btn-cancelar">Cancelar</button>
+            <button type="button" class="btn-guardar">Guardar</button>
+            </div>
+        </div>
+      </div>     
+      </div>
+  </div>
+  </div>
+  <div class="actions-bar">
+    <button id="btnPermCancelar" class="btn">Cancelar</button>
+       <button id="btnPermGuardar" class="btn">Guardar Permisionario</button>
+    <button id="btnPermVolverPostSave" class="btn ghost" style="display:none">Volver</button>
+ </div>
+</div>
+
+
+      
+<!-- LTR MODULE -->
+<div id="ltrModule" class="frame hidden" aria-label="Módulo LTR">
+  <!-- Submenú (Home) -->
+  <div id="ltrHome" class="ltr-home">
+    <h2 style="text-align:center;margin-bottom:16px;">LTR</h2>
+    <div class="home-grid">
+      <!-- Tarjeta: Unidades -->
+      <div id="btnLTRUnidades" class="choice-card" role="button" tabindex="0" aria-label="Unidades LTR">
+        <!-- ícono camión / llantas -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="1" y="7" width="15" height="10" rx="2"></rect>
+          <path d="M16 10h4l3 3v4h-7z"></path>
+          <circle cx="5.5" cy="19" r="2"></circle>
+          <circle cx="18.5" cy="19" r="2"></circle>
+        </svg>
+        <div class="choice-label">UNIDADES</div>
+      </div>
+
+      <!-- Tarjeta: Operadores -->
+      <div id="btnLTROperadores" class="choice-card" role="button" tabindex="0" aria-label="Operadores LTR">
+        <!-- ícono casco -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 13a8 8 0 0 1 16 0v2H4z"></path>
+          <path d="M2 17h20"></path>
+        </svg>
+        <div class="choice-label">OPERADORES</div>
+      </div>
+    </div>
+    <div class="home-actions" style="margin-top:16px; display:flex; justify-content:flex-end;">
+      <button id="btnLTRBack" class="btn">Volver</button>
+    </div>
+  </div>
+
+  <!-- Vista: LTR > Unidades -->
+  <div id="ltrUnitsList" class="clients-menu clients-list hidden" aria-label="Unidades LTR">
+    <div class="list-toolbar">
+      <div><h3>Unidades LTR</h3></div>
+        <!-- Filtro por tipo de unidad -->
+      <div class="filters" style="display:flex; align-items:center; gap:8px;">
+        <label for="tipoUnidadFilter">Tipo:</label>
+        <select id="tipoUnidadFilter" class="input">
+        <option value="">Todos</option>
+      <!-- Las opciones se llenan automáticamente desde la tabla -->
+        </select>
+        </div>     
+        <div class="search">
+        <label for="searchUnits">Buscar:</label>
+        <input id="searchUnits" type="text" placeholder="Placas, Eco, Tipo…">
+      </div>
+      <div class="list-actions">
+        <button id="btnUnidadNuevaLTR" class="btn primary">+ Agregar Unidad</button>
+        <button id="btnLTRUnidadesVolverHome" class="btn">Volver</button>
+        <button id="btnImportExcelUnidades" class="btn">Importar Excel</button>
+        <input id="excelInputUnidades" type="file" accept=".xlsx,.xls" style="display:none">
+      </div>
+    </div>
+
+    <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
+      <table class="doc-table" id="tablaLTRUnidades">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Tipo</th>
+            <th>Placas</th>
+            <th>Eco</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody><!-- filas dinámicas --></tbody>
+      </table>
+             <!-- Modal LTR: Agregar Unidad (independiente de Permisionarios) -->
+      <div id="ltrUnidadModal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content" style="min-width: 720px;">
+          <span id="ltrUnidadModalClose" class="close" title="Cerrar">&times;</span>
+          <h3>Alta de Unidad LTR</h3>
+          <input type="hidden" id="ltrUId" value="">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ltrUTarjetaName">Tarjeta de Circulación*</label>
+              <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+                <button type="button" id="btnLTRUTarjetaPick" class="icon-btn" title="Adjuntar">📁</button>
+                <input id="ltrUTarjetaFile" type="file" accept=".pdf,.jpg,.jpeg,.png" required style="display:none">
+                <input id="ltrUTarjetaName" type="text" placeholder="Selecciona un archivo…" readonly required>
+                <input id="ltrUTarjeta" type="hidden" value="">
+              </div>
+              <div class="field-error" data-for="ltrUTarjetaName"></div>
+            </div>
+            <div class="form-group">
+              <label for="ltrUPlacas">Placas*</label>
+              <input id="ltrUPlacas" type="text" placeholder="ABC123A" required>
+            </div>
+          </div>
+      
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ltrUEco">Eco</label>
+              <input id="ltrUEco" type="text" placeholder="Económico interno">
+            </div>
+            <div class="form-group">
+              <label for="ltrUTipo">Tipo*</label>
+              <select id="ltrUTipo" required>
+                <option value="">Seleccione…</option>
+                <option>Tractor</option>
+                <option>Unidad seca 53"</option>
+                <option>Refrigerada 53"</option>
+                <option>Thorton</option>
+                <option>3.5</option>
+                <option>Torton</option>
+                <option>Rabón</option>
+              </select>
+              <div class="field-error" data-for="ltrUTipo"></div>
+            </div>
+          </div>
+      
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ltrUAseguradora">Aseguradora</label>
+              <input id="ltrUAseguradora" type="text" placeholder="Nombre de aseguradora">
+            </div>
+            <div class="form-group">
+              <label for="ltrUVencePoliza">Vencimiento Póliza</label>
+              <input id="ltrUVencePoliza" type="date">
+            </div>
+            <div class="form-group">
+              <label for="ltrUPolizaName">Póliza de Seguro</label>
+              <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+                <button type="button" id="btnLTRUPolizaPick" class="icon-btn" title="Adjuntar póliza" aria-label="Adjuntar póliza">📁</button>
+                <input id="ltrUPolizaFile" type="file" accept="application/pdf,image/*" style="display:none">
+                <input id="ltrUPolizaName" type="text" placeholder="Selecciona un archivo…" readonly autocomplete="off">
+                <input id="ltrUPoliza" type="hidden" value="">
+              </div>
+              <div class="field-error" data-for="ltrUPolizaName"></div>
+            </div>
+            <div class="form-group">
+              <label for="ltrUMarca">Marca</label>
+              <input id="ltrUMarca" type="text" placeholder="Kenworth / Freightliner…">
+            </div>
+            <div class="form-group">
+              <label for="ltrUAnio">Año</label>
+              <input id="ltrUAnio" type="number" min="1980" max="2100" placeholder="2022">
+            </div>
+          </div>
+      
+          <div class="form-row">
+            <div class="form-group form-group-full">
+              <label for="ltrUPermisoSCT">Permiso SCT</label>
+              <input id="ltrUPermisoSCT" type="text" placeholder="Número de permiso SCT">
+            </div>
+          </div>
+      
+          <div class="modal-buttons">
+            <button type="button" id="ltrUnidadCancelar" class="btn-cancelar">Cancelar</button>
+            <button type="button" id="ltrUnidadGuardar" class="btn-guardar">Guardar</button>
+        </div>
+        </div>
+        </div>
+
+    </div>
+  </div>
+
+  <!-- Vista: LTR > Operadores -->
+  <div id="ltrOpsList" class="clients-menu clients-list hidden" aria-label="Operadores LTR">
+    <div class="list-toolbar">
+      <div><h3>Operadores LTR</h3></div>
+      <div class="search">
+        <label for="searchOps">Buscar:</label>
+        <input id="searchOps" type="text" placeholder="Nombre, Licencia, RFC…">
+      </div>
+      <div class="list-actions">
+        <button id="btnOperadorNuevoLTR" class="btn primary">+ Agregar Operador</button>
+        <button id="btnLTROpsVolverHome" class="btn">Volver</button>
+        <button id="btnImportExcelOperadores" class="btn">Importar Excel</button>
+        <input id="excelInputOperadores" type="file" accept=".xlsx,.xls" style="display:none">
+      </div>
+    </div>
+
+    <div class="doc-table-wrapper" style="max-height:300px; overflow:auto;">
+      <table class="doc-table" id="tablaLTROperadores">
+        <thead>
+            <tr>
+            <th>Nombre</th>
+            <th>Número de Licencia</th>
+            <th>Licencia</th>
+            <th>Vto de Licencia</th>
+            <th>Apto Médico</th>
+            <th>Vto de apto.</th>
+            <th>RFC</th>
+            <th>CURP</th>
+            <th>Telefono</th>
+            <th>NSS</th>
+            <th class="actions">Acciones</th>
+          </tr>     
+        </thead>
+        <tbody><!-- filas dinámicas --></tbody>
+      </table>
+    </div>
+        <!-- Modal: + Agregar Operador (EXCLUSIVO LTR) -->
+<div id="ltrOperadorModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-content" style="min-width:560px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <h3>+ Agregar Operador</h3>
+
+    <div class="form-row">
+      <div class="form-group form-group-full">
+        <label for="opLTRNombre">Nombre*</label>
+        <input id="opLTRNombre" type="text" placeholder="Nombre(s) y apellidos" required>
+        <div class="field-error" data-for="opLTRNombre"></div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="opLTRLicencia">No. Licencia*</label>
+        <input id="opLTRLicencia" type="text" placeholder="Numero de Licencia" required>
+        <div class="field-error" data-for="opLTRLicencia"></div>
+      </div>
+      <div class="form-group">
+        <label for="opLTRVtoLicencia">Vto de Licencia</label>
+        <input id="opLTRVtoLicencia" type="date">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group form-group-full">
+        <label for="opLicenciaName">Licencia</label>
+        <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+          <button type="button" id="btnOpLicenciaPick" class="icon-btn" title="Adjuntar licencia">📁</button>
+          <input id="opLicenciaFile" type="file" accept="application/pdf,image/*" style="display:none">
+          <input id="opLicenciaName" type="text" placeholder="Selecciona un archivo…" readonly>
+          <input id="opLicencia" type="hidden" value="">
+        </div>
+        <div class="field-error" data-for="opLicenciaName"></div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="opVtoApto">Vto apto</label>
+        <input id="opVtoApto" type="date">
+      </div>
+      <div class="form-group form-group-full">
+        <label for="opAptoName">Apto Médico</label>
+        <div class="file-row" style="display:flex;align-items:center;gap:8px;">
+          <button type="button" id="btnOpAptoPick" class="icon-btn" title="Adjuntar apto médico">📁</button>
+          <input id="opAptoFile" type="file" accept="application/pdf,image/*" style="display:none">
+          <input id="opAptoName" type="text" placeholder="Selecciona un archivo…" readonly>
+          <input id="opAptoMedico" type="hidden" value="">
+        </div>
+        <div class="field-error" data-for="opAptoName"></div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="opRFC">RFC</label>
+        <input id="opRFC" type="text">
+      </div>
+      <div class="form-group">
+        <label for="opLTRCURP">CURP*</label>
+        <input id="opLTRCURP" type="text" placeholder="CURP">
+        <div class="field-error" data-for="opLTRCURP"></div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="opLTRTelefono">Teléfono</label>
+        <input id="opLTRTelefono" type="tel" placeholder="10 dígitos">
+      </div>
+      <div class="form-group">
+        <label for="opLTRNSS">NSS</label>
+        <input id="opLTRNSS" type="text" placeholder="Número de Seguro Social">
+      </div>
+    </div>
+
+    <div class="modal-buttons">
+      <button type="button" id="ltrOpCancelar" class="btn-cancelar">Cancelar</button>
+      <button type="button" id="ltrOpGuardar" class="btn-guardar">Guardar</button>
+    </div>
+    </div>
+    </div>
+<div id="ltrOpDeleteModal" class="modal hidden">
+  <div class="modal-content" style="text-align:center; padding:36px;">
+    <span class="close" title="Cerrar">&times;</span>
+    <p id="ltrOpDeleteMsg">¿Deseas eliminar este operador?</p>
+    <div class="modal-buttons" style="justify-content:center;">
+      <button id="ltrOpDelYes" class="btn primary">Sí</button>
+      <button id="ltrOpDelNo"  class="btn">No</button>
+       </div>
+      </div>
+    </div>
+  </div>     
+</div><!-- Este cierra el Modulo 3 -->
+
+
+<!-- Aqui empieza el modulo 4-->
+<div id="asignMenu" class="frame hidden">
+  <h2>Asignación</h2>
+  <div class="asign-home">
+    <div class="home-grid">
+      <!-- Nuevo Servicio -->
+      <div id="asignNuevoBtn" class="choice-card" role="button" tabindex="0" aria-label="Nuevo servicio">
+        <!-- icono “plus/clipboard” -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="7" y="3" width="10" height="14" rx="2"></rect>
+          <path d="M9 7h6M12 11v6M9 14h6"></path>
+        </svg>
+        <div class="choice-label">NUEVO SERVICIO</div>
+      </div>
+
+      <!-- Servicios activos -->
+      <div id="asignActivosBtn" class="choice-card" role="button" tabindex="0" aria-label="Servicios activos">
+        <!-- icono “list/clipboard” -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="7" y="3" width="10" height="14" rx="2"></rect>
+          <path d="M9 7h6M9 11h6M9 15h6"></path>
+        </svg>
+        <div class="choice-label">SERVICIOS ACTIVOS</div>
+      </div>
+    </div>
+
+    <div class="home-actions">
+      <button class="btn" id="asignVolverBtn">Volver</button>
+    </div>
+  </div>
+</div>
+
+<!-- Placeholders ) -->
+<div id="asignNuevo" class="frame hidden">
+  <h2>Nuevo Servicio</h2>
+<!-- Aqui empieza el render de nuevo servicio -->
+
+      
+  <div id="asignNuevoForm" class="card" style="padding:16px; margin:12px 0;">
+      <h3 style="margin:0 0 12px;">Datos del servicio</h3>
+
+     <div class="form-row">
+      
+      <div class="form-group">
+      <label for="asigClienteSelect">Cliente*</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+       <select id="asigClienteSelect" required style="min-width:320px;">
+      <option value="">Cargando clientes…</option>
+      </select>
+      </div>
+       <small id="asigSinClientes" class="muted" style="display:none;">
+        No hay clientes registrados aún. Ve al módulo <strong>Clientes</strong> para dar de alta.
+       </small>
+       </div>
+       
+        <div class="form-group form-group-full">
+      <label for="asigTipoUnidad">Tipo de unidad*</label>
+      <select id="asigTipoUnidad" required disabled>
+        <option value="">Selecciona un cliente</option>
+      </select>
+    </div>
+
+      <div class="form-row compact">
+  <div class="fld">
+    <label for="asigTrayecto">Trayecto (Origen — Destino)*</label>
+    <select id="asigTrayecto" disabled>
+      <option value="">Selecciona cliente y tipo de unidad</option>
+    </select>
+  </div>
+
+  <div class="fld" style="max-width:220px">
+    <label for="asigPrecio">Precio (MXN)</label>
+    <input id="asigPrecio" type="text" placeholder="$0.00" readonly>
+  </div>
+</div>
+
+<div class="form-row compact">
+  <div class="fld" style="max-width:320px">
+    <label for="asigCitaCarga">Cita de Carga</label>
+    <input id="asigCitaCarga" type="datetime-local">
+  </div>
+</div>
+
+
+    </div>
+  </div>
+  <button class="btn primary" id="asignGuardarServicio">Guardar servicio</button>    
+  <div class="home-actions"><button class="btn" id="asignVolverDesdeNuevo">Volver</button></div>
+</div>
+
+  <div id="asignActivos" class="frame hidden">
+  <h2>Servicios activos</h2>
+  <p>(placeholder — aquí irá la lista/gestión de servicios)</p>
+  <div class="home-actions"><button class="btn" id="asignVolverDesdeActivos">Volver</button></div>
+
+      
+      
+
+</div><!-- Aqui termina el modulo Asignación-->
+
+      
+
+
+  
+      
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+      
+  
+
+  
+  
+
+   
+ <script>
+      //Login y Menú principal 
+window.addEventListener('DOMContentLoaded', () => {
+  // --- Usuarios válidos (puedes agregar más aquí)
+  const usuarios = [
+    {usuario:"David Vargas R.", password:"1234"}
+  ];
+
+  // --- Mostrar sección (frame)
+  function showSection(id) {
+    document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
+   window.showSection = showSection;   
+
+  // --- Rellenar usuario si existe en localStorage
+  const last = localStorage.getItem('sr_last_user');
+  if (last) document.getElementById('usuario').value = last;
+
+  // --- Botón guardar usuario
+  document.getElementById('btnGuardar').onclick = () => {
+    localStorage.setItem('sr_last_user', document.getElementById('usuario').value);
+    alert('Usuario guardado');
+  };
+
+  // --- Login
+  document.getElementById('btnEntrar').onclick = () => {
+    const u = document.getElementById('usuario').value;
+    const p = document.getElementById('password').value;
+    if (usuarios.find(x => x.usuario === u && x.password === p)) {
+      showSection('dashboard');
+    } else {
+      alert('Usuario o contraseña incorrectos');
+    }
+  };
+
+  // --- Sub-tabs (clientes)
+  document.querySelectorAll('.sub-tab').forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.content).classList.add('active');
+    };
+  });
+
+  // --- Navegación principal desde dashboard
+  document.getElementById('modClientes').onclick = () => {
+    showSection('clientsModule');
+    document.getElementById('clientsHome')?.classList.remove('hidden');
+    document.getElementById('clientsMenu')?.classList.add('hidden');
+    document.getElementById('clientsList')?.classList.add('hidden');
+  };
+  document.getElementById('modPerm').onclick = () => {
+    showSection('permModule');
+    if (typeof renderTablaPerms === 'function') renderTablaPerms();
+  };
+  // Handler LTR (mismo bloque donde están modClientes/modPerm)
+document.getElementById('modLTR').onclick = () => {
+  showSection('ltrModule');
+  // Mostrar el home y ocultar las vistas internas
+  document.getElementById('ltrHome')?.classList.remove('hidden');
+  document.getElementById('ltrUnitsList')?.classList.add('hidden');
+  document.getElementById('ltrOpsList')?.classList.add('hidden');
+};    
+  document.getElementById('btnClientesBack')?.addEventListener('click', () => {
+    showSection('dashboard');
+  });
+  document.getElementById('btnPermVolver')?.addEventListener('click', () => {
+    showSection('dashboard');
+  });
+
+  // --- Puedes agregar aquí otros módulos del dashboard si tienes más botones
+});
+
+ </script>   
+
+
+
+      
+<script>
+            //aqui empieza el modulo de clientes
+window.addEventListener('DOMContentLoaded', () => {
+  // === Referencias principales
+  const clientsHome = document.getElementById('clientsHome');
+  const clientsMenu = document.getElementById('clientsMenu');
+  const clientsList = document.getElementById('clientsList');
+  const srStoreKey = 'sr_clientes';
+  let editingClientId = null;
+
+  // === Helpers de vistas
+  function showInClientsModule(el){
+    [clientsHome, clientsMenu, clientsList].forEach(x => x && x.classList.add('hidden'));
+    el && el.classList.remove('hidden');
+  }
+
+  // === BD local de clientes
+  function getClientes(){ try { return JSON.parse(localStorage.getItem(srStoreKey)) || []; } catch { return []; } }
+  function setClientes(arr){ localStorage.setItem(srStoreKey, JSON.stringify(arr)); }
+
+  // === Render tabla clientes
+  function renderTablaClientes(filtro=''){
+    const tbody = document.querySelector('#tablaClientes tbody');
+    if(!tbody) return;
+    const data = getClientes();
+    const q = (filtro||'').toLowerCase();
+    const fil = data.filter(c =>
+      (!q) || (c.nombre?.toLowerCase().includes(q) || c.rfc?.toLowerCase().includes(q) || String(c.id||'').toLowerCase().includes(q))
+    );
+    tbody.innerHTML = fil.map(c => `
+      <tr>
+        <td><span class="client-id-link" data-id="${c.id}">${c.id || ''}</span></td>
+        <td>${c.nombre || ''}</td>
+        <td>${c.rfc || ''}</td>
+        <td>${c.estatus || 'Activo'}</td>
+        <td class="actions">
+          <span class="icon-btn btnEdit" title="Editar" data-id="${c.id}">✏️</span>
+          <span class="icon-btn btnDelete" title="Eliminar" data-id="${c.id}">🗑️</span>
+        </td>
+      </tr>
+    `).join('') || `<tr><td colspan="5">Sin registros</td></tr>`;
+    // Listeners de acciones
+    tbody.querySelectorAll('.btnDelete').forEach(btn => {
+      btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
+    });
+    tbody.querySelectorAll('.btnEdit').forEach(btn => {
+      btn.addEventListener('click', () => editCliente(btn.dataset.id));
+    });
+    tbody.querySelectorAll('.client-id-link').forEach(link => {
+      link.addEventListener('click', () => mostrarDetalleCliente(link.dataset.id));
+    });
+  }
+ document.getElementById('btnImportExcel')?.addEventListener('click', () => {
+  document.getElementById('excelInput')?.click();
+});     
+//Codigo para importar excel 
+excelInput?.addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, {type: 'array'});
+
+    // Procesar Hoja Clientes
+    const clientesSheet = workbook.Sheets['Clientes'];
+    const clientesJson = XLSX.utils.sheet_to_json(clientesSheet, {header:1});
+    // Procesar Hoja Tarifas
+    const tarifasSheet = workbook.Sheets['Tarifas'];
+    const tarifasJson = XLSX.utils.sheet_to_json(tarifasSheet, {header:1});
+
+    // Mapear encabezados de Clientes
+    const clientesHeaders = clientesJson[0];
+    const clientesData = clientesJson.slice(1);
+    let clientesArr = [];
+
+    clientesData.forEach(row => {
+      // Empareja cada encabezado con su valor
+      const obj = {};
+      clientesHeaders.forEach((h, idx) => {
+        obj[h] = row[idx] || '';
+      });
+      clientesArr.push({
+        id: '', // Se puede generar después
+        nombre: obj['Nombre / Razón Social'] || '',
+        rfc: obj['RFC'] || '',
+        estatus: obj['Estatus'] || '',
+        domicilio: obj['Domicilio'] || '',
+        operaciones: {
+          nombre: obj['Contacto Operaciones (Nombre)'] || '',
+          email: obj['Contacto Operaciones (Email)'] || '',
+          tel: obj['Contacto Operaciones (Tel)'] || ''
+        },
+        administracion: {
+          nombre: obj['Contacto Administración (Nombre)'] || '',
+          email: obj['Contacto Administración (Email)'] || '',
+          tel: obj['Contacto Administración (Tel)'] || ''
+        },
+        comercial: {
+          nombre: obj['Contacto Comercial (Nombre)'] || '',
+          email: obj['Contacto Comercial (Email)'] || '',
+          tel: obj['Contacto Comercial (Tel)'] || ''
+        },
+        tarifas: [] // Se llenará después
+      });
+    
+    });
+
+    // Mapear encabezados de Tarifas
+    const tarifasHeaders = tarifasJson[0];
+    const tarifasData = tarifasJson.slice(1);
+
+    tarifasData.forEach(row => {
+      const obj = {};
+      tarifasHeaders.forEach((h, idx) => {
+        obj[h] = row[idx] || '';
+      });
+      // Busca el cliente por RFC y agrega la tarifa
+      const cliente = clientesArr.find(c => c.rfc === obj['RFC']);
+      if (cliente) {
+        cliente.tarifas = cliente.tarifas || [];
+        cliente.tarifas.push({
+          estadoOrigen: obj['Estado Origen'] || '',
+          municipioOrigen: obj['Municipio Origen'] || '',
+          estadoDestino: obj['Estado Destino'] || '',
+          municipioDestino: obj['Municipio Destino'] || '',
+          tipoUnidad: obj['Tipo Unidad'] || '',
+          diasCredito: obj['Dias Credito'] || '',
+          kmRecorrer: obj['Km Recorrer'] || '',
+          tarifa: obj['Tarifa'] || ''
+        });
+      }
+    });
+
+    // Generar IDs automáticos tipo LTR-CL-01, LTR-CL-02...
+    const existing = getClientes();
+    let nextId = existing.reduce((max, c) => {
+      const match = /LTR-CL-(\d+)/.exec(c.id || '');
+      return Math.max(max, match ? parseInt(match[1], 10) : 0);
+    }, 0) + 1;
+
+    clientesArr.forEach(c => {
+      const idxExist = existing.findIndex(e => e.rfc === c.rfc);
+      if (idxExist >= 0) {
+        c.id = existing[idxExist].id;
+        existing[idxExist] = c;
+      } else {
+        c.id = 'LTR-CL-' + String(nextId).padStart(2, '0');
+        existing.push(c);
+        nextId++;
+      }
+    });
+
+    // Establece clientes SOLO UNA VEZ, fuera del bucle
+    setClientes(existing);
+    alert('Clientes y tarifas importados correctamente.');
+    if (typeof renderTablaClientes === 'function') renderTablaClientes();
+  };
+  reader.readAsArrayBuffer(file);
+});
+  // === Eliminar cliente
+  const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+  const deleteConfirmYes = document.getElementById('deleteConfirmYes');
+  const deleteConfirmNo  = document.getElementById('deleteConfirmNo');
+  let deleteId = null;
+  function openDeleteModal(id){
+    deleteId = id;
+    confirmDeleteModal.classList.remove('hidden');
+    confirmDeleteModal.style.display = 'flex';
+  }
+  function closeDeleteModal(){
+    confirmDeleteModal.classList.add('hidden');
+    confirmDeleteModal.style.display = 'none';
+    deleteId = null;
+  }
+  deleteConfirmYes?.addEventListener('click', () => {
+    if(deleteId){
+      const arr = getClientes();
+      const idx = arr.findIndex(c => c.id === deleteId);
+      if(idx >= 0){
+        arr.splice(idx,1);
+        setClientes(arr);
+        renderTablaClientes();
+      }
+    }
+    closeDeleteModal();
+  });
+  deleteConfirmNo?.addEventListener('click', closeDeleteModal);
+  confirmDeleteModal?.querySelector('.close')?.addEventListener('click', closeDeleteModal);
+  window.addEventListener('click', e => { if(e.target === confirmDeleteModal) closeDeleteModal(); });
+
+  // === Editar cliente
+  function editCliente(id){
+    const cliente = getClientes().find(c => c.id === id);
+    if(!cliente) return;
+    editingClientId = id;
+    document.getElementById('tituloCliente').textContent = 'Editar Cliente';
+    showInClientsModule(clientsMenu);
+    document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
+    limpiarFormularioCliente();
+    document.getElementById('inpNombre').value = cliente.nombre || '';
+    document.getElementById('selEstatus').value = cliente.estatus || 'Activo';
+    document.getElementById('inpRFC').value = cliente.rfc || '';
+    document.getElementById('txtDireccion').value = cliente.domicilio || '';
+    document.getElementById('txtComentario').value = cliente.comentario || '';
+    (cliente.docs || []).forEach((doc, idx) => {
+      const st = document.getElementById(`status${idx+1}`);
+      if(st){
+        if(doc.estatus){
+          st.textContent = '✅ Sí';
+          st.classList.remove('status-no');
+          st.classList.add('status-yes');
+        } else {
+          st.textContent = '❌ No';
+          st.classList.remove('status-yes');
+          st.classList.add('status-no');
+        }
+      }
+    });
+    const tarifasBody = document.querySelector('#tablaTarifas tbody');
+    if(tarifasBody){
+      tarifasBody.innerHTML = '';
+      (cliente.tarifas || []).forEach(t => {
+        const tr = document.createElement('tr');
+        tr.dataset.info = JSON.stringify(t);
+        const cOrigenDestino = `${t.estadoOrigen} - ${t.estadoDestino}`;
+        const cTipo = t.tipoUnidad;
+        const cTarifa = Number(t.tarifa).toLocaleString('es-MX', {style:'currency', currency:'MXN'});
+        const cCred  = t.diasCredito || 0;
+        const cKm    = t.kmRecorrer || 0;
+        tr.innerHTML = `<td>${cOrigenDestino}</td><td>${cTipo}</td><td>${cTarifa}</td><td>${cCred}</td><td>${cKm}</td><td><span class="icon-btn edit-tarifa" title="Editar">✏️</span></td>`;
+        tarifasBody.appendChild(tr);
+      });
+    }
+  }
+
+  // === Limpiar formulario
+  function limpiarFormularioCliente(){
+    if(!clientsMenu) return;
+    clientsMenu.querySelectorAll('input, textarea').forEach(el => {
+      el.value = '';
+      if(el.type === 'file'){ el.value = ''; }
+    });
+    clientsMenu.querySelectorAll('select').forEach(sel => sel.selectedIndex = 0);
+    clientsMenu.querySelectorAll('.status').forEach(st => {
+      st.textContent = '❌ No';
+      st.classList.remove('status-yes');
+      st.classList.add('status-no');
+    });
+    const tarifasBody = document.querySelector('#tablaTarifas tbody');
+    if(tarifasBody) tarifasBody.innerHTML = '';
+  }
+
+  // === Botón “Nuevo Cliente”
+  document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
+    editingClientId = null;
+    limpiarFormularioCliente();
+    document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
+    showInClientsModule(clientsMenu);
+    document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
+  });
+
+  // === Botón “CLIENTES”
+  document.getElementById('btnVerClientes')?.addEventListener('click', () => {
+    editingClientId = null;
+    document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
+    showInClientsModule(clientsList);
+    renderTablaClientes();
+    limpiarFormularioCliente();
+  });
+
+  // === Volver al dashboard desde clientes
+  document.getElementById('btnClientesBack')?.addEventListener('click', () => {
+    showSection('dashboard');
+  });
+
+  // === Botones dentro de la ventana “Clientes”
+  document.getElementById('btnVolverHome')?.addEventListener('click', () => {
+    editingClientId = null;
+    document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
+    showInClientsModule(clientsHome);
+  });
+  document.getElementById('btnNuevoDesdeLista')?.addEventListener('click', () => {
+    editingClientId = null;
+    limpiarFormularioCliente();
+    document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
+    showInClientsModule(clientsMenu);
+    document.querySelector('.sub-tab[data-content="tab-datos"]')?.click();
+  });
+
+  // === Búsqueda en la lista
+  document.getElementById('searchCli')?.addEventListener('input', (e) => {
+    renderTablaClientes(e.target.value);
+  });
+
+  // === Salir del menú de cliente
+  document.getElementById('exitClient').onclick = () => showSection('dashboard');
+
+  // === Mostrar/ocultar botón Guardar según la pestaña activa
+  const saveBtn = document.getElementById('saveClient');
+  function updateSaveButtonVisibility() {
+    const activeTab = document.querySelector('.sub-tab.active');
+    if (activeTab && activeTab.dataset.content === 'tab-comentario') {
+      saveBtn.style.display = 'inline-block';
+    } else {
+      saveBtn.style.display = 'none';
+    }
+  }
+  updateSaveButtonVisibility();
+  document.querySelectorAll('.sub-tab').forEach(tab => {
+    tab.addEventListener('click', updateSaveButtonVisibility);
+  });
+
+  // === Guardar cliente y mostrar confirmación
+  const clienteModal = document.getElementById('clienteModal');
+  const clienteModalClose = clienteModal.querySelector('.close');
+  const clienteModalBtnCerrar = clienteModal.querySelector('.btn-cerrar');
+
+  function generarSiguienteId(arr) {
+    const prefijo = 'LTR-CL-';
+    const maxNum = arr.reduce((max, c) => {
+      const m = (c.id || '').match(/^LTR-CL-(\d+)$/);
+      const n = m ? parseInt(m[1], 10) : 0;
+      return n > max ? n : max;
+    }, 0);
+    return `${prefijo}${String(maxNum + 1).padStart(2, '0')}`;
+  }
+
+  saveBtn.addEventListener('click', () => {
+    const nombre = (document.getElementById('inpNombre')?.value || '').trim();
+    const rfc = (document.getElementById('inpRFC')?.value || '').trim();
+    const estatus = document.getElementById('selEstatus')?.value || 'Activo';
+    const domicilio = (document.getElementById('txtDireccion')?.value || '').trim();
+    const comentario = (document.getElementById('txtComentario')?.value || '').trim();
+
+    const docNames = [
+      'Acta Constitutiva',
+      'Poder Rep. Legal',
+      'Comprobante de Domicilio',
+      'Constancia de Situación Fiscal',
+      'INE Rep. Legal',
+      'Contrato'
+    ];
+    const docs = docNames.map((nombre, idx) => {
+      const st = document.getElementById(`status${idx+1}`);
+      return { nombre, estatus: st?.classList.contains('status-yes') };
+    });
+
+    const tarifas = Array.from(document.querySelectorAll('#tablaTarifas tbody tr')).map(tr => {
+      try { return JSON.parse(tr.dataset.info || '{}'); } catch { return {}; }
+    });
+
+    if (!nombre || !rfc) {
+      alert('Por favor llena al menos Nombre/Razón Social y RFC.');
+      return;
+    }
+
+    const arr = getClientes();
+    let id = editingClientId;
+    if(editingClientId){
+      const idx = arr.findIndex(c => c.id === editingClientId);
+      if(idx >= 0){
+        arr[idx] = { id: editingClientId, nombre, rfc, estatus, domicilio, comentario, docs, tarifas };
+      }
+    } else {
+      id = generarSiguienteId(arr);
+      arr.push({ id, nombre, rfc, estatus, domicilio, comentario, docs, tarifas });
+    }
+    setClientes(arr);
+
+    renderTablaClientes();
+    document.getElementById('idClienteTexto').textContent = id;
+    document.getElementById('nombreCliente').textContent = nombre;
+    document.getElementById('rfcCliente').textContent = rfc;
+    document.getElementById('domicilioCliente').textContent = domicilio;
+    clienteModal.classList.remove('hidden');
+    clienteModal.style.display = 'flex';
+    editingClientId = null;
+    document.getElementById('tituloCliente').textContent = 'Nuevo Cliente';
+  });
+
+  // === Cerrar modal de confirmación
+  function cerrarClienteModal() {
+    clienteModal.classList.add('hidden');
+    clienteModal.style.display = 'none';
+  }
+  clienteModalClose.addEventListener('click', cerrarClienteModal);
+  clienteModalBtnCerrar.addEventListener('click', cerrarClienteModal);
+  window.addEventListener('click', (e) => {
+    if (e.target === clienteModal) cerrarClienteModal();
+  });
+
+  // === Documentación (folder, view)
+  document.querySelectorAll('.folder').forEach(btn => {
+    btn.onclick = () => {
+      const row = btn.dataset.row;
+      const inp = document.getElementById('file' + row);
+      inp.click();
+      inp.onchange = () => {
+        const st = document.getElementById('status' + row);
+        st.textContent = '✅ Sí';
+        st.classList.remove('status-no');
+        st.classList.add('status-yes');
+      };
+    };
+  });
+  document.querySelectorAll('.view').forEach(btn => {
+    btn.onclick = () => {
+      const row = btn.dataset.row;
+      const inp = document.getElementById('file' + row);
+      if (inp.files.length) {
+        const url = URL.createObjectURL(inp.files[0]);
+        window.open(url);
+      } else {
+        alert('No hay archivo cargado aún');
+      }
+    };
+  });
+
+  // === Tarifas / Modal
+  const modal = document.getElementById('tarifaModal');
+  const tablaTarifas = document.querySelector('#tablaTarifas tbody');
+  let editingRow = null;
+  const tituloModal = modal.querySelector('h3');
+
+  function mostrarModal() {
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+  }
+  function ocultarModal() {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  }
+  function activarTabTarifas() {
+    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+    document.querySelector('.sub-tab[data-content="tab-tarifas"]').classList.add('active');
+    document.getElementById('tab-tarifas').classList.add('active');
+  }
+  function limpiarFormulario() {
+    document.getElementById('estadoOrigen').value = '';
+    document.getElementById('municipioOrigen').value = '';
+    document.getElementById('estadoDestino').value = '';
+    document.getElementById('municipioDestino').value = '';
+    document.getElementById('tipoUnidad').selectedIndex = 0;
+    document.getElementById('diasCredito').value = '';
+    document.getElementById('kmRecorrer').value = '';
+    document.getElementById('tarifa').value = '';
+  }
+  function cargarFormulario(datos) {
+    document.getElementById('estadoOrigen').value   = datos.estadoOrigen || '';
+    document.getElementById('municipioOrigen').value= datos.municipioOrigen || '';
+    document.getElementById('estadoDestino').value  = datos.estadoDestino || '';
+    document.getElementById('municipioDestino').value= datos.municipioDestino || '';
+    document.getElementById('tipoUnidad').value     = datos.tipoUnidad || '';
+    document.getElementById('diasCredito').value    = datos.diasCredito ?? '';
+    document.getElementById('kmRecorrer').value     = datos.kmRecorrer ?? '';
+    document.getElementById('tarifa').value         = datos.tarifa ?? '';
+  }
+  function guardarTarifa() {
+    const datos = {
+      estadoOrigen: document.getElementById('estadoOrigen').value.trim(),
+      municipioOrigen: document.getElementById('municipioOrigen').value.trim(),
+      estadoDestino: document.getElementById('estadoDestino').value.trim(),
+      municipioDestino: document.getElementById('municipioDestino').value.trim(),
+      tipoUnidad: document.getElementById('tipoUnidad').value,
+      diasCredito: document.getElementById('diasCredito').value,
+      kmRecorrer: document.getElementById('kmRecorrer').value,
+      tarifa: document.getElementById('tarifa').value
+    };
+    if (!datos.estadoOrigen || !datos.estadoDestino || !datos.tipoUnidad || !datos.tarifa) {
+      alert('Por favor complete todos los campos obligatorios (*)');
+      return;
+    }
+    const cOrigenDestino = `${datos.estadoOrigen} - ${datos.estadoDestino}`;
+    const cTipo = datos.tipoUnidad;
+    const cTarifa = Number(datos.tarifa).toLocaleString('es-MX', {style:'currency', currency:'MXN'});
+    const cCred  = datos.diasCredito || 0;
+    const cKm    = datos.kmRecorrer || 0;
+    if (editingRow) {
+      editingRow.cells[0].textContent = cOrigenDestino;
+      editingRow.cells[1].textContent = cTipo;
+      editingRow.cells[2].textContent = cTarifa;
+      editingRow.cells[3].textContent = cCred;
+      editingRow.cells[4].textContent = cKm;
+      editingRow.dataset.info = JSON.stringify(datos);
+    } else {
+      const tr = document.createElement('tr');
+      tr.dataset.info = JSON.stringify(datos);
+      tr.innerHTML = `
+        <td>${cOrigenDestino}</td>
+        <td>${cTipo}</td>
+        <td>${cTarifa}</td>
+        <td>${cCred}</td>
+        <td>${cKm}</td>
+        <td><span class="icon-btn edit-tarifa" title="Editar">✏️</span></td>
+      `;
+      tablaTarifas.appendChild(tr);
+    }
+    ocultarModal();
+    limpiarFormulario();
+    activarTabTarifas();
+    editingRow = null;
+    tituloModal.textContent = 'Agregar Nueva Ruta/Tarifa';
+  }
+  const agregarBtn = document.querySelector('.add-route');
+  if (agregarBtn) agregarBtn.addEventListener('click', mostrarModal);
+  if (agregarBtn) agregarBtn.addEventListener('click', () => {
+    editingRow = null;
+    tituloModal.textContent = 'Agregar Nueva Ruta/Tarifa';
+    limpiarFormulario();
+  });
+  document.querySelector('#tarifaModal .close').addEventListener('click', () => { ocultarModal(); activarTabTarifas(); });
+  document.querySelector('#tarifaModal .btn-cancelar').addEventListener('click', () => { ocultarModal(); activarTabTarifas(); });
+  document.querySelector('#tarifaModal .btn-guardar').addEventListener('click', guardarTarifa);
+  window.addEventListener('click', (e) => { if (e.target === modal) ocultarModal(); });
+  tablaTarifas.addEventListener('click', (e) => {
+    const btn = e.target.closest('.edit-tarifa');
+    if (!btn) return;
+    const row = btn.closest('tr');
+    try {
+      const datos = JSON.parse(row.dataset.info || '{}');
+      cargarFormulario(datos);
+      editingRow = row;
+      tituloModal.textContent = 'Editar Ruta/Tarifa';
+      mostrarModal();
+    } catch {
+      alert('No fue posible cargar los datos de la fila para edición.');
+    }
+  });
+
+  // === Mostrar detalle cliente
+  function mostrarDetalleCliente(id){
+    const cliente = getClientes().find(c => c.id === id);
+    if(!cliente) return;
+    const cont = document.getElementById('detalleClienteContenido');
+    const docList = (cliente.docs || []).map(d => `<li>${d.nombre}: ${d.estatus ? 'Sí' : 'No'}</li>`).join('');
+    const tarifasTabla = (cliente.tarifas && cliente.tarifas.length)
+      ? `<table class="doc-table"><thead><tr><th>Origen - Destino</th><th>Tipo de Unidad</th><th>Tarifa</th><th>Días de Crédito</th><th>Km</th></tr></thead><tbody>${cliente.tarifas.map(t => `<tr><td>${t.estadoOrigen} - ${t.estadoDestino}</td><td>${t.tipoUnidad}</td><td>${Number(t.tarifa).toLocaleString('es-MX',{style:'currency',currency:'MXN'})}</td><td>${t.diasCredito}</td><td>${t.kmRecorrer}</td></tr>`).join('')}</tbody></table>`
+      : '<p>Sin tarifas registradas</p>';
+    cont.innerHTML = `
+      <h3 class="section-title">Datos Generales</h3>
+      <p><strong>Nombre/Razón Social:</strong> ${cliente.nombre || ''}</p>
+      <p><strong>RFC:</strong> ${cliente.rfc || ''}</p>
+      <p><strong>Estatus:</strong> ${cliente.estatus || ''}</p>
+      <p><strong>Domicilio:</strong> ${cliente.domicilio || ''}</p>
+      <h3 class="section-title">Tarifas</h3>
+      ${tarifasTabla}
+      <h3 class="section-title">Documentación</h3>
+      <ul>${docList}</ul>
+      <h3 class="section-title">Comentarios</h3>
+      <p>${cliente.comentario || ''}</p>
+    `;
+    const modal = document.getElementById('detalleClienteModal');
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+  }
+  const detalleModal = document.getElementById('detalleClienteModal');
+  detalleModal.querySelector('.close').addEventListener('click', () => {
+    detalleModal.classList.add('hidden');
+    detalleModal.style.display = 'none';
+  });
+  window.addEventListener('click', (e) => {
+    if (e.target === detalleModal) {
+      detalleModal.classList.add('hidden');
+      detalleModal.style.display = 'none';
+    }
+  });
+});
+</script>
+
+
+ <script>
+//Aqui empieza el modulo de permisionarios
+window.addEventListener('DOMContentLoaded', () => {
+  // === Claves y referencias
+  const srPermKey = 'sr_permisionarios';
+  const permsList = document.getElementById('permsList');
+  const permsMenu = document.getElementById('permsMenu');
+  let editingPermId = null;
+  const permInfoModal = document.getElementById('permInfoModal');
+  
+
+  // === BD local de permisionarios
+  function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
+  // MIGRACIÓN AUTOMÁTICA DE LA ESTRUCTURA DE PERMISIONARIOS
+function migratePermsStorage() {
+  const perms = getPerms();
+  let changed = false;
+  perms.forEach(p => {
+    if (!p.documentos) { p.documentos = [
+      { nombre: "Acta Constitutiva", estatus: false, archivo: null },
+      { nombre: "Poder Rep. Legal", estatus: false, archivo: null },
+      { nombre: "Comprobante de Domicilio", estatus: false, archivo: null },
+      { nombre: "Constancia de Situación Fiscal", estatus: false, archivo: null },
+      { nombre: "INE Rep. Legal", estatus: false, archivo: null },
+      { nombre: "Contrato", estatus: false, archivo: null }
+    ]; changed = true; }
+    if (!p.unidades) { p.unidades = []; changed = true; }
+    if (!p.operadores) { p.operadores = []; changed = true; }
+  });
+  if (changed) setPerms(perms);
+}
+window.addEventListener('DOMContentLoaded', migratePermsStorage);
+    
+  function setPerms(arr){ localStorage.setItem(srPermKey, JSON.stringify(arr)); }
+
+  function openPermDetalle(id){
+  const perm = getPerms().find(p => p.id === id);
+  if(!perm || !permInfoModal) return;
+  let html = `
+    <div class="modal-section">
+      <h3>Datos generales</h3>
+      <div class="modal-fields">
+        <p><label>ID:</label><span>${perm.id || ''}</span></p>
+        <p><label>Nombre:</label><span>${perm.nombre || ''}</span></p>
+        <p><label>RFC:</label><span>${perm.rfc || ''}</span></p>
+        <p><label>Estatus:</label><span>${perm.estatus || ''}</span></p>
+        <p><label>Domicilio:</label><span>${perm.contacto || ''}</span></p>
+      </div>
+    </div>
+    <div class="modal-section">
+      <h3>Documentos</h3>
+      <table class="modal-table"><thead>
+        <tr><th>Documento</th><th>Estatus</th><th>Ver</th></tr>
+      </thead><tbody>
+        ${perm.documentos?.map((d,i) => `
+          <tr>
+            <td>${d.nombre}</td>
+            <td>${d.estatus ? '✅ Sí' : '❌ No'}</td>
+            <td>${d.archivo ? `<span class="icon-btn" onclick="window.open('${d.archivo}','_blank')">🔍</span>` : '-'}</td>
+          </tr>`).join('')}
+      </tbody></table>
+    </div>
+    <div class="modal-section">
+      <h3>Unidades</h3>
+      <table class="modal-table"><thead>
+        <tr>
+          <th>Tarjeta de Circulación</th><th>Placas</th><th>Eco</th><th>Tipo</th>
+          <th>Vencimiento Poliza</th><th>Aseguradora</th><th>Marca</th><th>Año</th><th>Permiso SCT</th>
+        </tr>
+      </thead><tbody>
+        ${(perm.unidades||[]).map(u => `
+          <tr>
+            <td>${u.tarjeta ? `<span class="icon-btn" onclick="window.open('${u.tarjeta}','_blank')">🔍</span>` : '-'}</td>
+            <td>${u.placas||''}</td>
+            <td>${u.eco||''}</td>
+            <td>${u.tipo||''}</td>
+            <td>${u.vencePoliza ? new Date(u.vencePoliza).toLocaleDateString('es-MX') : ''}</td>
+            <td>${u.aseguradora||''}</td>
+            <td>${u.marca||''}</td>
+            <td>${u.anio||''}</td>
+            <td>${u.permiso||''}</td>
+          </tr>`).join('')}
+        ${(!perm.unidades || !perm.unidades.length)?'<tr><td colspan="9">Sin unidades registradas</td></tr>':''}
+      </tbody></table>
+    </div>
+    <div class="modal-section">
+      <h3>Operadores</h3>
+      <table class="modal-table"><thead>
+        <tr>
+          <th>Nombre</th><th>Número de Licencia</th><th>Licencia</th>
+          <th>Vto de Licencia</th><th>Apto Médico</th><th>Vto de apto.</th><th>RFC</th>
+        </tr>
+      </thead><tbody>
+        ${(perm.operadores||[]).map(o => `
+          <tr>
+            <td>${o.nombre||''}</td>
+            <td>${o.numero||''}</td>
+            <td>${o.licencia||''}</td>
+            <td>${o.vtoLic||''}</td>
+            <td>${o.apto||''}</td>
+            <td>${o.vtoApto||''}</td>
+            <td>${o.rfc||''}</td>
+          </tr>`).join('')}
+        ${(!perm.operadores || !perm.operadores.length)?'<tr><td colspan="7">Sin operadores registrados</td></tr>':''}
+      </tbody></table>
+    </div>
+  `;
+  permInfoModal.querySelector('.modal-card').innerHTML = `
+    <span id="permInfoCerrar" class="close">&times;</span>
+    <h2>Detalle del permisionario</h2>
+    ${html}
+  `;
+  permInfoModal.classList.remove('hidden');
+  permInfoModal.style.display = 'flex';
+  permInfoModal.querySelector('#permInfoCerrar').onclick = closePermDetalle;
+}
+
+  function closePermDetalle(){
+    if(!permInfoModal) return;
+    permInfoModal.classList.add('hidden');
+    permInfoModal.style.display = 'none';
+  }
+
+      
+  // === Render tabla de permisionarios
+  function renderTablaPerms(filtro=''){
+    const tbody = document.querySelector('#tablaPerms tbody');
+    if(!tbody) return;
+    const data = getPerms();
+    const q = (filtro||'').toLowerCase();
+    const fil = data.filter(p =>
+      (!q) ||
+      (String(p.id||'').toLowerCase().includes(q) ||
+       (p.nombre||'').toLowerCase().includes(q) ||
+       (p.rfc||'').toLowerCase().includes(q))
+    );
+    tbody.innerHTML = fil.map(p => `
+      <tr>
+        <td><button class="perm-id-link" data-id="${p.id}">${p.id || ''}</button>
+        <td>${p.nombre || ''}</td>
+        <td>${p.estatus || 'Activo'}</td>
+        <td class="actions">
+          <span class="icon-btn btnPermEdit" title="Editar" data-id="${p.id}">✏️</span>
+          <span class="icon-btn btnPermDelete btnDelete" title="Eliminar" data-id="${p.id}">🗑️</span>
+        </td>
+      </tr>
+    `).join('') || `<tr><td colspan="4">Sin registros</td></tr>`;
+    tbody.querySelectorAll('.btnPermDelete').forEach(btn => {
+      btn.addEventListener('click', () => openDeletePerm(btn.dataset.id));
+    });
+    tbody.querySelectorAll('.btnPermEdit').forEach(btn => {
+      btn.addEventListener('click', () => editPerm(btn.dataset.id));
+    });
+          tbody.querySelectorAll('.perm-id-link').forEach(btn => {
+      btn.addEventListener('click', () => openPermDetalle(btn.dataset.id));
+    });
+  }
+
+  // === Eliminar permisionario
+  const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+  const deleteConfirmYes = document.getElementById('deleteConfirmYes');
+  const deleteConfirmNo  = document.getElementById('deleteConfirmNo');
+  let deletePermId = null;
+  function openDeletePerm(id){
+    deletePermId = id;
+    confirmDeleteModal.classList.remove('hidden');
+    confirmDeleteModal.style.display = 'flex';
+  }
+  function closeDeletePermModal(){
+    confirmDeleteModal.classList.add('hidden');
+    confirmDeleteModal.style.display = 'none';
+    deletePermId = null;
+  }
+  deleteConfirmYes?.addEventListener('click', () => {
+    if(deletePermId){
+      const arr = getPerms();
+      const idx = arr.findIndex(p => p.id === deletePermId);
+      if(idx >= 0){
+        arr.splice(idx,1);
+        setPerms(arr);
+        renderTablaPerms();
+      }
+    }
+    closeDeletePermModal();
+  });
+  deleteConfirmNo?.addEventListener('click', closeDeletePermModal);
+  confirmDeleteModal?.querySelector('.close')?.addEventListener('click', closeDeletePermModal);
+  window.addEventListener('click', e => { if(e.target === confirmDeleteModal) closeDeletePermModal(); });
+
+  // === Editar permisionario (flujo básico)
+  function editPerm(id){
+    const perm = getPerms().find(p => p.id === id);
+    if(!perm) return;
+    editingPermId = id;
+    permsMenu.querySelector('h3').textContent = 'Editar Permisionario';
+    permsMenu.classList.remove('hidden');
+    permsList.classList.add('hidden');
+    document.querySelector('#permsMenu .subtab[data-target="perm-datos"]')?.click();
+    document.getElementById('permNombre').value = perm.nombre || '';
+    document.getElementById('permRFC').value = perm.rfc || '';
+    document.getElementById('permEstatus').value = perm.estatus || 'Activo';
+    document.getElementById('permContacto').value = perm.contacto || '';
+  }
+
+  // === Limpiar formulario nuevo permisionario
+  function limpiarFormularioPerm(){
+    permsMenu.querySelectorAll('input, textarea').forEach(el => { el.value = ''; });
+    permsMenu.querySelectorAll('select').forEach(sel => sel.selectedIndex = 0);
+  }
+
+  // === Botón "Nuevo Permisionario"
+  document.getElementById('btnPermNuevo')?.addEventListener('click', () => {
+    editingPermId = null;
+    limpiarFormularioPerm();
+    permsMenu.querySelector('h3').textContent = 'Nuevo Permisionario';
+    permsMenu.classList.remove('hidden');
+    permsList.classList.add('hidden');
+    document.querySelector('#permsMenu .subtab[data-target="perm-datos"]')?.click();
+  });
+
+  // === Volver al dashboard desde permisionarios
+  document.getElementById('btnPermVolver')?.addEventListener('click', () => {
+    showSection('dashboard');
+  });
+
+  // === Cancelar (volver a la lista)
+  document.getElementById('btnPermCancelar')?.addEventListener('click', () => {
+    permsMenu.classList.add('hidden');
+    permsList.classList.remove('hidden');
+  });
+
+ 
+  // === Generar siguiente ID consecutivo tipo LTR-PR-01
+  function generarSiguienteIdPerm(arr){
+    const prefijo = 'LTR-PR-';
+    const maxNum = arr.reduce((max, p) => {
+      const m = (p.id || '').match(/^LTR-PR-(\d+)$/);
+      const n = m ? parseInt(m[1], 10) : 0;
+      return n > max ? n : max;
+    }, 0);
+    return `${prefijo}${String(maxNum + 1).padStart(2, '0')}`;
+  }
+
+  // === Buscar en la lista
+  document.getElementById('searchPerm')?.addEventListener('input', (e) => {
+    renderTablaPerms(e.target.value);
+  });
+
+  // === Subtabs permisionarios (Datos / Documentos / Unidades / Comentarios)
+  document.querySelectorAll('#permsMenu .subtab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#permsMenu .subtab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const tgt = tab.dataset.target;
+      document.querySelectorAll('#permsMenu .subcontent').forEach(c => c.classList.remove('active'));
+      document.getElementById(tgt).classList.add('active');
+    });
+  });
+  document.getElementById('permInfoCerrar')?.addEventListener('click', closePermDetalle);
+  permInfoModal?.addEventListener('click', (e) => { if(e.target === permInfoModal) closePermDetalle(); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closePermDetalle(); });    
+
+  // === Inicializar tabla si está vacía (opcional demo)
+  if(getPerms().length === 0){
+    setPerms([
+      { id: 'LTR-PR-01', nombre: 'Permisionario Demo S.A. de C.V.', rfc: 'PDE010101AB1', estatus: 'Activo', contacto: 'Av. Ejemplo 123' }
+    ]);
+  }
+//Pestaña de documentación 
+      document.querySelectorAll('.perm-folder').forEach(btn => {
+  btn.onclick = () => {
+    const row = btn.dataset.row;
+    const inp = document.getElementById('permFile' + row);
+    inp.click();
+    inp.onchange = () => {
+      const st = document.getElementById('permStatus' + row);
+      st.textContent = '✅ Sí';
+      st.classList.remove('status-no');
+      st.classList.add('status-yes');
+    };
+  };
+});
+document.querySelectorAll('.perm-view').forEach(btn => {
+  btn.onclick = () => {
+    const row = btn.dataset.row;
+    const inp = document.getElementById('permFile' + row);
+    if (inp.files.length) {
+      const url = URL.createObjectURL(inp.files[0]);
+      window.open(url);
+    } else {
+      alert('No hay archivo cargado aún');
+    }
+  };
+});
+ const permSaveModal = document.getElementById('permSaveModal');
+  const btnPermGuardar = document.getElementById('btnPermGuardar');
+  const permModalCerrar = document.getElementById('permModalCerrar');
+  const permResumenGuardado = document.getElementById('permResumenGuardado');
+  const permIDMostrado = document.getElementById('permIDMostrado');
+
+  function buildPermResumen(){
+    const nombre = document.getElementById('permNombre')?.value?.trim() || '';
+    const rfc = document.getElementById('permRFC')?.value?.trim() || '';
+    const domicilio = document.getElementById('permContacto')?.value?.trim() || '';
+    if (permResumenGuardado) {
+      permResumenGuardado.innerHTML = `
+        <div style="display:grid;gap:6px;">
+          <div><strong>Permisionario:</strong> ${nombre || '-'}</div>
+          <div><strong>RFC:</strong> ${rfc || '-'}</div>
+          <div><strong>Domicilio:</strong> ${domicilio || '-'}</div>
+        </div>`;
+    }
+  }
+
+  function showSaveModal(id){
+    if (permIDMostrado) permIDMostrado.textContent = id;
+    buildPermResumen();
+    permSaveModal?.classList.remove('hidden');
+    if (permSaveModal) permSaveModal.style.display = 'flex';
+  }
+
+  function hideSaveModal(){
+    permSaveModal?.classList.add('hidden');
+    if (permSaveModal) permSaveModal.style.display = 'none';
+  }
+
+  btnPermGuardar?.addEventListener('click', () => {
+    const nombre   = document.getElementById('permNombre').value.trim();
+    const rfc      = document.getElementById('permRFC').value.trim();
+    const estatus  = document.getElementById('permEstatus').value;
+    const contacto = document.getElementById('permContacto').value.trim();
+
+    const docNames = [
+      "Acta Constitutiva", "Poder Rep. Legal", "Comprobante de Domicilio",
+      "Constancia de Situación Fiscal", "INE Rep. Legal", "Contrato"
+    ];
+    const documentos = docNames.map((nombre, idx) => {
+      const st = document.getElementById(`permStatus${idx+1}`);
+      const inp = document.getElementById(`permFile${idx+1}`);
+      let archivo = null;
+      if (inp && inp.files && inp.files.length) {
+        archivo = URL.createObjectURL(inp.files[0]);
+      }
+      return {
+        nombre,
+        estatus: st?.classList.contains('status-yes') || false,
+        archivo
+      };
+    });
+
+    const unidadesBody = document.querySelector('#tablaUnidades tbody');
+    const unidades = Array.from(unidadesBody?.children || []).map(tr => {
+      try { return JSON.parse(tr.dataset.info || '{}'); } catch { return {}; }
+    });
+
+    const operadoresBody = document.querySelector('#tablaOperadores tbody');
+    const operadores = Array.from(operadoresBody?.children || []).map(tr => {
+      const tds = tr.querySelectorAll('td');
+      return {
+        nombre: tds[0]?.textContent || '',
+        numero: tds[1]?.textContent || '',
+        licencia: tds[2]?.textContent || '',
+        vtoLic: tds[3]?.textContent || '',
+        apto: tds[4]?.textContent || '',
+        vtoApto: tds[5]?.textContent || '',
+        rfc: tds[6]?.textContent || ''
+      };
+    });
+
+    if(!nombre || !rfc){
+      alert('Por favor, completa al menos Nombre/Razón social y RFC.');
+      return;
+    }
+
+    const arr = getPerms();
+    let id = editingPermId;
+
+    if(editingPermId){
+      const idx = arr.findIndex(p => p.id === editingPermId);
+      if(idx >= 0) arr[idx] = { id: editingPermId, nombre, rfc, estatus, contacto, documentos, unidades, operadores };
+    } else {
+      id = generarSiguienteIdPerm(arr);
+      arr.push({ id, nombre, rfc, estatus, contacto, documentos, unidades, operadores });
+    }
+    setPerms(arr);
+
+    permsMenu.classList.add('hidden');
+    permsList.classList.remove('hidden');
+    renderTablaPerms();
+    editingPermId = null;
+    showSaveModal(id);
+  });
+
+  permModalCerrar?.addEventListener('click', hideSaveModal);
+  permSaveModal?.addEventListener('click', (e) => { if (e.target === permSaveModal) hideSaveModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideSaveModal(); });
+
+  // Modal +agegar unidad
+  renderTablaPerms();
+});
+(function(){
+  const btnAddUnit = document.querySelector('#permsMenu .add-unit');
+  const unidadModal = document.getElementById('unidadModal');
+  const tablaUnidadesBody = document.querySelector('#tablaUnidades tbody');
+  const $ = (id) => document.getElementById(id);
+  const f = {
+    tarjeta: $('uTarjeta'),
+    placas: $('uPlacas'),
+    eco: $('uEco'),
+    tipo: $('uTipo'),
+    vencePoliza: $('uVencePoliza'),
+    aseguradora: $('uAseguradora'),
+    marca: $('uMarca'),
+    anio: $('uAnio'),
+    permiso: $('uPermisoSCT'),
+  };
+
+  let unidadEditingRow = null;
+
+  function limpiarFormUnidad(){
+    f.tarjeta.value = '';
+    f.placas.value = '';
+    f.eco.value = '';
+    f.tipo.value = '';
+    f.vencePoliza.value = '';
+    f.aseguradora.value = '';
+    f.marca.value = '';
+    f.anio.value = '';
+    f.permiso.value = '';
+    const tarFile = document.getElementById('uTarjetaFile');
+    const tarName = document.getElementById('uTarjetaName');
+    const polFile = document.getElementById('uPolizaFile');
+    const polName = document.getElementById('uPolizaName');
+    if (tarFile) tarFile.value = '';
+    if (tarName) tarName.value = '';
+    if (polFile) polFile.value = '';
+    if (polName) polName.value = '';
+  }
+
+  function mostrarUnidadModal(){
+    unidadModal.classList.remove('hidden');
+    unidadModal.style.display = 'flex';
+  }
+  function ocultarUnidadModal(){
+    unidadModal.classList.add('hidden');
+    unidadModal.style.display = 'none';
+  }
+
+  btnAddUnit?.addEventListener('click', () => {
+    unidadEditingRow = null;
+    limpiarFormUnidad();
+    unidadModal.querySelector('h3').textContent = 'Alta de Unidad Vehicular';
+    mostrarUnidadModal();
+  });
+
+  unidadModal.querySelector('.close')?.addEventListener('click', ocultarUnidadModal);
+  unidadModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultarUnidadModal);
+
+unidadModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+  const archivoInput = document.getElementById('uTarjetaFile');
+  let archivoURL = '';
+  if (archivoInput && archivoInput.files.length) {
+    archivoURL = URL.createObjectURL(archivoInput.files[0]);
+         } else if (unidadEditingRow) {
+    const prev = JSON.parse(unidadEditingRow.dataset.info || '{}');
+    archivoURL = prev.tarjeta || '';
+  }
+  
+  const polizaInput = document.getElementById('uPolizaFile');
+  let polizaURL = '';
+  if (polizaInput && polizaInput.files.length) {
+    polizaURL = URL.createObjectURL(polizaInput.files[0]);
+  } else if (unidadEditingRow) {
+    const prev = JSON.parse(unidadEditingRow.dataset.info || '{}');
+    polizaURL = prev.poliza || '';
+  }
+
+  const datos = {
+    tarjeta: archivoURL,
+    placas: (f.placas.value || '').trim(),
+    eco: (f.eco.value || '').trim(),
+    tipo: f.tipo.value,
+    vencePoliza: f.vencePoliza.value,
+    aseguradora: (f.aseguradora.value || '').trim(),
+    poliza: polizaURL,    
+    marca: (f.marca.value || '').trim(),
+    anio: f.anio.value ? Number(f.anio.value) : '',
+    permiso: (f.permiso.value || '').trim(),
+  };
+
+  const venceLegible = datos.vencePoliza
+    ? new Date(datos.vencePoliza).toLocaleDateString('es-MX')
+    : '';
+
+  if (unidadEditingRow) {
+    unidadEditingRow.dataset.info = JSON.stringify(datos);
+    unidadEditingRow.querySelector('.unidad-lupa').dataset.url = datos.tarjeta;
+    unidadEditingRow.cells[1].textContent = datos.placas;
+    unidadEditingRow.cells[2].textContent = datos.eco;
+    unidadEditingRow.cells[3].textContent = datos.tipo;
+    unidadEditingRow.cells[4].textContent = venceLegible;
+    unidadEditingRow.cells[5].innerHTML = `${datos.aseguradora} <span class="icon-btn poliza-lupa" title="Ver póliza" data-url="${datos.poliza}">🔍</span>`;
+    unidadEditingRow.cells[6].textContent = datos.marca;
+    unidadEditingRow.cells[7].textContent = datos.anio || '';
+    unidadEditingRow.cells[8].textContent = datos.permiso;
+  } else {
+    const tr = document.createElement('tr');
+    tr.dataset.info = JSON.stringify(datos);
+    tr.innerHTML = `
+      <td><span class="icon-btn unidad-lupa" title="Ver archivo" data-url="${datos.tarjeta}">🔍</span></td>
+      <td>${datos.placas}</td>
+      <td>${datos.eco}</td>
+      <td>${datos.tipo}</td>
+      <td>${venceLegible}</td>
+     <td>${datos.aseguradora} <span class="icon-btn poliza-lupa" title="Ver póliza" data-url="${datos.poliza}">🔍</span></td>
+      <td>${datos.marca}</td>
+      <td>${datos.anio || ''}</td>
+      <td>${datos.permiso}</td>
+      <td class="actions">
+        <span class="icon-btn unidad-edit" title="Editar">✏️</span>
+        <span class="icon-btn unidad-delete" title="Eliminar">🗑️</span>
+      </td>
+    `;
+    tablaUnidadesBody.appendChild(tr);
+  }
+
+  ocultarUnidadModal();
+  limpiarFormUnidad();
+  unidadEditingRow = null;
+});
+  
+
+  window.addEventListener('click', (e) => {
+    if (e.target === unidadModal) ocultarUnidadModal();
+  });
+
+ tablaUnidadesBody.addEventListener('click', function(e) {
+const tarLupa = e.target.closest('.unidad-lupa');
+  if (tarLupa) {
+    const url = tarLupa.dataset.url;
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      alert('No hay archivo adjunto');
+    }
+    return;
+  }
+
+  const polLupa = e.target.closest('.poliza-lupa');
+  if (polLupa) {
+    const url = polLupa.dataset.url;
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      alert('No hay archivo adjunto');
+    }
+    return;
+  }
+
+  const edit = e.target.closest('.unidad-edit');
+  if (edit) {
+    const tr = edit.closest('tr');
+    const datos = JSON.parse(tr.dataset.info || '{}');
+    f.tarjeta.value = datos.tarjeta || '';
+    f.placas.value = datos.placas || '';
+    f.eco.value = datos.eco || '';
+    f.tipo.value = datos.tipo || '';
+    f.vencePoliza.value = datos.vencePoliza || '';
+    f.aseguradora.value = datos.aseguradora || '';
+    f.marca.value = datos.marca || '';
+    f.anio.value = datos.anio || '';
+    f.permiso.value = datos.permiso || '';
+    const polName = document.getElementById('uPolizaName');
+    const polFile = document.getElementById('uPolizaFile');
+    const tarName = document.getElementById('uTarjetaName');
+    const tarFile = document.getElementById('uTarjetaFile');
+    if (polName) polName.value = '';
+    if (polFile) polFile.value = '';
+    if (tarName) tarName.value = '';
+    if (tarFile) tarFile.value = '';    
+    unidadEditingRow = tr;
+    unidadModal.querySelector('h3').textContent = 'Editar Unidad Vehicular';
+    mostrarUnidadModal();
+    return;
+  }
+           const del = e.target.closest('.unidad-delete');
+  if (del) {
+    const tr = del.closest('tr');
+    if (confirm('¿Desea eliminar esta unidad?')) {
+      tr.remove();
+    }
+  }
+});                         
+})();
+//Boton de adjuntar tarjeta de circulación
+window.addEventListener('DOMContentLoaded', () => {
+  const btnUTarjetaPick = document.getElementById('btnUTarjetaPick');
+  const uTarjetaFile = document.getElementById('uTarjetaFile');
+  const uTarjetaName = document.getElementById('uTarjetaName');
+
+  if(btnUTarjetaPick && uTarjetaFile && uTarjetaName) {
+    btnUTarjetaPick.addEventListener('click', () => {
+      uTarjetaFile.click();
+    });
+
+    uTarjetaFile.addEventListener('change', () => {
+      if(uTarjetaFile.files.length) {
+        uTarjetaName.value = uTarjetaFile.files[0].name;
+        uTarjeta.value = uTarjetaFile.files[0].name    
+      } else {
+        uTarjetaName.value = '';
+      }
+    });
+  }
+});
+//Bóton de adjuntar póliza    
+ window.addEventListener('DOMContentLoaded', () => {
+  const btnUPolizaPick = document.getElementById('btnUPolizaPick');
+  const uPolizaFile = document.getElementById('uPolizaFile');
+  const uPolizaName = document.getElementById('uPolizaName');
+
+  if(btnUPolizaPick && uPolizaFile && uPolizaName) {
+    btnUPolizaPick.addEventListener('click', () => {
+      uPolizaFile.click();
+    });
+
+    uPolizaFile.addEventListener('change', () => {
+      if(uPolizaFile.files.length) {
+        uPolizaName.value = uPolizaFile.files[0].name;
+      } else {
+        uPolizaName.value = '';
+      }
+    });
+  }
+});
+
+
+  //Modal de +Agregar Operador
+(function(){
+  const btnAddOperator = document.querySelector('#permsMenu .add-operator');
+  const operadorModal = document.getElementById('operadorModal');
+  const tablaOperadoresBody = document.querySelector('#tablaOperadores tbody');
+
+  const $ = (id) => document.getElementById(id);
+  const f = {
+    nombre: $('opNombre'),
+    numero: $('opNumeroLicencia'),
+    licencia: $('opLicencia'),
+    licenciaName: $('opLicenciaName'),
+    licenciaFile: $('opLicenciaFile'),
+    vtoLic: $('opVtoLicencia'),
+    apto: $('opAptoMedico'),
+   aptoName: $('opAptoName'),
+    aptoFile: $('opAptoFile'),
+    vtoApto: $('opVtoApto'),
+    rfc: $('opRFC'),
+  };
+
+  function limpiar(){
+    Object.values(f).forEach(el => { if (el) el.value = ''; });
+  }
+
+  function mostrar(){
+    operadorModal.classList.remove('hidden');
+    operadorModal.style.display = 'flex';
+  }
+  function ocultar(){
+    operadorModal.classList.add('hidden');
+    operadorModal.style.display = 'none';
+  }
+
+  btnAddOperator?.addEventListener('click', () => {
+    limpiar();
+    mostrar();
+  });
+
+//Botón de adjuntar licencia (operador)
+window.addEventListener('DOMContentLoaded', () => {
+  const btnOpLicenciaPick = document.getElementById('btnOpLicenciaPick');
+  const opLicenciaFile = document.getElementById('opLicenciaFile');
+  const opLicenciaName = document.getElementById('opLicenciaName');
+  const opLicencia = document.getElementById('opLicencia');
+
+  if(btnOpLicenciaPick && opLicenciaFile && opLicenciaName && opLicencia) {
+    btnOpLicenciaPick.addEventListener('click', () => {
+      opLicenciaFile.click();
+    });
+
+    opLicenciaFile.addEventListener('change', () => {
+      if(opLicenciaFile.files.length) {
+        opLicenciaName.value = opLicenciaFile.files[0].name;
+        opLicencia.value = opLicenciaFile.files[0].name;
+      } else {
+        opLicenciaName.value = '';
+        opLicencia.value = '';
+      }
+    });
+  }
+});
+
+//Botón de adjuntar apto médico (operador)
+window.addEventListener('DOMContentLoaded', () => {
+  const btnOpAptoPick = document.getElementById('btnOpAptoPick');
+  const opAptoFile = document.getElementById('opAptoFile');
+  const opAptoName = document.getElementById('opAptoName');
+  const opAptoMedico = document.getElementById('opAptoMedico');
+
+  if(btnOpAptoPick && opAptoFile && opAptoName && opAptoMedico) {
+    btnOpAptoPick.addEventListener('click', () => {
+      opAptoFile.click();
+    });
+
+    opAptoFile.addEventListener('change', () => {
+      if(opAptoFile.files.length) {
+        opAptoName.value = opAptoFile.files[0].name;
+        opAptoMedico.value = opAptoFile.files[0].name;
+      } else {
+        opAptoName.value = '';
+        opAptoMedico.value = '';
+      }
+    });
+  }
+});      
+
+  operadorModal.querySelector('.close')?.addEventListener('click', ocultar);
+  operadorModal.querySelector('.btn-cancelar')?.addEventListener('click', ocultar);
+
+  operadorModal.querySelector('.btn-guardar')?.addEventListener('click', () => {
+    const datos = {
+      nombre: f.nombre.value.trim(),
+      numero: f.numero.value.trim(),
+      licencia: f.licencia.value.trim(),
+      vtoLic: f.vtoLic.value,
+      apto: f.apto.value.trim(),
+      vtoApto: f.vtoApto.value,
+      rfc: f.rfc.value.trim(),
+    };
+
+    if(!datos.nombre || !datos.licencia || !datos.rfc){
+  alert('Completa los campos obligatorios: Nombre, Licencia y RFC');
+  return;
+    }
+
+    const vtoLicLegible = datos.vtoLic ? new Date(datos.vtoLic + 'T00:00:00').toLocaleDateString('es-MX') : '';
+    const vtoAptoLegible = datos.vtoApto ? new Date(datos.vtoApto + 'T00:00:00').toLocaleDateString('es-MX') : '';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${datos.nombre}</td>
+      <td>${datos.numero}</td>
+      <td>${datos.licencia}</td>
+      <td>${vtoLicLegible}</td>
+      <td>${datos.apto}</td>
+      <td>${vtoAptoLegible}</td>
+      <td>${datos.rfc}</td>
+    `;
+    tablaOperadoresBody.appendChild(tr);
+
+    ocultar();
+    limpiar();
+  });
+
+  window.addEventListener('click', (e) => { if (e.target === operadorModal) ocultar(); });
+
+   })();
+</script>  
+
+
+<script>
+
+//Modulo 3
+window.addEventListener('DOMContentLoaded', () => {
+  // === Referencias de vistas LTR
+  const ltrHome         = document.getElementById('ltrHome');
+  const ltrUnitsList    = document.getElementById('ltrUnitsList');
+  const ltrOpsList      = document.getElementById('ltrOpsList');
+
+  // === Botones principales LTR
+  const btnLTR          = document.getElementById('modLTR'); // dashboard
+  const btnUnidades     = document.getElementById('btnLTRUnidades');
+  const btnOperadores   = document.getElementById('btnLTROperadores');
+  const btnLTRBack      = document.getElementById('btnLTRBack');
+
+  // === Botones internos (volver y acciones)
+  const btnUnitsBack    = document.getElementById('btnLTRUnidadesVolverHome');
+  const btnOpsBack      = document.getElementById('btnLTROpsVolverHome');
+
+  // === Helpers de vista interna LTR
+  function showInLTR(el){
+    [ltrHome, ltrUnitsList, ltrOpsList].forEach(x => x && x.classList.add('hidden'));
+    el && el.classList.remove('hidden');
+  }
+
+  // === Navegación desde Home LTR
+  btnUnidades?.addEventListener('click', () => showInLTR(ltrUnitsList));
+  btnOperadores?.addEventListener('click', () => showInLTR(ltrOpsList));
+
+  // === Volver (desde home de LTR hacia dashboard)
+  btnLTRBack?.addEventListener('click', () => {
+   
+    showSection('dashboard');
+  });
+
+  // === Volver internos (listas) hacia Home LTR
+  btnUnitsBack?.addEventListener('click', () => showInLTR(ltrHome));
+  btnOpsBack?.addEventListener('click', () => showInLTR(ltrHome));
+
+  // === Datos locales (puedes integrarlo con tu storage real)
+  const srUnitsKey = 'sr_ltr_unidades';
+  const srOpsKey   = 'sr_ltr_operadores';
+
+  function getUnits(){ try { return JSON.parse(localStorage.getItem(srUnitsKey)) || []; } catch { return []; } }
+  function setUnits(arr){ localStorage.setItem(srUnitsKey, JSON.stringify(arr)); }
+
+  function getOps(){ try { return JSON.parse(localStorage.getItem(srOpsKey)) || []; } catch { return []; } }
+  function setOps(arr){ localStorage.setItem(srOpsKey, JSON.stringify(arr)); }
+
+ // === Modal de previsualización de archivos ===
+  const fileModal = document.getElementById('filePreviewModal');
+  const fileFrame = document.getElementById('filePreviewFrame');
+  function showFile(url){
+    if(!fileModal || !fileFrame){ window.open(url,'_blank'); return; }
+    fileFrame.src = url;
+    fileModal.classList.remove('hidden');
+    fileModal.style.display = 'flex';
+  }
+  fileModal?.querySelector('.close')?.addEventListener('click', () => {
+    fileModal.classList.add('hidden');
+    fileModal.style.display = 'none';
+    fileFrame.src = '';
+  });
+  fileModal?.addEventListener('click', (e) => {
+    if(e.target === fileModal){
+      fileModal.classList.add('hidden');
+      fileModal.style.display = 'none';
+      fileFrame.src = '';
+    }
+  });
+
+
+ // === Render Operadores
+function renderTablaLTROperadores(filtro=''){
+  const tbody = document.querySelector('#tablaLTROperadores tbody');
+  if(!tbody) return;
+
+  const data = getOps(); // tu "BD" local sr_ltr_operadores
+  const q = (filtro || '').toLowerCase();
+  const fil = data.filter(o =>
+    !q || [o.nombre, o.numero, o.rfc].some(v => String(v||'').toLowerCase().includes(q))
+  );
+
+  tbody.innerHTML = fil.map(o => {
+    // índice real en el arreglo original (sirve aunque filtres)
+    const idx = data.indexOf(o);
+
+    const vtoLicVis  = o.vtoLic  ? new Date(o.vtoLic  + 'T00:00:00').toLocaleDateString('es-MX') : '';
+    const vtoAptoVis = o.vtoApto ? new Date(o.vtoApto + 'T00:00:00').toLocaleDateString('es-MX') : '';
+
+    const licCell = o.licenciaUrl
+      ? `<span class="icon-btn ltr-lic-lupa" title="${o.licencia||'Ver licencia'}" data-url="${o.licenciaUrl}">🔍</span>`
+      : (o.licencia || '');
+
+    const aptoCell = o.aptoUrl
+      ? `<span class="icon-btn ltr-apto-lupa" title="${o.apto||'Ver apto médico'}" data-url="${o.aptoUrl}">🔍</span>`
+      : (o.apto || '');
+
+    return `
+      <tr data-idx="${idx}">
+        <td>${o.nombre || ''}</td>
+        <td>${o.numero || ''}</td>
+        <td>${licCell}</td>
+        <td>${vtoLicVis}</td>
+        <td>${aptoCell}</td>
+        <td>${vtoAptoVis}</td>
+        <td>${o.rfc || ''}</td>
+        <td>${o.curp || ''}</td>
+        <td>${o.telefono || ''}</td>
+        <td>${o.nss || ''}</td>
+        <td class="actions">
+          <span class="icon-btn op-edit" title="Editar" data-idx="${idx}">✏️</span>
+          <span class="icon-btn op-del"  title="Eliminar" data-idx="${idx}">🗑️</span>
+        </td>
+      </tr>`;
+  }).join('') || `<tr><td colspan="11">Sin registros</td></tr>`;
+}
+// Delegado de clic para las lupas (Licencia / Apto) en la tabla LTR
+document.querySelector('#tablaLTROperadores tbody')?.addEventListener('click', (e) => {
+  const licBtn  = e.target.closest('.ltr-lic-lupa');
+  const aptoBtn = e.target.closest('.ltr-apto-lupa');
+
+  if (licBtn) {
+    const url = licBtn.dataset.url;
+    if (url) window.open(url, '_blank'); else alert('No hay archivo adjunto');
+    return;
+  }
+  if (aptoBtn) {
+    const url = aptoBtn.dataset.url;
+   if (url) showFile(url); else alert('No hay archivo adjunto');
+    return;
+  }
+});
+
+
+window.getOps = getOps;
+window.setOps = setOps;
+window.renderTablaLTROperadores = renderTablaLTROperadores;
+  // === Buscadores
+  document.getElementById('searchUnits')?.addEventListener('input', e => renderTablaLTRUnidades(e.target.value));
+  document.getElementById('searchOps')?.addEventListener('input',   e => renderTablaLTROperadores(e.target.value));
+
+  // Render inicial
+  
+  renderTablaLTROperadores();
+});
+
+// ===== Filtro por Tipo (LTR Unidades) =====
+(function(){
+  // Normaliza strings 
+  function normalize(s){
+    return (s || '')
+      .toString()
+      .normalize('NFD')                    // descompone acentos
+      .replace(/[\u0300-\u036f]/g, '')    // elimina marcas diacríticas
+      .toLowerCase().trim();
+  }
+
+  // Elementos base
+  var $tabla = document.getElementById('tablaLTRUnidades');       // <table>
+  var $tbody = $tabla ? $tabla.querySelector('tbody') : null;     // <tbody>
+  var $buscar = document.getElementById('searchUnits');           // input texto
+  var $filtroTipo = document.getElementById('tipoUnidadFilter');  // <select>
+
+  if(!$tabla || !$tbody){ console.warn('[Filtro Tipo] No se encontró la tabla de unidades.'); return; }
+
+  // Rellena las opciones del select con los tipos únicos encontrados en la col 2 ("Tipo")
+  function refreshTypeOptions(){
+    if(!$filtroTipo) return;
+    var tipos = new Set();
+    var rows = $tbody.querySelectorAll('tr');
+    rows.forEach(function(tr){
+      var celdas = tr.querySelectorAll('td');
+      if(celdas.length > 1){
+        var tipo = (celdas[1].textContent || '').trim(); // Columna "Tipo"
+        if(tipo) tipos.add(tipo);
+      }
+    });
+
+    var valorActual = $filtroTipo.value; // conserva selección
+    // Limpia y repuebla (deja el "Todos")
+    $filtroTipo.innerHTML = '<option value="">Todos</option>';
+    Array.from(tipos).sort().forEach(function(tipo){
+      var opt = document.createElement('option');
+      opt.value = tipo;
+      opt.textContent = tipo;
+      $filtroTipo.appendChild(opt);
+    });
+    // Si existía selección y sigue disponible, recupérala
+    if(valorActual && tipos.has(valorActual)) $filtroTipo.value = valorActual;
+  }
+
+  // Aplica el filtro por texto + tipo
+  function filterUnits(){
+    var q = normalize($buscar ? $buscar.value : '');
+    var tipoSel = $filtroTipo ? $filtroTipo.value : '';
+
+    var rows = $tbody.querySelectorAll('tr');
+    rows.forEach(function(tr){
+      var celdas = tr.querySelectorAll('td');
+      if(celdas.length === 0){ tr.style.display = 'none'; return; }
+
+      // Texto del renglón (para "Buscar")
+      var rowText = '';
+      for(var i=0;i<celdas.length;i++){ rowText += ' ' + (celdas[i].textContent || ''); }
+      var matchTexto = q ? normalize(rowText).indexOf(q) !== -1 : true;
+
+      // Tipo de la col 2
+      var tipo = (celdas[1].textContent || '').trim();
+      var matchTipo = tipoSel ? (normalize(tipo) === normalize(tipoSel)) : true;
+
+      tr.style.display = (matchTexto && matchTipo) ? '' : 'none';
+    });
+  }
+
+  // Eventos
+  if($filtroTipo) $filtroTipo.addEventListener('change', filterUnits, false);
+  if($buscar) $buscar.addEventListener('input', filterUnits, false);
+
+  // Helpers públicos por si repintas la tabla dinámicamente
+  window.LTRUnitsFilter = {
+    refreshTypeOptions: refreshTypeOptions, // vuelve a leer tipos desde el tbody
+    apply: filterUnits                       // re-aplica filtros actuales
+  };
+
+  // Inicializa: llena el select y aplica el filtro
+  refreshTypeOptions();
+  filterUnits();
+})();
+      
+ LTRUnitsFilter.refreshTypeOptions();
+ LTRUnitsFilter.apply();   
+
+(function(){
+  // ====== Store local para LTR Unidades ======
+  var LTR_STORE = 'sr_ltr_unidades';
+  function getUnits(){ try { return JSON.parse(localStorage.getItem(LTR_STORE)) || []; } catch(e){ return []; } }
+  function setUnits(arr){ localStorage.setItem(LTR_STORE, JSON.stringify(arr)); }
+
+  // ====== Helpers de UI ======
+  function openModal(){ modal.classList.remove('hidden'); modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); }
+  function closeModal(){ modal.classList.add('hidden'); modal.style.display='none'; modal.setAttribute('aria-hidden','true'); clearErrors(); }
+  function clearForm(){
+    ['ltrUId','ltrUTarjetaFile','ltrUTarjetaName','ltrUTarjeta','ltrUPlacas','ltrUEco','ltrUTipo','ltrUAseguradora','ltrUVencePoliza',
+    'ltrUPolizaFile','ltrUPolizaName','ltrUPoliza','ltrUMarca','ltrUAnio','ltrUPermisoSCT'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      if(el.tagName === 'SELECT') el.value = '';
+      else el.value = '';
+    });
+  }
+  function clearErrors(){
+    Array.prototype.forEach.call(modal.querySelectorAll('.form-group'), function(g){ g.classList.remove('error'); });
+    Array.prototype.forEach.call(modal.querySelectorAll('.field-error'), function(fe){ fe.textContent=''; });
+  }
+  function setError(forId, msg){
+    var field = document.getElementById(forId);
+    if(field){
+      var group = field.closest('.form-group');
+      if(group) group.classList.add('error');
+    }
+    var fe = modal.querySelector('.field-error[data-for="'+forId+'"]');
+    if(fe) fe.textContent = msg || 'Campo requerido';
+  }
+function fillForm(u){
+    if(!u) return;
+    document.getElementById('ltrUId').value = u.id || '';
+    document.getElementById('ltrUTarjetaName').value = u.tarjeta || '';
+    document.getElementById('ltrUTarjeta').value = u.tarjeta || '';
+    document.getElementById('ltrUPlacas').value = u.placas || '';
+    document.getElementById('ltrUEco').value = u.eco || '';
+    document.getElementById('ltrUTipo').value = u.tipo || '';
+    document.getElementById('ltrUAseguradora').value = u.aseguradora || '';
+    document.getElementById('ltrUVencePoliza').value = u.vencePoliza || '';
+    document.getElementById('ltrUPolizaName').value = u.poliza || '';
+    document.getElementById('ltrUPoliza').value = u.poliza || '';
+    document.getElementById('ltrUMarca').value = u.marca || '';
+    document.getElementById('ltrUAnio').value = u.anio || '';
+    document.getElementById('ltrUPermisoSCT').value = u.permisoSCT || '';
+  }
+function openLTRUnidadDetalle(id){
+    var unit = getUnits().find(function(x){ return String(x.id) === String(id); });
+    var modal = document.getElementById('ltrUnidadInfoModal');
+    if(!unit || !modal) return;
+    var html = '<div class="modal-section"><h3>Datos de la unidad</h3><div class="modal-fields">'
+      + '<p><label>ID:</label><span>'+ (unit.id || '') +'</span></p>'
+      + '<p><label>Tarjeta:</label><span>' + (unit.tarjeta ? '<span class="icon-btn" onclick="window.open(\''+unit.tarjeta+'\',\'_blank\')">🔍</span>' : '-') + '</span></p>'
+      + '<p><label>Placas:</label><span>'+ (unit.placas || '') +'</span></p>'
+      + '<p><label>Eco:</label><span>'+ (unit.eco || '') +'</span></p>'
+      + '<p><label>Tipo:</label><span>'+ (unit.tipo || '') +'</span></p>'
+      + '<p><label>Aseguradora:</label><span>'+ (unit.aseguradora || '') +'</span></p>'
+      + '<p><label>Vence Póliza:</label><span>'+ (unit.vencePoliza ? new Date(unit.vencePoliza).toLocaleDateString('es-MX') : '') +'</span></p>'
+      + '<p><label>Póliza:</label><span>' + (unit.poliza ? '<span class="icon-btn" onclick="window.open(\''+unit.poliza+'\',\'_blank\')">🔍</span>' : '-') + '</span></p>'
+      + '<p><label>Marca:</label><span>'+ (unit.marca || '') +'</span></p>'
+      + '<p><label>Año:</label><span>'+ (unit.anio || '') +'</span></p>'
+      + '<p><label>Permiso SCT:</label><span>'+ (unit.permisoSCT || '') +'</span></p>'
+      + '</div></div>';
+    var card = modal.querySelector('.modal-card');
+    card.innerHTML = '<span id="ltrUnidadInfoCerrar" class="close">&times;</span><h2>Detalle de la unidad</h2>' + html;
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    modal.querySelector('#ltrUnidadInfoCerrar').onclick = closeLTRUnidadDetalle;
+  }
+
+  function closeLTRUnidadDetalle(){
+    var modal = document.getElementById('ltrUnidadInfoModal');
+    if(!modal) return;
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  }
+  // ====== Render de tabla LTR ======
+  function renderLTRTable(){
+    var tbody = document.querySelector('#tablaLTRUnidades tbody');
+    if(!tbody) return;
+    var data = getUnits();
+    tbody.innerHTML = data.map(function(u){
+      return '<tr data-id="'+u.id+'">'
+        + '<td><button class="ltr-id-link" data-id="'+ (u.id || '') +'">'+ (u.id || '') +'</button></td>'
+        + '<td>'+ (u.tipo || '') +'</td>'
+        + '<td>'+ (u.placas || '') +'</td>'
+        + '<td>'+ (u.eco || '') +'</td>'
+        + '<td class="actions"><button class="icon-btn btnEdit" title="Editar">✏️</button><button class="icon-btn btnDel" title="Eliminar">🗑️</button></td>'
+        + '</tr>';
+    }).join('') || '<tr><td colspan="5">Sin registros</td></tr>';
+
+    tbody.onclick = function(e){
+     var idBtn = e.target.closest('.ltr-id-link');
+      if(idBtn){
+        var id = idBtn.getAttribute('data-id');
+        openLTRUnidadDetalle(id);
+        return;
+      } 
+      var editBtn = e.target.closest('.btnEdit');
+      if(editBtn){
+        var tr = editBtn.closest('tr');
+        var id = tr && tr.getAttribute('data-id');
+        if(!id) return;
+        var unit = getUnits().find(function(x){ return String(x.id) === String(id); });
+        clearForm();
+        fillForm(unit);
+        wirePickers();
+        openModal();
+        return;
+      }
+      var delBtn = e.target.closest('.btnDel');
+      if(!delBtn) return;
+      var tr = delBtn.closest('tr');
+      var id = tr && tr.getAttribute('data-id');
+      if(!id) return;
+       if(!confirm('¿Eliminar unidad?')) return;
+      var arr = getUnits().filter(function(x){ return String(x.id) !== String(id); });
+      setUnits(arr);
+      renderLTRTable();
+      
+      if(window.LTRUnitsFilter){
+        try { LTRUnitsFilter.refreshTypeOptions(); LTRUnitsFilter.apply(); } catch(e){}
+      }
+    };
+
+    // Actualiza opciones del filtro "Tipo" si lo tienes
+    if(window.LTRUnitsFilter){
+      try { LTRUnitsFilter.refreshTypeOptions(); LTRUnitsFilter.apply(); } catch(e){}
+    }
+  }
+
+  // ====== Guardar nueva unidad ======
+  function saveUnit(){
+    clearErrors();
+    var idEdit = document.getElementById('ltrUId').value.trim();
+
+    var tarjetaName = document.getElementById('ltrUTarjetaName').value.trim();
+    var placas = document.getElementById('ltrUPlacas').value.trim();
+    var tipo = document.getElementById('ltrUTipo').value.trim();
+    var eco = document.getElementById('ltrUEco').value.trim();
+    var aseguradora = document.getElementById('ltrUAseguradora').value.trim();
+    var vencePoliza = document.getElementById('ltrUVencePoliza').value;
+    var polizaName = document.getElementById('ltrUPolizaName').value.trim();
+    var marca = document.getElementById('ltrUMarca').value.trim();
+    var anio = document.getElementById('ltrUAnio').value;
+    var permisoSCT = document.getElementById('ltrUPermisoSCT').value.trim();
+
+    // Validaciones mínimas para tu tabla (Placas y Tipo)
+    var ok = true;
+    if(!tarjetaName){ setError('ltrUTarjetaName', 'Selecciona archivo'); ok = false; }
+    if(!placas){ setError('ltrUPlacas', 'Requerido'); ok = false; }
+    if(!tipo){ setError('ltrUTipo', 'Selecciona un tipo'); ok = false; }
+    if(!ok) return;
+
+    var list = getUnits();
+    
+     if(idEdit){
+      var idx = list.findIndex(function(x){ return String(x.id) === String(idEdit); });
+      if(idx >= 0){
+        list[idx] = {
+          id: list[idx].id,
+          placas: placas,
+          eco: eco,
+          tipo: tipo,
+          tarjeta: tarjetaName,
+          aseguradora: aseguradora,
+          vencePoliza: vencePoliza,
+          poliza: polizaName,
+          marca: marca,
+          anio: anio,
+          permisoSCT: permisoSCT
+        };
+      }
+    } else {
+      var newId = 'LTRU-' + String(Date.now()).slice(-6); // o puedes usar (list.length+1)
+      list.push({
+        id: newId,
+        placas: placas,
+        eco: eco,
+        tipo: tipo,
+        tarjeta: tarjetaName,
+        aseguradora: aseguradora,
+        vencePoliza: vencePoliza,
+        poliza: polizaName,
+        marca: marca,
+        anio: anio,
+        permisoSCT: permisoSCT
+      });
+    }
+    setUnits(list);
+    renderLTRTable();
+    closeModal();
+  }
+
+  // ====== File pickers ======
+  function wirePickers(){
+    var btnTar = document.getElementById('btnLTRUTarjetaPick');
+    var fileTar = document.getElementById('ltrUTarjetaFile');
+    var nameTar = document.getElementById('ltrUTarjetaName');
+    var hidTar = document.getElementById('ltrUTarjeta');
+
+    if(btnTar && fileTar && nameTar){
+      btnTar.onclick = function(){ fileTar.click(); };
+      fileTar.onchange = function(e){
+        var f = e.target.files && e.target.files[0];
+        nameTar.value = f ? f.name : '';
+        if(hidTar) hidTar.value = nameTar.value;
+      };
+    }
+
+    var btnPol = document.getElementById('btnLTRUPolizaPick');
+    var filePol = document.getElementById('ltrUPolizaFile');
+    var namePol = document.getElementById('ltrUPolizaName');
+    var hidPol = document.getElementById('ltrUPoliza');
+
+    if(btnPol && filePol && namePol){
+      btnPol.onclick = function(){ filePol.click(); };
+      filePol.onchange = function(e){
+        var f = e.target.files && e.target.files[0];
+        namePol.value = f ? f.name : '';
+        if(hidPol) hidPol.value = namePol.value;
+      };
+    }
+  }
+
+  // ====== Wiring ======
+  var modal = document.getElementById('ltrUnidadModal');
+
+  // Abrir modal desde el botón de la lista LTR
+  var btnOpen = document.getElementById('btnUnidadNuevaLTR');
+  if(btnOpen){
+    btnOpen.addEventListener('click', function(){
+      clearForm();
+      wirePickers();
+      openModal();
+    });
+  }
+
+  // Cerrar modal
+  document.getElementById('ltrUnidadModalClose')?.addEventListener('click', closeModal, false);
+  document.getElementById('ltrUnidadCancelar')?.addEventListener('click', closeModal, false);
+  // click fuera (overlay)
+  modal && modal.addEventListener('click', function(e){ if(e.target === modal) closeModal(); }, false);
+  // Esc para cerrar
+  window.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); }, false);
+
+  // Guardar
+  document.getElementById('ltrUnidadGuardar')?.addEventListener('click', saveUnit, false);
+// Render inicial
+    document.addEventListener('DOMContentLoaded', renderLTRTable);
+
+    var infoModal = document.getElementById('ltrUnidadInfoModal');
+    infoModal && infoModal.addEventListener('click', function(e){ if(e.target === infoModal) closeLTRUnidadDetalle(); });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeLTRUnidadDetalle(); });
+  })();
+  
+// ====== ID consecutivo LTR con prefijo "LTR-UN-" ======
+var LTR_PREFIX = 'LTR-UN-';
+var LTR_SEQ_KEY = 'sr_ltr_unidades_seq'; // donde guardamos el último consecutivo
+
+function padLeft(num, width){
+  var s = String(num);
+  while (s.length < width) s = '0' + s;
+  return s;
+}
+
+// Extrae el número de un ID tipo "LTR-UN-0007" -> 7
+function extractNum(id){
+  var m = (id || '').match(/^LTR-UN-(\d+)$/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+// Lee la lista y devuelve el mayor número usado en los IDs existentes
+function maxIdFromData(){
+  var list = getUnits ? getUnits() : [];
+  var max = 0, i, n;
+  for (i = 0; i < list.length; i++){
+    n = extractNum(list[i] && list[i].id);
+    if (n > max) max = n;
+  }
+  return max;
+}
+
+// Sincroniza el contador con los datos (por si se borraron o importaron registros)
+function syncSequence(){
+  var maxData = maxIdFromData();
+  var seq = parseInt(localStorage.getItem(LTR_SEQ_KEY) || '0', 10);
+  if (isNaN(seq)) seq = 0;
+  if (seq < maxData) seq = maxData;
+  localStorage.setItem(LTR_SEQ_KEY, String(seq));
+}
+
+// Obtiene el siguiente ID consecutivo seguro
+function nextLTRId(){
+  // asegura que el contador nunca sea menor al usado en datos
+  syncSequence();
+  var seq = parseInt(localStorage.getItem(LTR_SEQ_KEY) || '0', 10);
+  if (isNaN(seq)) seq = 0;
+  seq = seq + 1;
+  localStorage.setItem(LTR_SEQ_KEY, String(seq));
+  // ajusta 4 dígitos; cambia a 5/6 si quieres más amplitud
+  return LTR_PREFIX + padLeft(seq, 4);
+}
+// === Modal: + Agregar Operador (EXCLUSIVO LTR) ===
+(function(){
+  // Referencias
+  const btnNuevo   = document.getElementById('btnOperadorNuevoLTR');
+  const modal      = document.getElementById('ltrOperadorModal');
+  const btnClose   = modal?.querySelector('.close');
+  const btnGuardar = document.getElementById('ltrOpGuardar');
+  const btnCancelar= document.getElementById('ltrOpCancelar');
+
+  // Campos (buscados dentro del modal para evitar conflictos de IDs)
+  const $ = (id) => modal.querySelector('#' + id);
+  const f = {
+    nombre: $('opLTRNombre'),
+    numero: $('opLTRLicencia'),
+    vtoLic: $('opLTRVtoLicencia'),
+    licBtn: $('btnOpLicenciaPick'),
+    licFile:$('opLicenciaFile'),
+    licName:$('opLicenciaName'),
+    licHidden:$('opLicencia'),
+    vtoApto:$('opVtoApto'),
+    aptoBtn:$('btnOpAptoPick'),
+    aptoFile:$('opAptoFile'),
+    aptoName:$('opAptoName'),
+    aptoHidden:$('opAptoMedico'),
+    rfc: $('opRFC'),
+    curp:$('opLTRCURP'),
+    tel: $('opLTRTelefono'),
+    nss: $('opLTRNSS')
+  };
+
+  function mostrar(){ modal.classList.remove('hidden'); modal.style.display = 'flex'; }
+  function ocultar(){ modal.classList.add('hidden'); modal.style.display = 'none'; }
+  function limpiar(){
+    Object.values(f).forEach(el => { if(el && 'value' in el) el.value = ''; });
+  }
+
+  // Pickers
+  f.licBtn?.addEventListener('click', () => f.licFile?.click());
+  f.licFile?.addEventListener('change', () => {
+    f.licName.value = f.licFile.files?.[0]?.name || '';
+    f.licHidden.value = f.licName.value;
+  });
+
+  f.aptoBtn?.addEventListener('click', () => f.aptoFile?.click());
+  f.aptoFile?.addEventListener('change', () => {
+    f.aptoName.value = f.aptoFile.files?.[0]?.name || '';
+    f.aptoHidden.value = f.aptoName.value;
+  });
+
+  // Abrir / cerrar
+  btnNuevo?.addEventListener('click', () => { limpiar(); mostrar(); });
+  btnClose?.addEventListener('click', ocultar);
+  btnCancelar?.addEventListener('click', ocultar);
+  window.addEventListener('click', (e) => { if (e.target === modal) ocultar(); });
+
+  // Validación mínima
+  function setError(id, msg){
+    const err = modal.querySelector(`.field-error[data-for="${id}"]`);
+    if(err) err.textContent = msg || '';
+  }
+  function validar(){
+    let ok = true;
+    setError('opLTRNombre','');
+    setError('opLTRLicencia','');
+
+        
+    if(!f.nombre.value.trim()){ setError('opLTRNombre','Requerido'); ok=false; }
+    if(!f.numero.value.trim()){ setError('opLTRLicencia','Requerido'); ok=false; }
+    
+    return ok;
+  }
+// botón Guardar
+ btnGuardar?.addEventListener('click', () => {
+    if(!validar()) return;
+
+    // archivos opcionales (si no cambian, conservamos las URLs previas)
+    const licFile  = f.licFile?.files?.[0] || null;
+    const aptoFile = f.aptoFile?.files?.[0] || null;
+
+    const up = {
+      nombre:   f.nombre.value.trim(),
+      numero:   f.numero.value.trim(),
+      licencia: f.licName.value.trim(),
+      vtoLic:   f.vtoLic.value || '',
+      apto:     f.aptoName.value.trim(),
+      vtoApto:  f.vtoApto.value || '',
+      rfc:      f.rfc.value.trim(),
+      curp:     f.curp.value.trim(),   // (recuerda: ya no es requerido)
+      telefono: f.tel.value.trim(),
+      nss:      f.nss.value.trim()
+    };
+
+    if (licFile)  up.licenciaUrl = URL.createObjectURL(licFile);
+    if (aptoFile) up.aptoUrl     = URL.createObjectURL(aptoFile);
+
+    const arr = getOps();
+
+    if (typeof window.editingOpIndex === 'number' && window.editingOpIndex >= 0) {
+      const prev = arr[window.editingOpIndex] || {};
+      // si no re-subieron archivo, conserva las URLs existentes
+      if (!up.licenciaUrl) up.licenciaUrl = prev.licenciaUrl || '';
+      if (!up.aptoUrl)     up.aptoUrl     = prev.aptoUrl     || '';
+      arr[window.editingOpIndex] = up;
+      window.editingOpIndex = null;
+    } else {
+      arr.push(up);
+    }
+
+    setOps(arr);
+    renderTablaLTROperadores();
+    ocultar();
+    limpiar();
+  });
+})();
+
+window.editingOpIndex = null;
+
+document.querySelector('#tablaLTROperadores tbody')?.addEventListener('click', (e) => {
+  const editBtn = e.target.closest('.op-edit');
+  const delBtn  = e.target.closest('.op-del');
+
+  if (editBtn) {
+    window.editingOpIndex = parseInt(editBtn.dataset.idx, 10);
+    const data = getOps();
+    const o = data[window.editingOpIndex];
+    if (!o) return;
+
+    const $ = (id) => document.getElementById(id);
+    $('opLTRNombre').value       = o.nombre   || '';
+    $('opLTRLicencia').value     = o.numero   || '';
+    $('opLicenciaName').value    = o.licencia || '';
+    $('opLicencia').value        = o.licencia || '';
+    $('opLTRVtoLicencia').value  = o.vtoLic   || '';
+    $('opAptoName').value        = o.apto     || '';
+    $('opAptoMedico').value      = o.apto     || '';
+    $('opVtoApto').value         = o.vtoApto  || '';
+    $('opRFC').value             = o.rfc      || '';
+    $('opLTRCURP').value         = o.curp     || '';
+    $('opLTRTelefono').value     = o.telefono || '';
+    $('opLTRNSS').value          = o.nss      || '';
+
+    // abre el modal existente de operadores LTR
+    const modal = document.getElementById('ltrOperadorModal');
+    modal?.classList.remove('hidden');
+    modal.style.display = 'flex';
+    return;
+  }
+
+  if (delBtn) {
+    const idx = parseInt(delBtn.dataset.idx, 10);
+    const data = getOps();
+    const o = data[idx];
+    openOpDeleteModal(idx, o?.nombre || o?.numero || 'este operador');
+    return;
+  }
+});
+function openOpDeleteModal(idx, label){
+  const m   = document.getElementById('ltrOpDeleteModal');
+  const msg = document.getElementById('ltrOpDeleteMsg');
+  if (msg) msg.textContent = `¿Deseas eliminar ${label}?`;
+  if (m) { m.classList.remove('hidden'); m.style.display = 'flex'; m.dataset.idx = String(idx); }
+}
+
+(function(){
+  const m     = document.getElementById('ltrOpDeleteModal');
+  const yes   = document.getElementById('ltrOpDelYes');
+  const no    = document.getElementById('ltrOpDelNo');
+  const close = m?.querySelector('.close');
+
+  function cerrar(){
+    if(!m) return;
+    m.classList.add('hidden');
+    m.style.display = 'none';
+    m.dataset.idx = '';
+  }
+
+  yes?.addEventListener('click', () => {
+    const idx = parseInt(m?.dataset.idx || '-1', 10);
+    if (idx >= 0){
+      const arr = getOps();
+      arr.splice(idx, 1);
+      setOps(arr);
+      renderTablaLTROperadores();
+    }
+    cerrar();
+  });
+
+  no?.addEventListener('click', cerrar);
+  close?.addEventListener('click', cerrar);
+  m?.addEventListener('click', (e) => { if (e.target === m) cerrar(); });
+})();
+   
+</script>
+
+
+
+
+
+      
+<script> //Aqui empieza el modulo 4
+function showFrame(id){
+    document.querySelectorAll('.frame').forEach(f => f.classList.add('hidden'));
+    document.getElementById(id)?.classList.remove('hidden');
+  }
+
+  // Entrar a Asignación desde el menú principal
+  document.getElementById('modAsign')?.addEventListener('click', () => {
+    showFrame('asignMenu');
+  });
+
+  // Dentro del submenú Asignación
+  document.getElementById('asignVolverBtn')?.addEventListener('click', () => showFrame('dashboard'));
+  document.getElementById('asignNuevoBtn')?.addEventListener('click', () => showFrame('asignNuevo'));
+  document.getElementById('asignActivosBtn')?.addEventListener('click', () => showFrame('asignActivos'));
+
+  // Botones volver en vistas internas
+  document.getElementById('asignVolverDesdeNuevo')?.addEventListener('click', () => showFrame('asignMenu'));
+  document.getElementById('asignVolverDesdeActivos')?.addEventListener('click', () => showFrame('asignMenu'));
+
+//Aqui empieza el render de Asignación
+const ASIG_CLIENT_KEYS = ['sr_clientes', 'sr_clientes_registrados', 'srClientes'];
+
+function _readLS(key){
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); }
+  catch { return []; }
+}
+function getClienteById(id){
+  for (const k of ASIG_CLIENT_KEYS){
+    const arr = _readLS(k);
+    if(Array.isArray(arr)){
+      const found = arr.find(c => String(c.id || c.clienteId || c.codigo || c.clave || '') === String(id));
+      if(found) return found;
+    }
+  }
+  return null;
+}
+
+function renderTipoUnidadOptions(cliente){
+  const sel = document.getElementById('asigTipoUnidad');
+  if(!sel) return;
+  if(!cliente){
+    sel.innerHTML = `<option value="">Selecciona un cliente</option>`;
+    sel.disabled = true;
+    return;
+  }
+  const tipos = Array.from(new Set((cliente.tarifas || []).map(t => t.tipoUnidad).filter(Boolean)));
+  if (tipos.length){
+   sel.innerHTML = ['<option value="">— Selecciona tipo —</option>', ...tipos.map(t => `<option value="${t}">${t}</option>`) ].join('');
+    sel.disabled = false;
+    const draft = JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}');
+    if (draft.tipoUnidad) sel.value = draft.tipoUnidad;
+  } else {
+    sel.innerHTML = `<option value="">— Sin tipos —</option>`;
+    sel.disabled = true;
+  }
+}
+// Normaliza un cliente cualquiera al shape {id, nombre, rfc}
+function _normCliente(c){
+  return {
+    id:     c.id || c.clienteId || c.codigo || c.clave || '',
+    nombre: c.nombre || c.razonSocial || c.nombreRazon || c.nombre_comercial || '',
+    rfc:    c.rfc || c.RFC || ''
+  };
+}
+
+function getAllClientes(){
+  for (const k of ASIG_CLIENT_KEYS){
+    const arr = _readLS(k);
+    if (Array.isArray(arr) && arr.length) {
+      return arr.map(_normCliente).filter(x => x.nombre);
+    }
+  }
+  return [];
+}
+
+// Pinta las opciones del <select> y maneja estados vacíos
+function renderClienteOptions(){
+    const sel  = document.getElementById('asigClienteSelect');
+    const msg  = document.getElementById('asigSinClientes');
+    if(!sel) return;
+
+    renderTipoUnidadOptions(null);
+
+    const clientes = getAllClientes();
+  if (!clientes.length){
+    sel.innerHTML = `<option value="">— Sin clientes —</option>`;
+    sel.disabled = true;
+    if (msg) msg.style.display = 'inline';
+    return;
+  }
+
+  sel.disabled = false;
+  if (msg) msg.style.display = 'none';
+  sel.innerHTML = [
+    `<option value="">— Selecciona un cliente —</option>`,
+    ...clientes.map(c => `<option value="${c.id}">${c.nombre}${c.rfc ? ' ('+c.rfc+')' : ''}</option>`)
+  ].join('');
+
+  const draft = JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}');
+  if (draft.cliente && sel.querySelector(`option[value="${draft.cliente.id}"]`)) {
+    sel.value = draft.cliente.id;
+    const full = getClienteById(draft.cliente.id);
+    renderTipoUnidadOptions(full);
+     renderTrayectoOptions(null, null);
+  }
+}
+
+// Guarda la selección del cliente en un “borrador” de servicio
+function bindClienteChange(){
+  const sel = document.getElementById('asigClienteSelect');
+  if(!sel) return;
+  sel.addEventListener('change', () => {
+   const full = getClienteById(sel.value);
+    const chosen = full ? _normCliente(full) : null;
+    const draft = {
+      ...(JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}')),
+      cliente: chosen,
+      tipoUnidad: null
+    };
+    localStorage.setItem('sr_asign_borrador', JSON.stringify(draft));
+    renderTipoUnidadOptions(full);
+  });
+}
+
+function bindTipoUnidadChange(){
+  const sel = document.getElementById('asigTipoUnidad');
+  if(!sel) return;
+  sel.addEventListener('change', () => {
+    const cliSel  = document.getElementById('asigClienteSelect');
+    const cliente = getClienteById(cliSel?.value);
+    const draft = {
+      ...(JSON.parse(localStorage.getItem('sr_asign_borrador') || '{}')),
+      tipoUnidad: sel.value || null,
+      trayecto: null
+    };
+    localStorage.setItem('sr_asign_borrador', JSON.stringify(draft));
+    renderTrayectoOptions(cliente, sel.value);  // ← encadenado cliente → tipo → trayecto
+  });
+}
+
+
+// Botón “🔄 Refrescar”
+document.getElementById('btnAsignRefrescarClientes')
+ ?.addEventListener('click', () => { renderClienteOptions(); bindClienteChange(); bindTipoUnidadChange(); });
+// Si otro tab/ventana modifica clientes, actualiza opciones aquí
+window.addEventListener('storage', (e) => {
+  if (ASIG_CLIENT_KEYS.includes(e.key)) renderClienteOptions();
+});
+
+// Llama a render cuando entras a “Nuevo Servicio”
+document.getElementById('asignNuevoBtn')
+  ?.addEventListener('click', () => { renderClienteOptions(); bindClienteChange(); });
+
+// Por si navegas directo a #asignNuevo (F5 sobre esa vista)
+document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
+      renderClienteOptions();
+      bindClienteChange();
+      bindTipoUnidadChange();
+    }
+  });
+      
+// ===== ASIGNACIÓN: encadenar Cliente -> Tipo de unidad -> Trayecto (+ Precio) =====
+(function(){
+  const selCliente  = document.getElementById('asigClienteSelect');
+  const selTipo     = document.getElementById('asigTipoUnidad');
+  const selTrayecto = document.getElementById('asigTrayecto');
+  const inpPrecio   = document.getElementById('asigPrecio');
+
+  // Clientes están en localStorage con la clave usada en el módulo Clientes
+  const STORE_CLIENTES = 'sr_clientes';
+  function getClientes(){ try { return JSON.parse(localStorage.getItem(STORE_CLIENTES)) || []; } catch { return []; } }
+
+  // Abreviaturas MX para mostrar trayecto corto
+  const ABBR = {
+    "Aguascalientes":"AGS","Baja California":"BC","Baja California Sur":"BCS","Campeche":"CAMP","Coahuila":"COAH",
+    "Colima":"COL","Chiapas":"CHIS","Chihuahua":"CHIH","Ciudad de México":"CDMX","Durango":"DGO","Guanajuato":"GTO",
+    "Guerrero":"GRO","Hidalgo":"HGO","Jalisco":"JAL","Estado de México":"EDOMEX","Michoacán":"MICH","Morelos":"MOR",
+    "Nayarit":"NAY","Nuevo León":"NL","Oaxaca":"OAX","Puebla":"PUE","Querétaro":"QRO","Quintana Roo":"QROO",
+    "San Luis Potosí":"SLP","Sinaloa":"SIN","Sonora":"SON","Tabasco":"TAB","Tamaulipas":"TAM","Tlaxcala":"TLAX",
+    "Veracruz":"VER","Yucatán":"YUC","Zacatecas":"ZAC"
+  };
+  const abbr = (s) => ABBR[s?.trim()] || (s || '').trim();
+
+  // Formatea precio
+  const fmtMXN = (n) => Number(n || 0).toLocaleString('es-MX', { style:'currency', currency:'MXN' });
+
+  // 1) Pinta lista de clientes
+  function cargarClientes() {
+    const clientes = getClientes();
+    selCliente.innerHTML = '<option value="">Selecciona…</option>';
+    clientes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;                // guardamos el ID
+      opt.textContent = c.nombre || c.id || 'Cliente';
+      selCliente.appendChild(opt);
+    });
+    // Estado inicial de los otros dos
+    resetTipoYTrayecto();
+  }
+
+  function resetTipoYTrayecto() {
+    selTipo.innerHTML = '<option value="">Selecciona un cliente</option>';
+    selTipo.disabled = true;
+
+    selTrayecto.innerHTML = '<option value="">Selecciona cliente y tipo de unidad</option>';
+    selTrayecto.disabled = true;
+
+    inpPrecio.value = '';
+  }
+
+  // 2) Al cambiar cliente -> llena tipos de unidad únicos
+  selCliente.addEventListener('change', () => {
+    const id = selCliente.value;
+    const cli = getClientes().find(c => c.id === id);
+
+    // Reset de dependientes
+    selTrayecto.innerHTML = '<option value="">Selecciona cliente y tipo de unidad</option>';
+    selTrayecto.disabled = true;
+    inpPrecio.value = '';
+
+    selTipo.innerHTML = '<option value="">Selecciona…</option>';
+    selTipo.disabled = true;
+
+    if(!cli || !Array.isArray(cli.tarifas) || !cli.tarifas.length) return;
+
+    // Tipos únicos
+    const tipos = [...new Set(cli.tarifas.map(t => String(t.tipoUnidad || '').trim()).filter(Boolean))];
+    tipos.forEach(t => selTipo.appendChild(new Option(t, t)));
+    selTipo.disabled = tipos.length === 0;
+  });
+
+  // 3) Al cambiar tipo -> llena trayectos de ese tipo
+  selTipo.addEventListener('change', () => {
+    const id = selCliente.value;
+    const tipo = (selTipo.value || '').trim();
+    const cli = getClientes().find(c => c.id === id);
+
+    selTrayecto.innerHTML = '<option value="">Selecciona…</option>';
+    selTrayecto.disabled = true;
+    inpPrecio.value = '';
+
+    if(!cli || !tipo) return;
+
+    const rutas = (cli.tarifas || []).filter(t => String(t.tipoUnidad || '').trim() === tipo);
+    // Para poder leer el precio después, guardamos un JSON en value
+    rutas.forEach((t, idx) => {
+      const label = `${abbr(t.estadoOrigen)} — ${abbr(t.estadoDestino)}`;
+      const value = JSON.stringify({ precio: t.tarifa, idx });
+      selTrayecto.appendChild(new Option(label, value));
+    });
+
+    selTrayecto.disabled = rutas.length === 0;
+  });
+
+  // 4) Al elegir trayecto -> muestra precio (solo lectura)
+  selTrayecto.addEventListener('change', () => {
+    if(!selTrayecto.value){ inpPrecio.value = ''; return; }
+    try{
+      const { precio } = JSON.parse(selTrayecto.value);
+       const numero = parseFloat(String(precio).replace(/[^0-9.-]/g, ''));
+      if (Number.isFinite(numero)) {
+        inpPrecio.value = fmtMXN(numero);
+      } else {
+        inpPrecio.value = '';
+      }
+    }catch{
+      inpPrecio.value = '';
+    }
+  });
+
+    // API pública para reinicializar cuando entras a "Nuevo Servicio"
+  window.initAsignacionNuevoServicio = function(){
+    cargarClientes();                // repinta clientes (por si importaste nuevos)
+    selCliente.dispatchEvent(new Event('change')); // deja todo coherente
+  };
+
+// === ASIGNACIÓN: soporte a "Cita de Carga" + guardado de servicio ===
+
+// --- Helpers de almacenamiento ---
+const STORE_ASIGN_BORRADOR = 'sr_asign_borrador';     // borrador del formulario
+const STORE_ASIGN_SERVICIOS = 'sr_asign_servicios';   // servicios guardados
+
+function getDraft(){
+  try { return JSON.parse(localStorage.getItem(STORE_ASIGN_BORRADOR)) || {}; }
+  catch { return {}; }
+}
+function setDraft(obj){
+  localStorage.setItem(STORE_ASIGN_BORRADOR, JSON.stringify(obj || {}));
+}
+function getServicios(){
+  try { return JSON.parse(localStorage.getItem(STORE_ASIGN_SERVICIOS)) || []; }
+  catch { return []; }
+}
+function setServicios(arr){
+  localStorage.setItem(STORE_ASIGN_SERVICIOS, JSON.stringify(arr || []));
+}
+function genServicioId(arr){
+  const prefijo = 'LTR-SV-';
+  const maxNum = arr.reduce((max, s) => {
+    const m = (s.id || '').match(/^LTR-SV-(\d+)$/);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return n > max ? n : max;
+  }, 0);
+  return `${prefijo}${String(maxNum + 1).padStart(2, '0')}`;
+}
+
+// --- Enlazar "Cita de Carga" al borrador ---
+function bindCitaCargaChange(){
+  const cita = document.getElementById('asigCitaCarga');
+  if(!cita) return;
+  // 1) Rellenar desde el borrador si existiera
+  const draft = getDraft();
+  if (draft.citaCarga) {
+    // Si guardaste en ISO, puedes convertir a local para <input type="datetime-local">
+    // asumiendo draft.citaCarga ya viene en formato compatible (YYYY-MM-DDTHH:mm)
+    cita.value = draft.citaCarga;
+  }
+  // 2) Guardar cambios en borrador
+  cita.addEventListener('change', () => {
+    const d = getDraft();
+    d.citaCarga = cita.value || null;
+    setDraft(d);
+  });
+}
+
+// --- Cargar valores precargados de cliente/tipo/trayecto al entrar ---
+// Ya tienes window.initAsignacionNuevoServicio() definido que repinta selects y dispara change:contentReference[oaicite:5]{index=5}.
+// Amplíalo para que también precargue "Cita de Carga" si existe:
+(function patchInitAsignacion(){
+  const prevInit = window.initAsignacionNuevoServicio;
+  window.initAsignacionNuevoServicio = function(){
+    if (typeof prevInit === 'function') prevInit();
+    bindCitaCargaChange();
+  };
+})();
+
+// Si entras directo a la vista (F5) ya ejecutas render/binds en tu código actual:contentReference[oaicite:6]{index=6}.
+// Engancha también el bind de la cita:
+document.addEventListener('DOMContentLoaded', () => {
+  if (!document.getElementById('asignNuevo')?.classList.contains('hidden')) {
+    bindCitaCargaChange();
+  }
+});
+
+// --- Guardar el servicio completo ---
+function parsePrecioToNumber(txt){
+  // Convierte "$ 12,345.67" → 12345.67
+  const num = parseFloat(String(txt || '').replace(/[^0-9.-]/g, ''));
+  return Number.isFinite(num) ? num : 0;
+}
+
+function leerTrayectoSeleccionado(){
+  const selTray = document.getElementById('asigTrayecto');
+  if (!selTray || !selTray.value) return null;
+  try { return JSON.parse(selTray.value); }
+  catch { return null; }
+}
+
+function validarNuevoServicio(draft){
+  const selCliente  = document.getElementById('asigClienteSelect');
+  const selTipo     = document.getElementById('asigTipoUnidad');
+  const selTrayecto = document.getElementById('asigTrayecto');
+
+  const errores = [];
+  if (!selCliente?.value) errores.push('Cliente');
+  if (!selTipo?.value) errores.push('Tipo de unidad');
+  if (!selTrayecto?.value) errores.push('Trayecto');
+
+  // "Cita de Carga" puede ser opcional; si la quieres obligatoria, descomenta:
+  // if (!draft.citaCarga) errores.push('Cita de Carga');
+
+  return errores;
+}
+
+function guardarNuevoServicio(){
+  const draft = getDraft();
+  const selCliente  = document.getElementById('asigClienteSelect');
+  const selTipo     = document.getElementById('asigTipoUnidad');
+  const selTrayecto = document.getElementById('asigTrayecto');
+  const inpPrecio   = document.getElementById('asigPrecio');
+  const inpCita     = document.getElementById('asigCitaCarga');
+
+  const errores = validarNuevoServicio(draft);
+  if (errores.length){
+    alert('Faltan datos requeridos: ' + errores.join(', '));
+    return;
+  }
+
+  // Construir el objeto servicio
+  const servicios = getServicios();
+
+  const tray = leerTrayectoSeleccionado(); // { origen, destino, precio, credito, km, ... } como lo guardaste
+  const precioNumber = parsePrecioToNumber(inpPrecio?.value || (tray?.precio ?? 0));
+
+  const servicio = {
+    id: genServicioId(servicios),
+    createdAt: new Date().toISOString(),
+    estado: 'Activo',
+    // Cliente
+    cliente: draft.cliente || { id: selCliente.value, nombre: selCliente.options[selCliente.selectedIndex]?.text || '' },
+    // Tipo / Trayecto / Precio
+    tipoUnidad: draft.tipoUnidad || selTipo.value || null,
+    trayecto: tray,                     // guarda el objeto serializado desde el <select>
+    precio: precioNumber,               // número
+    precioFmt: (precioNumber || 0).toLocaleString('es-MX', { style:'currency', currency:'MXN' }),
+    // Cita de Carga
+    citaCarga: (inpCita?.value || null), // formato datetime-local (YYYY-MM-DDTHH:mm)
+  };
+
+  // Persistir
+  servicios.push(servicio);
+  setServicios(servicios);
+
+  // Limpiar borrador para el siguiente servicio
+  setDraft({});
+
+  // (Opcional) Reset visual mínimo
+  if (selCliente) selCliente.value = '';
+  if (selTipo) selTipo.value = '';
+  if (selTrayecto) selTrayecto.innerHTML = '<option value="">Selecciona cliente y tipo de unidad</option>', selTrayecto.disabled = true;
+  if (inpPrecio) inpPrecio.value = '';
+  if (inpCita) inpCita.value = '';
+
+  alert('Servicio guardado: ' + servicio.id);
+
+  // Redirige a "Servicios activos" (placeholder en tu HTML actual):contentReference[oaicite:7]{index=7}
+  if (typeof showSection === 'function') showSection('asignActivos');
+}
+
+// Hook del botón "Guardar servicio"
+document.getElementById('asignGuardarServicio')?.addEventListener('click', guardarNuevoServicio);
+
+
+  cargarClientes();
+})();    
+      
+</script>
+
+
+      
+      <!-- Op LTR -->
+      <div id="filePreviewModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-content" style="width:80vw;max-width:900px;max-height:90vh;">
+    <span class="close" title="Cerrar">&times;</span>
+    <iframe id="filePreviewFrame" style="width:100%;height:80vh;" src=""></iframe>
+  </div>
+</div>      
+ <!-- Detalle unidad LTR -->
+  <div id="ltrUnidadInfoModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
+    <div class="modal-card"></div>
+  </div>
+
+      
+<!-- Detalle permisionario -->
+<div id="permInfoModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
+  <div class="modal-card">
+    <span id="permInfoCerrar" class="close">&times;</span>
+    <h2>Detalle del permisionario</h2>
+    <div class="modal-section">
+      <h3>Datos generales</h3>
+      <div class="modal-fields">
+        <p><label>ID:</label><span id="permInfoId"></span></p>
+        <p><label>Nombre:</label><span id="permInfoNombre"></span></p>
+        <p><label>RFC:</label><span id="permInfoRFC"></span></p>
+        <p><label>Estatus:</label><span id="permInfoEstatus"></span></p>
+        <p><label>Domicilio:</label><span id="permInfoContacto"></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+      
+<!-- Guardar permisionario -->     
+ <div id="permSaveModal" class="modal-overlay hidden" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000;">
+  <div class="modal-card" style="width:min(520px,92vw);background:#1e1e1e;color:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.5);overflow:hidden;">
+    <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px;">
+      <div style="font-size:28px;">🎉</div>
+      <h3 style="margin:0;font-size:20px;font-weight:700;">¡Felicidades, agregaste un nuevo permisionario!</h3>
+    </div>
+    <div style="padding:20px 24px;">
+      <p style="margin:0 0 12px 0;opacity:.9;">El registro se ha creado correctamente.</p>
+      <div style="margin-bottom:10px;">
+        <div id="permIDMostrado" style="color:#ff6b6b;font-weight:800;font-size:16px"></div>
+      </div>
+      <div id="permResumenGuardado" style="font-size:14px;opacity:.9;"></div>
+    </div>
+    <div style="padding:16px 24px;display:flex;gap:12px;justify-content:flex-end;background:rgba(255,255,255,.03);">
+      <button id="permModalCerrar" class="btn btn-primary" style="padding:10px 16px;border-radius:10px;border:none;cursor:pointer;">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+  
+</body>
+</html>
