@@ -3204,13 +3204,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const srUnitsKey = 'sr_ltr_unidades';
   const srOpsKey   = 'sr_ltr_operadores';
 
-  function getUnits(){ try { return JSON.parse(localStorage.getItem(srUnitsKey)) || []; } catch { return []; } }
-  function setUnits(arr){ localStorage.setItem(srUnitsKey, JSON.stringify(arr)); }
-
-  function getOps(){ try { return JSON.parse(localStorage.getItem(srOpsKey)) || []; } catch { return []; } }
-  function setOps(arr){ localStorage.setItem(srOpsKey, JSON.stringify(arr)); }
-
- // === Modal de previsualización de archivos ===
+// EXponer a global
+  window.getUnits = getUnits;
+  window.getOps   = getOps;
+  function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
+  window.getPerms = getPerms;
+// === Modal de previsualización de archivos ===
   const fileModal = document.getElementById('filePreviewModal');
   const fileFrame = document.getElementById('filePreviewFrame');
   function showFile(url){
@@ -3218,13 +3217,13 @@ window.addEventListener('DOMContentLoaded', () => {
     fileFrame.src = url;
     fileModal.classList.remove('hidden');
     fileModal.style.display = 'flex';
-  }
-  fileModal?.querySelector('.close')?.addEventListener('click', () => {
+    }
+    fileModal?.querySelector('.close')?.addEventListener('click', () => {
     fileModal.classList.add('hidden');
     fileModal.style.display = 'none';
     fileFrame.src = '';
   });
-  fileModal?.addEventListener('click', (e) => {
+    fileModal?.addEventListener('click', (e) => {
     if(e.target === fileModal){
       fileModal.classList.add('hidden');
       fileModal.style.display = 'none';
@@ -4481,6 +4480,21 @@ document.getElementById('asignGuardarServicio')?.addEventListener('click', guard
     });
     selPlaca.disabled = uniques.length === 0;
   }
+function obtenerUnidadesLTR(){
+  if (typeof getUnits === 'function') return getUnits();
+  try{
+    const raw = localStorage.getItem('sr_ltr_unidades');
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+
+function fillFromLTR(){
+  try{
+    const units = obtenerUnidadesLTR();
+    const placas = units.map(u => u.placas).filter(Boolean);
+    setPlacas(placas);
+  }catch{ resetPlacas(); }
+}
   // Llenado desde LTR (sr_ltr_unidades) usando getUnits()
   function fillFromLTR(){
     try{
