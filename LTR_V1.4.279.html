@@ -1661,36 +1661,38 @@ btn.primary { background:#efe9ff; border-color:#033552; }
       </select>
     </div>
 
-      <div class="form-row compact">
-  <div class="fld">
-    <label for="asigTrayecto">Trayecto (Origen — Destino)*</label>
-    <select id="asigTrayecto" disabled>
-      <option value="">Selecciona cliente y tipo de unidad</option>
-    </select>
-  </div>
-
-  <div class="fld" style="max-width:220px">
-    <label for="asigPrecio">Precio (MXN)</label>
-    <input id="asigPrecio" type="text" placeholder="$0.00" readonly>
-  </div>
-</div>
-
 <div class="form-row compact">
-  <div class="fld" style="max-width:320px">
-    <label for="asigCitaCarga">Cita de Carga</label>
-    <input id="asigCitaCarga" type="datetime-local">
-        </div>
-      </div>
+   <div class="fld">
+      <label for="asigTrayecto">Trayecto (Origen — Destino)*</label>
+      <select id="asigTrayecto" disabled>
+      <option value="">Selecciona cliente y tipo de unidad</option>
+      </select>
+   </div>
+
+   <div class="fld" style="max-width:220px">
+       <label for="asigPrecio">Precio (MXN)</label>
+       <input id="asigPrecio" type="text" placeholder="$0.00" readonly>
+       </div>
+    </div>
+
+    <div class="form-row compact">
+          <div class="fld" style="max-width:320px">
+          <label for="asigCitaCarga">Cita de Carga</label>
+          <input id="asigCitaCarga" type="datetime-local">
+          </div>
+    </div>
+           
 </div>
+        
 <h3 id="asigInfoUnidadSub" class="section-subtitle">Info Unidad</h3>
       
     <div class="form-row">
-       <div class="form-group">
+          <div class="form-group">
           <label for="ns-unidadTipo">Unidad</label>
           <select id="ns-unidadTipo">
-            <option value="">Selecciona…</option>
-            <option value="LTR">LTR</option>
-            <option value="Permisionario">Permisionario</option>
+          <option value="">Selecciona…</option>
+          <option value="LTR">LTR</option>
+          <option value="Permisionario">Permisionario</option>
           </select>
      </div>
 
@@ -1708,22 +1710,27 @@ btn.primary { background:#efe9ff; border-color:#033552; }
          </select>
          <div class="field-error" data-for="ns-placa"></div>
      </div>     
+         <div class="form-group">
+         <label for="ns-eco">Eco</label>
+         <select id="ns-eco" disabled>
+         <option value="">Selecciona…</option>
+         </select>
+         <div class="field-error" data-for="ns-eco"></div>
+      </div> 
+
           
 </div>
      
+   </div>
+      <button class="btn primary" id="asignGuardarServicio">Guardar servicio</button>    
+      <div class="home-actions"><button class="btn" id="asignVolverDesdeNuevo">Volver</button></div>
+   </div>
 
-</div>
-  <button class="btn primary" id="asignGuardarServicio">Guardar servicio</button>    
-  <div class="home-actions"><button class="btn" id="asignVolverDesdeNuevo">Volver</button></div>
-</div>
-
-  <div id="asignActivos" class="frame hidden">
-  <h2>Servicios activos</h2>
+<div id="asignActivos" class="frame hidden">
+  
+      <h2>Servicios activos</h2>
   <p>(placeholder — aquí irá la lista/gestión de servicios)</p>
-  <div class="home-actions"><button class="btn" id="asignVolverDesdeActivos">Volver</button></div>
-
-      
-      
+  <div class="home-actions"><button class="btn" id="asignVolverDesdeActivos">Volver</button></div>      
 
 </div><!-- Aqui termina el modulo Asignación-->
 
@@ -4577,7 +4584,7 @@ function fillFromLTR(){
     }catch{ return []; }
   }
 
-  // idOrName: valor actual del <select id="ns-permisionario"> (puede ser id o nombre)
+// idOrName: valor actual del <select id="ns-permisionario"> (puede ser id o nombre)
   function getPermPlates(idOrName){
     if(!idOrName) return [];
     try{
@@ -4594,7 +4601,7 @@ function fillFromLTR(){
     }catch{ return []; }
   }
 
-  // --- refresco principal ---
+// --- refresco principal ---
   function refreshPlacas(){
     const tipo = selUnidad.value;
     if (tipo === 'LTR'){
@@ -4611,21 +4618,127 @@ function fillFromLTR(){
     }
   }
 
-  // --- listeners ---
+// --- listeners ---
   selUnidad.addEventListener('change', refreshPlacas);
   selPerm.addEventListener('change', refreshPlacas);
 
-  // Si ya tienes eventos personalizados en tu app, puedes engancharlos también:
+// Si ya tienes eventos personalizados en tu app, puedes engancharlos también:
   document.addEventListener('unidad:source-changed', refreshPlacas);
   document.addEventListener('permisionario:selected',  refreshPlacas);
 
-  // estado inicial (si la vista ya está visible y con valores)
+// estado inicial (si la vista ya está visible y con valores)
   document.addEventListener('DOMContentLoaded', () => {
     if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
       refreshPlacas();
     }
   });
-})();      
+})(); 
+(function(){
+  const selUnidad = document.getElementById('ns-unidadTipo');      // "LTR" | "Permisionario"
+  const selPerm   = document.getElementById('ns-permisionario');    // id o nombre
+  const selPlaca  = document.getElementById('ns-placa');            // placa seleccionada
+  const selEco    = document.getElementById('ns-eco');
+
+  if(!selUnidad || !selPerm || !selPlaca || !selEco) return;
+
+// --- utils ---
+  function resetEco(){
+    selEco.innerHTML = '<option value="">Selecciona…</option>';
+    selEco.disabled = true;
+  }
+  function setEco(opciones){
+    const list = Array.from(new Set((opciones||[]).filter(Boolean)));
+    selEco.innerHTML = '<option value="">Selecciona…</option>';
+    for(const eco of list){
+      const opt = document.createElement('option');
+      opt.value = eco;
+      opt.textContent = eco;
+      selEco.appendChild(opt);
+    }
+    selEco.disabled = list.length === 0;
+  }
+
+ // helpers para leer storage (mismos que usaste para Placa)
+  function readLTRUnits(){
+    try{
+      const arr = JSON.parse(localStorage.getItem('sr_ltr_unidades') || '[]');
+      return Array.isArray(arr) ? arr : [];
+    }catch{ return []; }
+  }
+  function readPerms(){
+    try{
+      const arr = JSON.parse(localStorage.getItem('sr_permisionarios') || '[]');
+      return Array.isArray(arr) ? arr : [];
+    }catch{ return []; }
+  }
+  function findPermByIdOrName(idOrName){
+    const perms = readPerms();
+    return perms.find(pp =>
+      String(pp?.id) === String(idOrName) ||
+      String(pp?.nombre) === String(idOrName) ||
+      String(pp?.razon) === String(idOrName) ||
+      String(pp?.razonSocial) === String(idOrName)
+    );
+  }
+
+// --- llenado desde LTR ---
+  function fillEcoFromLTR(){
+    const units = readLTRUnits();
+    const placaSel = selPlaca.value;
+    let ecos;
+    if (placaSel){
+      const u = units.find(x => String(x.placas) === String(placaSel));
+      ecos = u && u.eco ? [u.eco] : [];
+    } else {
+      ecos = units.map(u => u.eco).filter(Boolean);
+    }
+    setEco(ecos);
+  }
+
+// --- llenado desde Permisionarios ---
+  function fillEcoFromPerm(){
+    const idOrName = selPerm.value;
+    if(!idOrName){ resetEco(); return; }
+    const perm = findPermByIdOrName(idOrName);
+    const unidades = Array.isArray(perm?.unidades) ? perm.unidades : [];
+    const placaSel = selPlaca.value;
+    let ecos;
+    if (placaSel){
+      const u = unidades.find(x => String(x.placas) === String(placaSel));
+      ecos = u && u.eco ? [u.eco] : [];
+    } else {
+      ecos = unidades.map(u => u.eco).filter(Boolean);
+    }
+    setEco(ecos);
+  }
+
+  function refreshEco(){
+    const tipo = selUnidad.value;
+    if (tipo === 'LTR'){
+      fillEcoFromLTR();
+    } else if (tipo === 'Permisionario'){
+      fillEcoFromPerm();
+    } else {
+      resetEco();
+    }
+  }
+
+// --- listeners ---
+  selUnidad.addEventListener('change', refreshEco);
+  selPerm  .addEventListener('change', refreshEco);
+  selPlaca .addEventListener('change', refreshEco);
+
+// Si tu app emite estos eventos personalizados, también nos enganchamos:
+  document.addEventListener('unidad:source-changed', refreshEco);
+  document.addEventListener('permisionario:selected',  refreshEco);
+
+// Estado inicial si la vista ya está visible
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
+      refreshEco();
+    }
+  });
+})();     
 //Hasta aqui sin modificar ek script       
 })();    
       
