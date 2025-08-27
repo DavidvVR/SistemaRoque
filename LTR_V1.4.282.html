@@ -3717,7 +3717,7 @@ function nextLTRId(){
   const btnNuevo   = document.getElementById('btnOperadorNuevoLTR');
   const modal      = document.getElementById('ltrOperadorModal');
   const btnClose   = modal?.querySelector('.close');
-  const btnGuardar = document.getElementById('ltrOpGuardar');
+  const btnGuardar = modal?.querySelector('#ltrOpGuardar');
   const btnCancelar= document.getElementById('ltrOpCancelar');
 
   // Campos (buscados dentro del modal para evitar conflictos de IDs)
@@ -3806,7 +3806,15 @@ function nextLTRId(){
     if (licFile)  up.licenciaUrl = URL.createObjectURL(licFile);
     if (aptoFile) up.aptoUrl     = URL.createObjectURL(aptoFile);
 
-    const arr = getOps();
+  const arr = (() => {
+      try {
+     const d = (typeof getOps === 'function' ? getOps() : []);
+     return Array.isArray(d) ? d : [];
+      } catch (e) {
+     console.error('[LTR Ops] getOps() falló:', e);
+     return [];
+     }
+ })();
 
     if (typeof window.editingOpIndex === 'number' && window.editingOpIndex >= 0) {
       const prev = arr[window.editingOpIndex] || {};
@@ -3819,7 +3827,17 @@ function nextLTRId(){
       arr.push(up);
     }
 
+
+       try {
+if (typeof setOps === 'function') {
     setOps(arr);
+    } else {
+     console.error('[LTR Ops] setOps no está definida');
+    }
+    } catch(e) {
+    console.error('[LTR Ops] setOps() falló:', e);
+    }
+    console.debug('[LTR Ops] guardado', { up, total: arr.length });
     renderTablaLTROperadores();
     ocultar();
     limpiar();
