@@ -2395,11 +2395,12 @@ excelInput?.addEventListener('change', (event) => {
 </script>
 
 
- <script>
+<script>
 //Aqui empieza el modulo de permisionarios
+const srPermKey = 'sr_permisionarios';
+window.srPermKey = srPermKey;
 window.addEventListener('DOMContentLoaded', () => {
   // === Claves y referencias
-  const srPermKey = 'sr_permisionarios';
   const permsList = document.getElementById('permsList');
   const permsMenu = document.getElementById('permsMenu');
   let editingPermId = null;
@@ -4343,8 +4344,7 @@ document.getElementById('asignGuardarServicio')?.addEventListener('click', guard
   cargarClientes();
 
 // --- Configuración / helpers ---
-const srPermKey = window.srPermKey || 'srPerms'; // usa tu clave si ya existe
-
+const srPermKey = window.srPermKey || 'srpermisionarios';
 function getPerms(){
   try {
     const raw = localStorage.getItem(srPermKey);
