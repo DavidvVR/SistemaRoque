@@ -3246,34 +3246,31 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
 
- // === Render Operadores
-function renderTablaLTROperadores(filtro=''){
+// === Render Operadores LTR ===
+function renderTablaLTROperadores(filtro = '') {
   const tbody = document.querySelector('#tablaLTROperadores tbody');
-  if(!tbody) return;
+  if (!tbody) return;
 
-  const data = getOps(); // tu "BD" local sr_ltr_operadores
+  const data = getOps();
   const q = (filtro || '').toLowerCase();
   const fil = data.filter(o =>
-    !q || [o.nombre, o.numero, o.rfc].some(v => String(v||'').toLowerCase().includes(q))
+    !q || [o.nombre, o.numero, o.rfc].some(v => String(v || '').toLowerCase().includes(q))
   );
 
   tbody.innerHTML = fil.map(o => {
-    // índice real en el arreglo original (sirve aunque filtres)
-    const idx = data.indexOf(o);
-
-    const vtoLicVis  = o.vtoLic  ? new Date(o.vtoLic  + 'T00:00:00').toLocaleDateString('es-MX') : '';
+    const vtoLicVis = o.vtoLic ? new Date(o.vtoLic + 'T00:00:00').toLocaleDateString('es-MX') : '';
     const vtoAptoVis = o.vtoApto ? new Date(o.vtoApto + 'T00:00:00').toLocaleDateString('es-MX') : '';
 
     const licCell = o.licenciaUrl
-      ? `<span class="icon-btn ltr-lic-lupa" title="${o.licencia||'Ver licencia'}" data-url="${o.licenciaUrl}">🔍</span>`
+      ? `<span class="icon-btn ltr-lic-lupa" title="${o.licencia || 'Ver licencia'}" data-url="${o.licenciaUrl}">🔍</span>`
       : (o.licencia || '');
 
     const aptoCell = o.aptoUrl
-      ? `<span class="icon-btn ltr-apto-lupa" title="${o.apto||'Ver apto médico'}" data-url="${o.aptoUrl}">🔍</span>`
+      ? `<span class="icon-btn ltr-apto-lupa" title="${o.apto || 'Ver apto médico'}" data-url="${o.aptoUrl}">🔍</span>`
       : (o.apto || '');
 
     return `
-      <tr data-idx="${idx}">
+      <tr>
         <td>${o.nombre || ''}</td>
         <td>${o.numero || ''}</td>
         <td>${licCell}</td>
@@ -3285,11 +3282,23 @@ function renderTablaLTROperadores(filtro=''){
         <td>${o.telefono || ''}</td>
         <td>${o.nss || ''}</td>
         <td class="actions">
-          <span class="icon-btn op-edit" title="Editar" data-idx="${idx}">✏️</span>
-          <span class="icon-btn op-del"  title="Eliminar" data-idx="${idx}">🗑️</span>
+          <span class="icon-btn op-edit" title="Editar">✏️</span>
+          <span class="icon-btn op-del" title="Eliminar">🗑️</span>
         </td>
       </tr>`;
   }).join('') || `<tr><td colspan="11">Sin registros</td></tr>`;
+
+  // Agregar event listeners para los botones de acción
+  tbody.querySelectorAll('.op-del').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const fila = e.target.closest('tr');
+      const nombre = fila.cells[0].textContent;
+      if (confirm(`¿Eliminar operador ${nombre}?`)) {
+        fila.remove();
+        // Aquí deberías también eliminar el operador del almacenamiento
+      }
+    });
+  });
 }
 // Delegado de clic para las lupas (Licencia / Apto) en la tabla LTR
 document.querySelector('#tablaLTROperadores tbody')?.addEventListener('click', (e) => {
@@ -3656,8 +3665,11 @@ function openLTRUnidadDetalle(id){
 
   // Guardar
   document.getElementById('ltrUnidadGuardar')?.addEventListener('click', saveUnit, false);
-// Render inicial
-    document.addEventListener('DOMContentLoaded', renderLTRTable);
+/
+ // Inicializar la tabla al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+  renderTablaLTROperadores();
+});
 
     var infoModal = document.getElementById('ltrUnidadInfoModal');
     infoModal && infoModal.addEventListener('click', function(e){ if(e.target === infoModal) closeLTRUnidadDetalle(); });
@@ -3714,11 +3726,11 @@ function nextLTRId(){
 // === Modal: + Agregar Operador (EXCLUSIVO LTR) ===
 (function(){
   // Referencias
-  const btnNuevo   = document.getElementById('btnOperadorNuevoLTR');
-  const modal      = document.getElementById('ltrOperadorModal');
-  const btnClose   = modal?.querySelector('.close');
-  const btnGuardar = modal?.querySelector('#ltrOpGuardar');
-  const btnCancelar= document.getElementById('ltrOpCancelar');
+  const btnNuevo = document.getElementById('btnOperadorNuevoLTR');
+  const modal = document.getElementById('ltrOperadorModal');
+  const btnClose = modal?.querySelector('.close');
+  const btnGuardar = document.getElementById('ltrOpGuardar');
+  const btnCancelar = document.getElementById('ltrOpCancelar');
 
   // Campos (buscados dentro del modal para evitar conflictos de IDs)
   const $ = (id) => modal.querySelector('#' + id);
@@ -3726,123 +3738,141 @@ function nextLTRId(){
     nombre: $('opLTRNombre'),
     numero: $('opLTRLicencia'),
     vtoLic: $('opLTRVtoLicencia'),
-    licBtn: $('btnOpLicenciaPick'),
-    licFile:$('opLicenciaFile'),
-    licName:$('opLicenciaName'),
-    licHidden:$('opLicencia'),
-    vtoApto:$('opVtoApto'),
-    aptoBtn:$('btnOpAptoPick'),
-    aptoFile:$('opAptoFile'),
-    aptoName:$('opAptoName'),
-    aptoHidden:$('opAptoMedico'),
-    rfc: $('opRFC'),
-    curp:$('opLTRCURP'),
+    licBtn: $('btnLtrOpLicenciaPick'),
+    licFile: $('opLtrLicenciaFile'),
+    licName: $('opLtrLicenciaName'),
+    licHidden: $('opLtrLicencia'),
+    vtoApto: $('opLtrVtoApto'),
+    aptoBtn: $('btnLtrOpAptoPick'),
+    aptoFile: $('opLtrAptoFile'),
+    aptoName: $('opLtrAptoName'),
+    aptoHidden: $('opLtrAptoMedico'),
+    rfc: $('opLtrRFC'),
+    curp: $('opLTRCURP'),
     tel: $('opLTRTelefono'),
     nss: $('opLTRNSS')
   };
 
-  function mostrar(){ modal.classList.remove('hidden'); modal.style.display = 'flex'; }
-  function ocultar(){ modal.classList.add('hidden'); modal.style.display = 'none'; }
-  function limpiar(){
-    Object.values(f).forEach(el => { if(el && 'value' in el) el.value = ''; });
+  function mostrar() { 
+    modal.classList.remove('hidden'); 
+    modal.style.display = 'flex'; 
+  }
+  
+  function ocultar() { 
+    modal.classList.add('hidden'); 
+    modal.style.display = 'none'; 
+  }
+  
+  function limpiar() {
+    Object.values(f).forEach(el => { 
+      if (el && 'value' in el) el.value = ''; 
+    });
   }
 
-  // Pickers
-  f.licBtn?.addEventListener('click', () => f.licFile?.click());
-  f.licFile?.addEventListener('change', () => {
-    f.licName.value = f.licFile.files?.[0]?.name || '';
-    f.licHidden.value = f.licName.value;
-  });
+  // Pickers de archivos
+  if (f.licBtn && f.licFile) {
+    f.licBtn.addEventListener('click', () => f.licFile.click());
+    f.licFile.addEventListener('change', () => {
+      f.licName.value = f.licFile.files?.[0]?.name || '';
+      f.licHidden.value = f.licName.value;
+    });
+  }
 
-  f.aptoBtn?.addEventListener('click', () => f.aptoFile?.click());
-  f.aptoFile?.addEventListener('change', () => {
-    f.aptoName.value = f.aptoFile.files?.[0]?.name || '';
-    f.aptoHidden.value = f.aptoName.value;
-  });
+  if (f.aptoBtn && f.aptoFile) {
+    f.aptoBtn.addEventListener('click', () => f.aptoFile.click());
+    f.aptoFile.addEventListener('change', () => {
+      f.aptoName.value = f.aptoFile.files?.[0]?.name || '';
+      f.aptoHidden.value = f.aptoName.value;
+    });
+  }
 
   // Abrir / cerrar
-  btnNuevo?.addEventListener('click', () => { limpiar(); mostrar(); });
+  btnNuevo?.addEventListener('click', () => { 
+    limpiar(); 
+    mostrar(); 
+  });
+  
   btnClose?.addEventListener('click', ocultar);
   btnCancelar?.addEventListener('click', ocultar);
-  window.addEventListener('click', (e) => { if (e.target === modal) ocultar(); });
+  
+  window.addEventListener('click', (e) => { 
+    if (e.target === modal) ocultar(); 
+  });
 
-  // Validación mínima
-  function setError(id, msg){
-    const err = modal.querySelector(`.field-error[data-for="${id}"]`);
-    if(err) err.textContent = msg || '';
-  }
-  function validar(){
+  // Validación
+  function validar() {
     let ok = true;
-    setError('opLTRNombre','');
-    setError('opLTRLicencia','');
-
-        
-    if(!f.nombre.value.trim()){ setError('opLTRNombre','Requerido'); ok=false; }
-    if(!f.numero.value.trim()){ setError('opLTRLicencia','Requerido'); ok=false; }
+    
+    // Limpiar errores previos
+    const errors = modal.querySelectorAll('.field-error');
+    errors.forEach(e => e.textContent = '');
+    
+    if (!f.nombre.value.trim()) {
+      mostrarError('opLTRNombre', 'Nombre es requerido');
+      ok = false;
+    }
+    
+    if (!f.numero.value.trim()) {
+      mostrarError('opLTRLicencia', 'Número de licencia es requerido');
+      ok = false;
+    }
+    
+    if (!f.curp.value.trim()) {
+      mostrarError('opLTRCURP', 'CURP es requerido');
+      ok = false;
+    }
     
     return ok;
   }
-// botón Guardar
- btnGuardar?.addEventListener('click', () => {
-    if(!validar()) return;
 
-    // archivos opcionales (si no cambian, conservamos las URLs previas)
-    const licFile  = f.licFile?.files?.[0] || null;
+  function mostrarError(campoId, mensaje) {
+    const errorElement = modal.querySelector(`.field-error[data-for="${campoId}"]`);
+    if (errorElement) {
+      errorElement.textContent = mensaje;
+    }
+  }
+
+  // Guardar operador
+  btnGuardar?.addEventListener('click', () => {
+    if (!validar()) return;
+
+    const licFile = f.licFile?.files?.[0] || null;
     const aptoFile = f.aptoFile?.files?.[0] || null;
 
-    const up = {
-      nombre:   f.nombre.value.trim(),
-      numero:   f.numero.value.trim(),
+    const nuevoOperador = {
+      nombre: f.nombre.value.trim(),
+      numero: f.numero.value.trim(),
       licencia: f.licName.value.trim(),
-      vtoLic:   f.vtoLic.value || '',
-      apto:     f.aptoName.value.trim(),
-      vtoApto:  f.vtoApto.value || '',
-      rfc:      f.rfc.value.trim(),
-      curp:     f.curp.value.trim(),   // (recuerda: ya no es requerido)
+      vtoLic: f.vtoLic.value || '',
+      apto: f.aptoName.value.trim(),
+      vtoApto: f.vtoApto.value || '',
+      rfc: f.rfc.value.trim(),
+      curp: f.curp.value.trim(),
       telefono: f.tel.value.trim(),
-      nss:      f.nss.value.trim()
+      nss: f.nss.value.trim(),
+      // Guardar URLs de los archivos si se subieron
+      licenciaUrl: licFile ? URL.createObjectURL(licFile) : '',
+      aptoUrl: aptoFile ? URL.createObjectURL(aptoFile) : ''
     };
 
-    if (licFile)  up.licenciaUrl = URL.createObjectURL(licFile);
-    if (aptoFile) up.aptoUrl     = URL.createObjectURL(aptoFile);
+    // Guardar en localStorage
+    const operadores = getOps();
+    operadores.push(nuevoOperador);
+    setOps(operadores);
 
-  const arr = (() => {
-      try {
-     const d = (typeof getOps === 'function' ? getOps() : []);
-     return Array.isArray(d) ? d : [];
-      } catch (e) {
-     console.error('[LTR Ops] getOps() falló:', e);
-     return [];
-     }
- })();
-
-    if (typeof window.editingOpIndex === 'number' && window.editingOpIndex >= 0) {
-      const prev = arr[window.editingOpIndex] || {};
-      // si no re-subieron archivo, conserva las URLs existentes
-      if (!up.licenciaUrl) up.licenciaUrl = prev.licenciaUrl || '';
-      if (!up.aptoUrl)     up.aptoUrl     = prev.aptoUrl     || '';
-      arr[window.editingOpIndex] = up;
-      window.editingOpIndex = null;
-    } else {
-      arr.push(up);
+    // Actualizar tabla
+    if (typeof renderTablaLTROperadores === 'function') {
+      renderTablaLTROperadores();
     }
 
-
-       try {
-if (typeof setOps === 'function') {
-    setOps(arr);
-    } else {
-     console.error('[LTR Ops] setOps no está definida');
-    }
-    } catch(e) {
-    console.error('[LTR Ops] setOps() falló:', e);
-    }
-    console.debug('[LTR Ops] guardado', { up, total: arr.length });
-    renderTablaLTROperadores();
+    // Cerrar modal y limpiar
     ocultar();
     limpiar();
+    
+    alert('Operador agregado correctamente');
   });
 })();
+
 
 window.editingOpIndex = null;
 
