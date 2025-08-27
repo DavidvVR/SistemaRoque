@@ -1697,9 +1697,17 @@ btn.primary { background:#efe9ff; border-color:#033552; }
      <div class="form-group">
           <label for="ns-permisionario">Permisionario</label>
           <select id="ns-permisionario" disabled>
-            <option value="">Selecciona…</option>
+          <option value="">Selecciona…</option>
           </select>
      </div>
+
+     <div class="form-group">
+         <label for="ns-placa">Placa</label>
+         <select id="ns-placa" disabled>
+         <option value="">Selecciona…</option>
+         </select>
+         <div class="field-error" data-for="ns-placa"></div>
+     </div>     
           
 </div>
      
@@ -4452,6 +4460,75 @@ document.getElementById('asignGuardarServicio')?.addEventListener('click', guard
   // estado inicial
   syncEstadoPermField();
 })();
+//Aqui empieza lo label de placa 
+(function(){
+  const selUnidad = document.getElementById('ns-unidadTipo');      // LTR | Permisionario
+  const selPerm   = document.getElementById('ns-permisionario');    // Permisionario seleccionado
+  const selPlaca  = document.getElementById('ns-placa');
+  if(!selUnidad || !selPerm || !selPlaca) return;
+  function resetPlacas(){
+    selPlaca.innerHTML = '<option value="">Selecciona…</option>';
+    selPlaca.disabled = true;
+  }
+  function setPlacas(opciones){
+    const uniques = Array.from(new Set((opciones || []).filter(Boolean)));
+    selPlaca.innerHTML = '<option value="">Selecciona…</option>';
+    uniques.forEach(placa => {
+      const opt = document.createElement('option');
+      opt.value = placa;
+      opt.textContent = placa;
+      selPlaca.appendChild(opt);
+    });
+    selPlaca.disabled = uniques.length === 0;
+  }
+  // Llenado desde LTR (sr_ltr_unidades) usando getUnits()
+  function fillFromLTR(){
+    try{
+      const units = (typeof getUnits === 'function') ? getUnits() : [];
+      const placas = units.map(u => u.placas).filter(Boolean);
+      setPlacas(placas);
+    }catch{ resetPlacas(); }
+  }
+  // Llenado desde Permisionarios (sr_permisionarios) usando getPerms()
+  function fillFromPerm(){
+    try{
+      const perms = (typeof getPerms === 'function') ? getPerms() : [];
+      const sel = selPerm.value;
+      // Puede que el <option> de Permisionario lleve id o nombre; comparamos ambos.
+      const p = perms.find(pp => (pp.id && String(pp.id) === String(sel)) ||
+                                 (pp.nombre && String(pp.nombre) === String(sel)) ||
+                                 (pp.razon && String(pp.razon) === String(sel)));
+      const placas = (p?.unidades || []).map(u => u.placas).filter(Boolean);
+      setPlacas(placas);
+    }catch{ resetPlacas(); }
+  }
+  function refreshPlacas(){
+    const tipo = selUnidad.value;
+    if (tipo === 'LTR'){
+      fillFromLTR();
+    } else if (tipo === 'Permisionario'){
+      if (selPerm.disabled || !selPerm.value) {
+        resetPlacas(); // no hay permisionario aún
+      } else {
+        fillFromPerm();
+      }
+    } else {
+      resetPlacas();
+    }
+  }
+  // Listeners directos
+  selUnidad.addEventListener('change', refreshPlacas);
+  selPerm.addEventListener('change', refreshPlacas);
+  // Listeners a tus eventos globales ya existentes
+  document.addEventListener('unidad:source-changed', refreshPlacas);   // ya se dispara cuando cambias LTR/Permisionario :contentReference[oaicite:5]{index=5}
+  document.addEventListener('permisionario:selected', refreshPlacas);  // ya se dispara al elegir el permisionario :contentReference[oaicite:6]{index=6}
+  // Estado inicial (por si entras a #asignNuevo con valores precargados)
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('asignNuevo')?.classList.contains('hidden')){
+      refreshPlacas();
+    }
+  });
+})();      
 //Hasta aqui sin modificar ek script       
 })();    
       
