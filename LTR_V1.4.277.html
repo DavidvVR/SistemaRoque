@@ -1700,8 +1700,31 @@ btn.primary { background:#efe9ff; border-color:#033552; }
             <option value="">Selecciona…</option>
           </select>
      </div>
-          
-</div>
+
+     <div class="form-row">
+        <div class="form-group form-group-full">
+        <label for="ns-placa">Placa</label>
+        <select id="ns-placa" disabled>
+        <option value="">Selecciona…</option>
+        </select>
+
+          <div id="placaTableWrapper" class="doc-table-wrapper" style="margin-top:8px;">
+            <table class="doc-table" id="tablaPlacas">
+            <thead>
+            <tr>
+            <th>Placa</th>
+            <th>Tipo</th>
+            <th>Origen de datos</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr><td colspan="3" style="text-align:center;opacity:.7;">Selecciona “Unidad” (y “Permisionario” si aplica)…</td></tr>
+            </tbody>
+            </table>
+          </div>
+        </d iv>
+      </div>     
+    </div>
      
 
 </div>
@@ -4452,6 +4475,99 @@ document.getElementById('asignGuardarServicio')?.addEventListener('click', guard
   // estado inicial
   syncEstadoPermField();
 })();
+(function(){
+  const selUnidad = document.getElementById('ns-unidadTipo');      // LTR | Permisionario
+  const selPerm   = document.getElementById('ns-permisionario');    // Permisionario elegido
+  const selPlaca  = document.getElementById('ns-placa');
+  const tablaBody = document.querySelector('#tablaPlacas tbody');
+
+  if(!selUnidad || !selPlaca || !tablaBody) return;
+
+  // --- Helpers ---
+  const getPlaca = (u) =>
+    u?.placas || u?.Placas || u?.uPlacas || u?.placa || '';  // tolerante a nombre de campo
+  const getTipo = (u) =>
+    u?.tipo || u?.Tipo || u?.uTipo || u?.tipoUnidad || '';
+
+  function filasVacias(msg){
+    tablaBody.innerHTML = `<tr><td colspan="3" style="text-align:center;opacity:.7;">${msg}</td></tr>`;
+  }
+
+  function setPlacasOptions(unidades, origen){
+    // Rellena el SELECT
+    selPlaca.innerHTML = '<option value="">Selecciona…</option>';
+    const rows = [];
+
+    unidades.forEach(u => {
+      const placa = String(getPlaca(u)||'').trim();
+      if(!placa) return;
+      const opt = document.createElement('option');
+      opt.value = placa;
+      opt.textContent = placa;
+      selPlaca.appendChild(opt);
+
+      rows.push(`<tr>
+        <td>${placa}</td>
+        <td>${getTipo(u) || '—'}</td>
+        <td>${origen}</td>
+      </tr>`);
+    });
+
+    // Tabla
+    if(rows.length){
+      tablaBody.innerHTML = rows.join('');
+      selPlaca.disabled = false;
+    }else{
+      filasVacias('No se encontraron placas para la selección actual.');
+      selPlaca.disabled = true;
+      selPlaca.value = '';
+    }
+  }
+
+  function cargarPlacas(){
+    const tipo = (window.UnidadDataSource?.tipo) || selUnidad.value;  // respaldo
+    if(tipo !== 'LTR' && tipo !== 'Permisionario'){
+      filasVacias('Selecciona “Unidad” (y “Permisionario” si aplica)…');
+      selPlaca.disabled = true; selPlaca.value = '';
+      return;
+    }
+
+    if(tipo === 'LTR'){
+      const unidadesLTR = (window.UnidadDataSource?.getUnidades?.() || []);
+      setPlacasOptions(unidadesLTR, 'LTR > Unidades');
+      return;
+    }
+
+    // tipo === 'Permisionario'
+    const permValue = selPerm?.value || '';
+    const perms = (window.UnidadDataSource?.getPermisionarios?.() || []);
+    // Buscar permisionario por id o nombre
+    const perm = perms.find(p => String(p.id) === permValue) ||
+                 perms.find(p => (p.nombre||p.razon) === permValue) ||
+                 perms.find(p => (p.nombre||p.razon)); // fallback: el primero si el value es nombre
+    const unidades = Array.isArray(perm?.unidades) ? perm.unidades : [];
+    setPlacasOptions(unidades, `Permisionario${perm?.nombre ? ' — '+perm.nombre : ''}`);
+  }
+
+  // --- Eventos para mantener sincronizado ---
+  document.addEventListener('unidad:source-changed', cargarPlacas);
+  selUnidad.addEventListener('change', cargarPlacas);
+  if(selPerm){
+    document.addEventListener('permisionario:selected', cargarPlacas);
+    selPerm.addEventListener('change', cargarPlacas);
+  }
+
+  // Cambio manual de placa (por si quieres escuchar en otros lados)
+  selPlaca.addEventListener('change', () => {
+    document.dispatchEvent(new CustomEvent('placa:selected', {
+      detail: { placa: selPlaca.value }
+    }));
+  });
+
+  // Estado inicial
+  cargarPlacas();
+})();
+      
 //Hasta aqui sin modificar ek script       
 })();    
       
