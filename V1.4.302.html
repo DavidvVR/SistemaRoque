@@ -954,6 +954,7 @@ btn.primary { background:#efe9ff; border-color:#033552; }
     <div class="list-actions">
    <button id="btnPermNuevo" class="btn primary">+ Nuevo Permisionario</button>
       <button id="btnPermVolver" class="btn">Volver</button>
+      <input id="excelInputPerms" tipo="archivo" aceptar=".xlsx,.xls" estilo="mostrar:ninguno">
     </div>
   </div>
 
@@ -2426,6 +2427,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const permsMenu = document.getElementById('permsMenu');
   let editingPermId = null;
   const permInfoModal = document.getElementById('permInfoModal');
+  constante excelInputPerms = document.getElementById('excelInputPerms');
   
 
   // === BD local de permisionarios
@@ -2570,10 +2572,117 @@ window.addEventListener('DOMContentLoaded', migratePermsStorage);
     tbody.querySelectorAll('.btnPermEdit').forEach(btn => {
       btn.addEventListener('click', () => editPerm(btn.dataset.id));
     });
-          tbody.querySelectorAll('.perm-id-link').forEach(btn => {
+      tbody.querySelectorAll('.perm-id-link').forEach(btn => {
       btn.addEventListener('click', () => openPermDetalle(btn.dataset.id));
     });
   }
+documento.getElementById('btnImportPermExcel')?.addEventListener('clic', () => {
+    excelInputPerms?.click();
+  });
+
+  excelInputPerms?.addEventListener('cambio', (evento) => {
+    const archivo = evento.objetivo.archivos[0];
+    si (!archivo) retorna;
+
+    const lector = nuevo FileReader();
+    lector.onload = función(e) {
+      const datos = new Uint8Array(e.objetivo.resultado);
+      const workbook = XLSX.read(datos, {tipo: 'matriz'});
+
+      constante docNames = [
+        'Acta Constitutiva',
+        'Poder Rep. Legal',
+        'Comprobante de Domicilio',
+        'Constancia de Situación Fiscal',
+        'INE Representante Legal',
+        'Contrato'
+      ];
+
+      const permsSheet = workbook.Sheets['Permisionarios'];
+      const permisosJson = permsSheet ? XLSX.utils.sheet_to_json(permsSheet, {header:1}) : [];
+      const permHeaders = permisosJson[0] || [];
+      const permData = permisosJson.slice(1);
+      constante importPerms = [];
+
+      permData.forEach(fila => {
+        constante obj = {};
+        permHeaders.forEach((h, idx) => { obj[h] = row[idx] || ''; });
+        importarPerms.push({
+          identificación: '',
+          nombre: obj['Nombre'] || '',
+          rfc: obj['RFC'] || '',
+          estatus: obj['Estatus'] || 'Activo',
+          contacto: obj['Domicilio'] || '',
+          documentos: docNames.map(nombre => ({ nombre, estatus: false, archivo: null })),
+          unidades: [],
+          operadores: []
+        });
+      });
+
+      const unidadesSheet = workbook.Sheets['Unidades'];
+      si (unidadesHoja) {
+        const unJson = XLSX.utils.sheet_to_json(unidadesSheet, {header:1});
+        constante unHeaders = unJson[0] || [];
+        unJson.slice(1).forEach(fila => {
+          constante obj = {};
+          unHeaders.forEach((h, idx) => { obj[h] = row[idx] || ''; });
+          const perm = importPerms.find(p => p.rfc === obj['RFC Permisionario']);
+          si (permanente) {
+            perm.unidades.push({
+              tarjeta: obj['Tarjeta de Circulación'] || '',
+              placas: obj['Placas'] || '',
+              eco: obj['Eco'] || '',
+              tipo: obj['Tipo'] || '',
+              vencePoliza: obj['Vence Poliza'] || '',
+              aseguradora: obj['Aseguradora'] || '',
+              marca: obj['Marca'] || '',
+              anio: obj['Año'] || '',
+              permiso: obj['Permiso SCT'] || ''
+            });
+          }
+        });
+      }
+
+      const operadoresSheet = workbook.Sheets['Operadores'];
+      if (operadoresSheet) {
+        const opJson = XLSX.utils.sheet_to_json(operadoresSheet, {header:1});
+        constante opHeaders = opJson[0] || [];
+        opJson.slice(1).forEach(fila => {
+          constante obj = {};
+          opHeaders.forEach((h, idx) => { obj[h] = row[idx] || ''; });
+          const perm = importPerms.find(p => p.rfc === obj['RFC Permisionario']);
+          si (permanente) {
+            perm.operadores.push({
+              nombre: obj['Nombre'] || '',
+              numero: obj['Número de Licencia'] || '',
+              licencia: obj['Licencia'] || '',
+              vtoLic: obj['Vto de Licencia'] || '',
+              apto: obj['Apto Médico'] || '',
+              vtoApto: obj['Vto de Apto'] || '',
+              rfc: obj['RFC'] || ''
+            });
+          }
+        });
+      }
+
+      const existente = getPerms();
+      importarPerms.forEach(p => {
+        const idx = existente.findIndex(e => e.rfc === p.rfc);
+        si (idx >= 0) {
+          p.id = existente[idx].id;
+          existente[idx] = p;
+        } demás {
+          p.id = generarSiguienteIdPerm(existente);
+          existente.push(p);
+        }
+      });
+
+      setPerms(existente);
+      renderTablaPerms();
+      alert('Permisionarios importados correctamente.');
+    };
+    lector.readAsArrayBuffer(archivo);
+  });
 
   // === Eliminar permisionario
   const confirmDeleteModal = document.getElementById('confirmDeleteModal');
