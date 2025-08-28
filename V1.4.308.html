@@ -2576,7 +2576,6 @@ if (btnImport && inputFile) {
       alert('No se pudo importar el archivo. Verifica el formato.');
     }
   });
-}
  // 1) Construye el mapa principal de permisionarios (igual que ya haces)
 const incoming = new Map();  // key canon -> objeto permisionario
 
@@ -2654,6 +2653,8 @@ rowsOps.forEach(o => {
     rfc:     o.RFCOperador || o.RFC || ''
   });
 });     
+}
+      
       
   // === BD local de permisionarios
   function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
