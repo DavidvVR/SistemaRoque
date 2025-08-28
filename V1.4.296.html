@@ -4968,8 +4968,19 @@ if (inpObservaciones) inpObservaciones.value = '';
 //Aqui empieza los comandos sobre los condados de validación de Vto de placa eco
 function parseISODate(s){
   if (!s) return null;
-  const d = new Date(s);
-  return isNaN(d) ? null : d;
+ // Intenta parseo estándar (ISO, marcas de tiempo, etc.)
+  sea ​​d = nueva Fecha(s);
+  si (!isNaN(d)) devuelve d;
+
+  // Fallback para fechas en formato DD/MM/AAAA o DD-MM-AAAA
+  constante m = s.match(/^\s*(\d{2})[\/\-](\d{2})[\/\-](\d{4})\s*$/);
+  si (m) {
+    const [, dd, mm, aaaa] = m;
+    d = nueva Fecha(`${aaaa}-${mm}-${dd}T00:00:00`);
+    si (!isNaN(d)) devuelve d;
+  }
+
+  devuelve nulo;
 }
 function isExpired(dateStr){
   const d = parseISODate(dateStr);
