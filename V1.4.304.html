@@ -2430,10 +2430,9 @@ window.addEventListener('DOMContentLoaded', () => {
   const permInfoModal = document.getElementById('permInfoModal');
   
 // === Importador de Permisionarios (Datos, Unidades, Operadores)
-window.addEventListener('DOMContentLoaded', () => {
-  const btnImport = document.getElementById('btnImportExcelPerms');
-  const inputFile = document.getElementById('excelInputPerms');
-  if (!btnImport || !inputFile) return;
+constante btnImport = document.getElementById('btnImportExcelPerms');
+constante inputFile = document.getElementById('excelInputPerms');
+si (btnImport && archivoDeEntrada) {
 
   // 1) Abrir selector de archivo
   btnImport.addEventListener('click', () => inputFile.click());
