@@ -4968,20 +4968,21 @@ if (inpObservaciones) inpObservaciones.value = '';
 //Aqui empieza los comandos sobre los condados de validación de Vto de placa eco
 
 // Parseo flexible: ISO (YYYY-MM-DD) y también DD/MM/YYYY
-function parseDateFlexible(s){
-  if (!s || typeof s !== 'string') return null;
-  const t = s.trim();
-  // ISO o variantes con T/hora
-  if (/^\d{4}-\d{2}-\d{2}/.test(t)) {
-    const d = new Date(t);
-    return isNaN(d) ? null : d;
+función parseDateFlexible(s){
+  si (!s || typeof s !== 'string') devuelve nulo;
+  constante t = s.trim();
+  // ISO o variantes con T/hora , o AAAA/MM/DD
+  si (/^\d{4} [-/]\d{2}[-/] \d{2}/.test(t)) {
+    const d = nueva Fecha(t);
+    si (!isNaN(d)) devuelve d;
   }
-  // DD/MM/YYYY
-  const m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m) {
-    const dd = parseInt(m[1],10), mm = parseInt(m[2],10)-1, yy = parseInt(m[3],10);
-    const d = new Date(yy, mm, dd);
-    return isNaN(d) ? null : d;
+  // DD/MM/AAAA o DD-MM-AAAA (también acepta año con 2 dígitos)
+  constante m = t.match(/^(\d{1,2}) [\/\-](\d{1,2})[\/\-](\d{2, 4})$/);
+  si (m) {
+    sea ​​dd = parseInt(m[1],10), mm = parseInt(m[2],10)-1, yy = parseInt(m[3],10);
+    si (yy < 100) yy += 2000; // manejar años con 2 dígitos
+    const d = nueva Fecha(aa, mm, dd);
+    si (!isNaN(d)) devuelve d;
   }
   // Fallback: que intente el motor
   const d = new Date(t);
