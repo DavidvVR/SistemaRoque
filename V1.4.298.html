@@ -5077,7 +5077,19 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('ns-eco')?.addEventListener('change', handleUnitSelectionLock);
 });
 
+// justo después de definirlas dentro del IIFE:
+window.showPolizaWarn = showPolizaWarn;
+window.closePolizaWarn = closePolizaWarn;
+window.parseDateFlexible = parseDateFlexible;
+window.isExpired = isExpired;
+      
+document.addEventListener('DOMContentLoaded', () => {
+document.getElementById('polizaWarnOk')?.addEventListener('click', window.closePolizaWarn);
+document.querySelector('#polizaWarnModal .close')?.addEventListener('click', window.closePolizaWarn);
 
+document.getElementById('ns-placa')?.addEventListener('change', handleUnitSelectionLock);
+document.getElementById('ns-eco')?.addEventListener('change', handleUnitSelectionLock);
+});
     
 //Hasta aqui sin modificar ek script      
 })();    
