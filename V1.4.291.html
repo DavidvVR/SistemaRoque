@@ -4942,8 +4942,11 @@ document.getElementById('ns-permisionario')?.addEventListener('change', renderOp
 document.getElementById('ns-eco')?.addEventListener('change', renderOperadores);
 document.getElementById('ns-placa')?.addEventListener('change', renderOperadores);      
 
-//label Remolque
+//label Remolque, GPS, Observaciones
   const inpRemolque = document.getElementById('ns-remolque');
+  const inpLigaGps = document.getElementById('ns-ligaGps');
+  const inpObservaciones = document.getElementById('ns-observaciones');
+
 
 const servicio = {
   id: genServicioId(servicios),
@@ -4956,8 +4959,10 @@ const servicio = {
   precioFmt: (precioNumber || 0).toLocaleString('es-MX', { style:'currency', currency:'MXN' }),
   citaCarga: (inpCita?.value || null),
   remolque: (inpRemolque?.value || '').trim()   // 👈 NUEVO CAMPO
+  observaciones: (inpObservaciones?.value || '').trim()
 };
       
+if (inpObservaciones) inpObservaciones.value = '';      
 //Hasta aqui sin modificar ek script      
 })();    
       
