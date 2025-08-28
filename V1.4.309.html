@@ -2577,6 +2577,26 @@ if (btnImport && inputFile) {
     }
   });
 }
+// Después de leer wb:
+const shContact = getSheet(['Contactos','CONTACTOS','Contacts']);
+const rowsContact = toJson(shContact);
+
+// Al crear/actualizar cada permisionario 'inc', agrega un arreglo contactos:
+if (!inc.contactos) inc.contactos = [];
+
+// Al recorrer contactos:
+rowsContact.forEach(c => {
+  const k = String(c['RFC/Permisionario'] || c.RFC || '').trim() ||
+            String(c.Permisionario || c['Nombre/Razón Social'] || '').trim();
+  if (!k || !incoming.has(k)) return;
+  incoming.get(k).contactos.push({
+    rol:      c['Área/Rol'] || '',
+    nombre:   c['Nombre'] || '',
+    telefono: c['Teléfono'] || '',
+    email:    c['Email'] || '',
+    comentario: c['Comentario'] || ''
+  });
+});
       
   // === BD local de permisionarios
   function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
