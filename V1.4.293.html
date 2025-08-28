@@ -1733,6 +1733,19 @@ btn.primary { background:#efe9ff; border-color:#033552; }
 <div class="form-group">
       <label for="ns-observaciones">Observaciones</label>
       <textarea id="ns-observaciones" rows="2" placeholder="Notas u observaciones del servicio" style="resize:vertical;"></textarea>
+</div>  
+
+<div id="polizaWarnModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-content" style="text-align:center; max-width:520px;">
+      <span class="close" title="Cerrar">&times;</span>
+      <h3>Atención</h3>
+      <p style="margin:12px 0 6px;">
+      La unidad no puede seleccionarse porque la póliza requiere actualización.
+      </p>
+      <div class="modal-buttons" style="justify-content:center;">
+      <button id="polizaWarnOk" class="btn">Entendido</button>
+      </div>
+      </div>
 </div>        
         
 </div>
@@ -4962,7 +4975,64 @@ const servicio = {
   observaciones: (inpObservaciones?.value || '').trim()
 };
       
-if (inpObservaciones) inpObservaciones.value = '';      
+if (inpObservaciones) inpObservaciones.value = '';  
+
+      
+//Aqui empieza los comandos sobre los condados de validación de Vto de placa eco
+function handleUnitSelectionLock(e){
+  const placaSel = document.getElementById('ns-placa');
+  const ecoSel   = document.getElementById('ns-eco');
+  const opSel    = document.getElementById('ns-operador');
+
+  let unit = null;
+  if (e?.target === placaSel) {
+    unit = findUnitByPlaca(placaSel?.value);
+  } else if (e?.target === ecoSel) {
+    unit = findUnitByEco(ecoSel?.value);
+  } else {
+    return;
+  }
+
+  if (!unit) return;
+
+  // Adapta el nombre del campo según tu estructura de unidad
+  const vto = unit.vencePoliza || unit.vencimientoPoliza || unit.vtoPoliza || unit.vto_seguro || unit.vencimiento_seguro;
+  if (isExpired(vto)) {
+    // Bloquear selección: limpiar el select que disparó el evento
+    if (e.target) e.target.value = '';
+
+    // Opcional: limpiar y bloquear operador para evitar cadenas inválidas
+    if (opSel) { opSel.value = ''; opSel.disabled = true; }
+
+    showPolizaWarn();
+  }
+}
+
+// Eventos
+document.getElementById('ns-placa')?.addEventListener('change', handleUnitSelectionLock);
+document.getElementById('ns-eco')?.addEventListener('change', handleUnitSelectionLock);
+function assertUnidadNoVencidaOrThrow(){
+  const placa = document.getElementById('ns-placa')?.value;
+  const eco   = document.getElementById('ns-eco')?.value;
+  const unit  = placa ? findUnitByPlaca(placa) : (eco ? findUnitByEco(eco) : null);
+  if (!unit) return;
+  const vto = unit.vencePoliza || unit.vencimientoPoliza || unit.vtoPoliza || unit.vto_seguro || unit.vencimiento_seguro;
+  if (isExpired(vto)) {
+    showPolizaWarn();
+    throw new Error('Póliza vencida: no se puede guardar el servicio con esta unidad.');
+  }
+}
+
+// Ejemplo de uso justo antes de construir/guardar `servicio`
+try {
+  assertUnidadNoVencidaOrThrow();
+  // ... continuar flujo normal de guardado
+} catch(err){
+  console.warn(err.message);
+  return; // cortar el guardado
+}
+      
+    
 //Hasta aqui sin modificar ek script      
 })();    
       
