@@ -1734,19 +1734,6 @@ btn.primary { background:#efe9ff; border-color:#033552; }
       <label for="ns-observaciones">Observaciones</label>
       <textarea id="ns-observaciones" rows="2" placeholder="Notas u observaciones del servicio" style="resize:vertical;"></textarea>
 </div>  
-
-<div id="polizaWarnModal" class="modal hidden" aria-hidden="true">
-      <div class="modal-content" style="text-align:center; max-width:520px;">
-      <span class="close" title="Cerrar">&times;</span>
-      <h3>Atención</h3>
-      <p style="margin:12px 0 6px;">
-      La unidad no puede seleccionarse porque la póliza requiere actualización.
-      </p>
-      <div class="modal-buttons" style="justify-content:center;">
-      <button id="polizaWarnOk" class="btn">Entendido</button>
-      </div>
-      </div>
-</div>        
         
 </div>
   <button class="btn primary" id="asignGuardarServicio">Guardar servicio</button>    
@@ -5038,8 +5025,19 @@ try {
       
 </script>
 
-
-      
+ <!-- Vto poliza -->
+<div id="polizaWarnModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-content" style="text-align:center; max-width:520px;">
+      <span class="close" title="Cerrar">&times;</span>
+      <h3>Atención</h3>
+      <p style="margin:12px 0 6px;">
+      La unidad no puede seleccionarse porque la póliza requiere actualización.
+      </p>
+      <div class="modal-buttons" style="justify-content:center;">
+      <button id="polizaWarnOk" class="btn">Entendido</button>
+      </div>
+      </div>
+</div>         
       <!-- Op LTR -->
       <div id="filePreviewModal" class="modal hidden" aria-hidden="true">
   <div class="modal-content" style="width:80vw;max-width:900px;max-height:90vh;">
