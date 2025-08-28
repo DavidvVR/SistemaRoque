@@ -2621,6 +2621,8 @@ window.addEventListener('DOMContentLoaded', migratePermsStorage);
     document.getElementById('permContacto').value = perm.contacto || '';
   }
 
+      
+
   // === Limpiar formulario nuevo permisionario
   function limpiarFormularioPerm(){
     permsMenu.querySelectorAll('input, textarea').forEach(el => { el.value = ''; });
@@ -3593,7 +3595,7 @@ function openLTRUnidadDetalle(id){
         };
       }
     } else {
-      var newId = 'LTRU-' + String(Date.now()).slice(-6); // o puedes usar (list.length+1)
+      var newId = nextLTRId(); 
       list.push({
         id: newId,
         placas: placas,
