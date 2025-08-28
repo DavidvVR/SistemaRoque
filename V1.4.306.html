@@ -2430,10 +2430,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const permInfoModal = document.getElementById('permInfoModal');
   
 // === Importador de Permisionarios (Datos, Unidades, Operadores)
-constante btnImport = document.getElementById('btnImportExcelPerms');
-constante inputFile = document.getElementById('excelInputPerms');
-si (btnImport && archivoDeEntrada) {
+// FIX: usar 'const' y 'if'; variables correctas
+const btnImport = document.getElementById('btnImportExcelPerms');
+const inputFile = document.getElementById('excelInputPerms');
 
+if (btnImport && inputFile) {
   // 1) Abrir selector de archivo
   btnImport.addEventListener('click', () => inputFile.click());
 
@@ -2441,72 +2442,72 @@ si (btnImport && archivoDeEntrada) {
   inputFile.addEventListener('change', async (ev) => {
     const file = ev.target.files?.[0];
     if (!file) return;
+
     try {
+      if (typeof XLSX === 'undefined') {
+        alert('Falta la librería XLSX. Agrega el <script> de SheetJS antes de este código.');
+        return;
+      }
 
       const buf = await file.arrayBuffer();
       const wb  = XLSX.read(buf, { type: 'array' });
 
-      // Hojas esperadas (nombres flexibles, toma la primera coincidencia)
-      const getSheet = (names) =>
-        names.map(n => wb.Sheets[n]).find(sh => !!sh);
-
+      const getSheet = (names) => names.map(n => wb.Sheets[n]).find(Boolean);
       const shPerms = getSheet(['Permisionarios','PERMISIONARIOS','Perms','Sheet1']);
       const shUnid  = getSheet(['Unidades','UNIDADES','Units']);
       const shOps   = getSheet(['Operadores','OPERADORES','Ops']);
 
-      // Utilidad: hoja a JSON "limpio"
       const toJson = (sh) => (sh ? XLSX.utils.sheet_to_json(sh, { defval: '' }) : []);
+      const rowsPerms = toJson(shPerms);
+      const rowsUnid  = toJson(shUnid);
+      const rowsOps   = toJson(shOps);
 
-      const rowsPerms = toJson(shPerms);   // columnas sugeridas: RFC, Nombre, Estatus, Domicilio/Contacto, Comentario
-      const rowsUnid  = toJson(shUnid);    // columnas sugeridas: RFC/Permisionario, Placas, Eco, Tipo, Tarjeta, VencePoliza, Aseguradora, Marca, Año, PermisoSCT
-      const rowsOps   = toJson(shOps);     // columnas sugeridas: RFC/Permisionario, Nombre, NumLicencia, LicenciaArchivo, VtoLic, AptoArchivo, VtoApto, RFCOperador
-
-      // 3) Normaliza registros nuevos en un mapa por RFC o Nombre
-      const keyOf = (obj) => String(obj.RFC || obj.Rfc || obj.rfc || obj.Nombre || obj['Nombre/Razón Social'] || '').trim();
+      const keyOf = (obj) => String(
+        obj.RFC || obj.Rfc || obj.rfc || obj.Nombre || obj['Nombre/Razón Social'] || ''
+      ).trim();
 
       const incoming = new Map();
+
       rowsPerms.forEach(r => {
         const k = keyOf(r);
         if (!k) return;
         incoming.set(k, {
-          id: null, // se asigna al fusionar si es nuevo
+          id: null,
           nombre:  r.Nombre || r['Nombre/Razón Social'] || r.Razon || r.Razón || '',
           rfc:     r.RFC || r.Rfc || r.rfc || '',
           estatus: r.Estatus || r.Status || 'Activo',
           contacto: r.Domicilio || r.Contacto || r.Direccion || r.Dirección || '',
           comentario: r.Comentario || '',
           documentos: [
-            { nombre:'Acta Constitutiva',                 estatus:false, archivo:null },
-            { nombre:'Poder Rep. Legal',                  estatus:false, archivo:null },
-            { nombre:'Comprobante de Domicilio',          estatus:false, archivo:null },
-            { nombre:'Constancia de Situación Fiscal',    estatus:false, archivo:null },
-            { nombre:'INE Rep. Legal',                    estatus:false, archivo:null },
-            { nombre:'Contrato',                          estatus:false, archivo:null },
+            { nombre:'Acta Constitutiva',              estatus:false, archivo:null },
+            { nombre:'Poder Rep. Legal',               estatus:false, archivo:null },
+            { nombre:'Comprobante de Domicilio',       estatus:false, archivo:null },
+            { nombre:'Constancia de Situación Fiscal', estatus:false, archivo:null },
+            { nombre:'INE Rep. Legal',                 estatus:false, archivo:null },
+            { nombre:'Contrato',                       estatus:false, archivo:null },
           ],
           unidades: [],
           operadores: []
         });
       });
 
-      // 4) Anexa UNIDADES agrupando por RFC/Nombre
       rowsUnid.forEach(u => {
         const k = keyOf(u) || String(u.Permisionario || u['Nombre/Razón Social'] || '').trim();
         if (!k || !incoming.has(k)) return;
         const dst = incoming.get(k);
         dst.unidades.push({
-          tarjeta:       u.Tarjeta || u['Tarjeta de Circulación'] || '',
-          placas:        u.Placas || u['No. Placas'] || '',
-          eco:           u.Eco || u['No. Eco'] || '',
-          tipo:          u.Tipo || u['Tipo de Unidad'] || '',
-          vencePoliza:   u.VencePoliza || u['Vencimiento Poliza'] || u['Vencimiento Póliza'] || '',
-          aseguradora:   u.Aseguradora || '',
-          marca:         u.Marca || '',
-          anio:          u.Año || u.Anio || '',
-          permiso:       u.PermisoSCT || u['Permiso SCT'] || ''
+          tarjeta:     u.Tarjeta || u['Tarjeta de Circulación'] || '',
+          placas:      u.Placas || u['No. Placas'] || '',
+          eco:         u.Eco || u['No. Eco'] || '',
+          tipo:        u.Tipo || u['Tipo de Unidad'] || '',
+          vencePoliza: u.VencePoliza || u['Vencimiento Poliza'] || u['Vencimiento Póliza'] || '',
+          aseguradora: u.Aseguradora || '',
+          marca:       u.Marca || '',
+          anio:        u.Año || u.Anio || '',
+          permiso:     u.PermisoSCT || u['Permiso SCT'] || ''
         });
       });
 
-      // 5) Anexa OPERADORES agrupando por RFC/Nombre
       rowsOps.forEach(o => {
         const k = keyOf(o) || String(o.Permisionario || o['Nombre/Razón Social'] || '').trim();
         if (!k || !incoming.has(k)) return;
@@ -2522,79 +2523,54 @@ si (btnImport && archivoDeEntrada) {
         });
       });
 
-      // 6) Fusiona con los existentes: conserva IDs y no rompe estructura
-      const existing = getPerms(); // tu helper actual
+      const existing = getPerms();
       const out = [...existing];
 
-      // Generador de IDs (usas esta función en tus altas; si no está global, replica una simple)
+      // FIX: unificar prefijo de IDs a 'LTR-PR-'
       const generarSiguienteIdPerm = (arr) => {
-        const pref = 'LTR-PERM-';
+        const pref = 'LTR-PR-';
         const max = arr.reduce((m, p) => {
-          const n = String(p.id||'').startsWith(pref) ? parseInt(String(p.id).slice(pref.length),10) || 0 : 0;
+          const n = String(p.id||'').startsWith(pref)
+            ? parseInt(String(p.id).slice(pref.length),10) || 0 : 0;
           return n>m?n:m;
         }, 0);
         return pref + String(max+1).padStart(2,'0');
       };
 
-      const eqRFC = (a,b) => (String(a||'').trim().toLowerCase() === String(b||'').trim().toLowerCase());
-      const eqName = (a,b) => (String(a||'').trim().toLowerCase() === String(b||'').trim().toLowerCase());
-
-      // utilidades para evitar duplicados
+      const eq = (a,b) => String(a||'').trim().toLowerCase() === String(b||'').trim().toLowerCase();
       const uniqBy = (arr, keyFn) => {
         const seen = new Set();
-        return arr.filter(x => {
-          const k = keyFn(x);
-          if (seen.has(k)) return false;
-          seen.add(k);
-          return true;
-        });
+        return arr.filter(x => { const k = keyFn(x); if (seen.has(k)) return false; seen.add(k); return true; });
       };
 
-      for (const [k, inc] of incoming.entries()) {
-        const idx = out.findIndex(p =>
-          (inc.rfc && eqRFC(p.rfc, inc.rfc)) ||
-          (!inc.rfc && eqName(p.nombre, inc.nombre))
-        );
-
+      for (const [, inc] of incoming.entries()) {
+        const idx = out.findIndex(p => (inc.rfc && eq(p.rfc, inc.rfc)) || (!inc.rfc && eq(p.nombre, inc.nombre)));
         if (idx >= 0) {
-          // Actualiza datos básicos, conserva ID y documentos
           const prev = out[idx];
-          const id   = prev.id;
-          const documentos = Array.isArray(prev.documentos) ? prev.documentos : inc.documentos;
-          // Merge "no destructivo" de arrays
-          const unidades = uniqBy(
-            [...(prev.unidades||[]), ...(inc.unidades||[])],
-            u => `${(u.placas||'').toUpperCase()}|${(u.eco||'').toUpperCase()}`
-          );
-          const operadores = uniqBy(
-            [...(prev.operadores||[]), ...(inc.operadores||[])],
-            o => `${(o.nombre||'').toUpperCase()}|${(o.numero||'').toUpperCase()}`
-          );
-
           out[idx] = {
             ...prev,
-            id,
             nombre:   inc.nombre || prev.nombre,
             rfc:      inc.rfc    || prev.rfc,
             estatus:  inc.estatus|| prev.estatus,
             contacto: inc.contacto ?? prev.contacto,
             comentario: inc.comentario ?? prev.comentario,
-            documentos,
-            unidades,
-            operadores
+            documentos: Array.isArray(prev.documentos) ? prev.documentos : inc.documentos,
+            unidades: uniqBy([...(prev.unidades||[]), ...(inc.unidades||[])],
+                             u => `${(u.placas||'').toUpperCase()}|${(u.eco||'').toUpperCase()}`),
+            operadores: uniqBy([...(prev.operadores||[]), ...(inc.operadores||[])],
+                               o => `${(o.nombre||'').toUpperCase()}|${(o.numero||'').toUpperCase()}`)
           };
         } else {
-          // Nuevo registro → asigna ID
           inc.id = generarSiguienteIdPerm(out);
           out.push(inc);
         }
       }
 
-      setPerms(out);                          // guarda en tu storage
-      if (typeof renderTablaPerms === 'function') renderTablaPerms(); // refresca tabla (tu render actual)
-      document.dispatchEvent(new CustomEvent('permisionarios:updated')); // avisa a listeners (Placa/Eco, etc.)
+      setPerms(out);
+      if (typeof renderTablaPerms === 'function') renderTablaPerms();
+      document.dispatchEvent(new CustomEvent('permisionarios:updated'));
       alert('Importación completada.');
-      inputFile.value = ''; // limpia el file input
+      inputFile.value = '';
     } catch (err) {
       console.error(err);
       alert('No se pudo importar el archivo. Verifica el formato.');
@@ -2729,7 +2705,7 @@ window.addEventListener('DOMContentLoaded', migratePermsStorage);
     );
     tbody.innerHTML = fil.map(p => `
       <tr>
-        <td><button class="perm-id-link" data-id="${p.id}">${p.id || ''}</button>
+        <td><button class="perm-id-link" data-id="${p.id}">${p.id || ''}</button></td>
         <td>${p.nombre || ''}</td>
         <td>${p.estatus || 'Activo'}</td>
         <td class="actions">
