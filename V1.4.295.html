@@ -4966,6 +4966,59 @@ if (inpObservaciones) inpObservaciones.value = '';
 
       
 //Aqui empieza los comandos sobre los condados de validación de Vto de placa eco
+function parseISODate(s){
+  if (!s) return null;
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+function isExpired(dateStr){
+  const d = parseISODate(dateStr);
+  if (!d) return false;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  return d < today;
+}
+
+// Modal: abrir/cerrar
+function showPolizaWarn(){
+  const m = document.getElementById('polizaWarnModal');
+  if (!m) return;
+  m.classList.remove('hidden');
+  m.style.display = 'flex';
+}
+function closePolizaWarn(){
+  const m = document.getElementById('polizaWarnModal');
+  if (!m) return;
+  m.classList.add('hidden');
+  m.style.display = 'none';
+}
+document.getElementById('polizaWarnOk')?.addEventListener('click', closePolizaWarn);
+document.querySelector('#polizaWarnModal .close')?.addEventListener('click', closePolizaWarn);
+function getUnitsFromCurrentSource(){
+  const unidadTipo = document.getElementById('ns-unidadTipo')?.value;
+  if (unidadTipo === 'LTR') {
+    return JSON.parse(localStorage.getItem('sr_ltr_unidades') || '[]');
+  }
+  if (unidadTipo === 'Permisionario') {
+    const permId = document.getElementById('ns-permisionario')?.value;
+    const perms = JSON.parse(localStorage.getItem('sr_permisionarios') || '[]');
+    const p = perms.find(x => x.id === permId);
+    return p?.unidades || [];
+  }
+  return [];
+}
+
+function findUnitByPlaca(placa){
+  const arr = getUnitsFromCurrentSource();
+  const v = (placa || '').toString().trim().toLowerCase();
+  return arr.find(u => (u.placas || u.placa || '').toString().trim().toLowerCase() === v);
+}
+function findUnitByEco(eco){
+  const arr = getUnitsFromCurrentSource();
+  const v = (eco || '').toString().trim().toLowerCase();
+  return arr.find(u => (u.eco || '').toString().trim().toLowerCase() === v);
+}
 function handleUnitSelectionLock(e){
   const placaSel = document.getElementById('ns-placa');
   const ecoSel   = document.getElementById('ns-eco');
@@ -5018,7 +5071,7 @@ try {
   console.warn(err.message);
   return; // cortar el guardado
 }
-      
+
     
 //Hasta aqui sin modificar ek script      
 })();    
