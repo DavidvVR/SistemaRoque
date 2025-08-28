@@ -2577,6 +2577,83 @@ if (btnImport && inputFile) {
     }
   });
 }
+ // 1) Construye el mapa principal de permisionarios (igual que ya haces)
+const incoming = new Map();  // key canon -> objeto permisionario
+
+rowsPerms.forEach(r => {
+  const nombre = r.Nombre || r['Nombre/Razón Social'] || r.Razon || r.Razón || '';
+  const rfc    = r.RFC || r.Rfc || r.rfc || '';
+  const keyCanon = (rfc || nombre).trim();  // preferimos RFC si hay
+  if (!keyCanon) return;
+
+  incoming.set(keyCanon.toLowerCase(), {
+    id: null,
+    nombre,
+    rfc,
+    estatus: r.Estatus || r.Status || 'Activo',
+    contacto: r.Domicilio || r.Contacto || r.Direccion || r.Dirección || '',
+    comentario: r.Comentario || '',
+    documentos: [
+      { nombre:'Acta Constitutiva', estatus:false, archivo:null },
+      { nombre:'Poder Rep. Legal',  estatus:false, archivo:null },
+      { nombre:'Comprobante de Domicilio', estatus:false, archivo:null },
+      { nombre:'Constancia de Situación Fiscal', estatus:false, archivo:null },
+      { nombre:'INE Rep. Legal',    estatus:false, archivo:null },
+      { nombre:'Contrato',          estatus:false, archivo:null },
+    ],
+    unidades: [],
+    operadores: [],
+    // contactos: []  // si activas la hoja Contactos
+  });
+});
+
+// 2) Índice de resolución por RFC y por Nombre → apunta al key canónico
+const indexKeys = new Map(); // alias -> keyCanon
+for (const [k, p] of incoming.entries()) {
+  const a = (p.rfc||'').trim().toLowerCase();
+  const b = (p.nombre||'').trim().toLowerCase();
+  if (a) indexKeys.set(a, k);
+  if (b) indexKeys.set(b, k);
+}
+
+// Helper: resuelve RFC o Nombre hacia el key canónico
+const resolveKey = (val) => indexKeys.get(String(val||'').trim().toLowerCase());
+
+// 3) UNIDADES: intenta por RFC, si no por Nombre
+rowsUnid.forEach(u => {
+  const alias = u['RFC/Permisionario'] || u.RFC || u.Permisionario || u['Nombre/Razón Social'];
+  const keyCanon = resolveKey(alias);
+  if (!keyCanon) return;
+  const dst = incoming.get(keyCanon);
+  dst.unidades.push({
+    tarjeta:     u.Tarjeta || u['Tarjeta de Circulación'] || '',
+    placas:      u.Placas || u['No. Placas'] || '',
+    eco:         u.Eco || u['No. Eco'] || '',
+    tipo:        u.Tipo || u['Tipo de Unidad'] || '',
+    vencePoliza: u.VencePoliza || u['Vencimiento Poliza'] || u['Vencimiento Póliza'] || '',
+    aseguradora: u.Aseguradora || '',
+    marca:       u.Marca || '',
+    anio:        u.Año || u.Anio || '',
+    permiso:     u.PermisoSCT || u['Permiso SCT'] || ''
+  });
+});
+
+// 4) OPERADORES: lo mismo
+rowsOps.forEach(o => {
+  const alias = o['RFC/Permisionario'] || o.RFC || o.Permisionario || o['Nombre/Razón Social'];
+  const keyCanon = resolveKey(alias);
+  if (!keyCanon) return;
+  const dst = incoming.get(keyCanon);
+  dst.operadores.push({
+    nombre:  o.Nombre || '',
+    numero:  o.NumLicencia || o['Número Licencia'] || o.Licencia || '',
+    licencia: o.LicenciaArchivo || o.Licencia || '',
+    vtoLic:  o.VtoLic || o['Vencimiento Licencia'] || '',
+    apto:    o.AptoArchivo || o['Apto Médico'] || '',
+    vtoApto: o.VtoApto || o['Vencimiento Apto'] || '',
+    rfc:     o.RFCOperador || o.RFC || ''
+  });
+});     
       
   // === BD local de permisionarios
   function getPerms(){ try { return JSON.parse(localStorage.getItem(srPermKey)) || []; } catch { return []; } }
