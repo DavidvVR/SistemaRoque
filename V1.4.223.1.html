@@ -988,21 +988,21 @@ btn.primary { background:#efe9ff; border-color:#033552; }
           <h3 class="section-title">Contactos</h3>
           <div class="form-group">
             <label>Operaciones</label>
-            <input type="text" placeholder="Email">
-            <input type="email" placeholder="Nombre">
-            <input type="text" placeholder="Tel.">
+            <input id="permOpNombre" type="text" placeholder="Nombre">
+            <input id="permOpEmail"  type="email" placeholder="Email">
+            <input id="permOpTel"    type="text" placeholder="Tel.">
           </div>
           <div class="form-group">
             <label>Administración</label>
-            <input type="text" placeholder="Email">
-            <input type="email" placeholder="Nombre">
-            <input type="text" placeholder="Tel.">
+            <input id="permAdNombre" type="text" placeholder="Nombre">
+            <input id="permAdEmail"  type="email" placeholder="Email">
+            <input id="permAdTel"    type="text" placeholder="Tel.">
           </div>
           <div class="form-group">
             <label>Comercial</label>
-            <input type="text" placeholder="Email">
-            <input type="email" placeholder="Nombre">
-            <input type="text" placeholder="Tel.">
+            <input id="permCoNombre" type="text" placeholder="Nombre">
+            <input id="permCoEmail"  type="email" placeholder="Email">
+            <input id="permCoTel"    type="text" placeholder="Tel.">
           </div>
         </div>
         <!-- Subcontenido: Documentos -->
@@ -2518,6 +2518,14 @@ btn.primary { background:#efe9ff; border-color:#033552; }
             ]; changed = true; }
             if (!p.unidades) { p.unidades = []; changed = true; }
             if (!p.operadores) { p.operadores = []; changed = true; }
+            if (!p.contactos) {
+              p.contactos = {
+                operaciones: { nombre: '', email: '', tel: '' },
+                administracion: { nombre: '', email: '', tel: '' },
+                comercial: { nombre: '', email: '', tel: '' }
+              };
+              changed = true;
+            }
           });
           if (changed) setPerms(perms);
         }
@@ -2691,6 +2699,16 @@ btn.primary { background:#efe9ff; border-color:#033552; }
           document.getElementById('permRFC').value = perm.rfc || '';
           document.getElementById('permEstatus').value = perm.estatus || 'Activo';
           document.getElementById('permContacto').value = perm.contacto || '';
+          const cc = perm.contactos || {};
+          document.getElementById('permOpNombre').value = cc.operaciones?.nombre || '';
+          document.getElementById('permOpEmail').value  = cc.operaciones?.email  || '';
+          document.getElementById('permOpTel').value   = cc.operaciones?.tel    || '';
+          document.getElementById('permAdNombre').value = cc.administracion?.nombre || '';
+          document.getElementById('permAdEmail').value  = cc.administracion?.email  || '';
+          document.getElementById('permAdTel').value    = cc.administracion?.tel    || '';
+          document.getElementById('permCoNombre').value = cc.comercial?.nombre || '';
+          document.getElementById('permCoEmail').value  = cc.comercial?.email  || '';
+          document.getElementById('permCoTel').value    = cc.comercial?.tel    || '';
         }
         // === Limpiar formulario nuevo permisionario
         function limpiarFormularioPerm(){
@@ -2728,6 +2746,141 @@ btn.primary { background:#efe9ff; border-color:#033552; }
         // === Buscar en la lista
         document.getElementById('searchPerm')?.addEventListener('input', (e) => {
           renderTablaPerms(e.target.value);
+        });
+        // === Importar permisionarios desde Excel ===
+        document.getElementById('btnPermImport')?.addEventListener('click', () => {
+          document.getElementById('permExcelInput')?.click();
+        });
+        document.getElementById('permExcelInput')?.addEventListener('change', (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const norm = s => String(s || '').trim().toUpperCase();
+
+            // --- Hoja: DatosGenerales ---
+            const dgSheet = workbook.Sheets['DatosGenerales'];
+            const dgJson = dgSheet ? XLSX.utils.sheet_to_json(dgSheet, { header: 1 }) : [];
+            const dgHeaders = dgJson[0] || [];
+            const dgData = dgJson.slice(1);
+            const importPerms = dgData.map(row => {
+              const obj = {};
+              dgHeaders.forEach((h, i) => obj[h] = row[i] || '');
+              return {
+                id: '',
+                nombre: obj['Nombre/Razón Social'] || '',
+                rfc: obj['RFC'] || '',
+                estatus: obj['Estatus'] || '',
+                contacto: obj['Domicilio'] || '',
+                documentos: [
+                  { nombre: 'Acta Constitutiva', estatus: false, archivo: null },
+                  { nombre: 'Poder Rep. Legal', estatus: false, archivo: null },
+                  { nombre: 'Comprobante de Domicilio', estatus: false, archivo: null },
+                  { nombre: 'Constancia de Situación Fiscal', estatus: false, archivo: null },
+                  { nombre: 'INE Rep. Legal', estatus: false, archivo: null },
+                  { nombre: 'Contrato', estatus: false, archivo: null }
+                ],
+                contactos: {
+                  operaciones: { nombre: '', email: '', tel: '' },
+                  administracion: { nombre: '', email: '', tel: '' },
+                  comercial: { nombre: '', email: '', tel: '' }
+                },
+                unidades: [],
+                operadores: []
+              };
+            });
+            const mapa = new Map(importPerms.map(p => [norm(p.rfc), p]));
+
+            // --- Hoja: Contactos ---
+            const contactosSheet = workbook.Sheets['Contactos'];
+            const contactosJson = contactosSheet ? XLSX.utils.sheet_to_json(contactosSheet) : [];
+            contactosJson.forEach(r => {
+              const perm = mapa.get(norm(r['RFC Permisionario'] || r['RFC']));
+              if (!perm) return;
+              const area = String(r['Área'] || '').toLowerCase();
+              const payload = {
+                nombre: r['Nombre'] || '',
+                email: r['Email'] || '',
+                tel: r['Tel'] || r['Tel.'] || ''
+              };
+              if (area.startsWith('opera')) perm.contactos.operaciones = payload;
+              else if (area.startsWith('admin')) perm.contactos.administracion = payload;
+              else if (area.startsWith('comer')) perm.contactos.comercial = payload;
+            });
+
+            // --- Hoja: Unidades ---
+            const unidadesSheet = workbook.Sheets['Unidades'];
+            const unidadesJson = unidadesSheet ? XLSX.utils.sheet_to_json(unidadesSheet) : [];
+            unidadesJson.forEach(r => {
+              const perm = mapa.get(norm(r['RFC']));
+              if (!perm) return;
+              perm.unidades.push({
+                tarjeta: r['Tarjeta de Circulación'] || '',
+                placas: r['Placas'] || '',
+                eco: r['Eco'] || '',
+                tipo: r['Tipo'] || '',
+                vencePoliza: r['Vencimiento Póliza'] || '',
+                aseguradora: r['Aseguradora'] || '',
+                marca: r['Marca'] || '',
+                anio: r['Año'] || '',
+                permiso: r['Permiso SCT'] || ''
+              });
+            });
+
+            // --- Hoja: Operadores ---
+            const operadoresSheet = workbook.Sheets['Operadores'];
+            const operadoresJson = operadoresSheet ? XLSX.utils.sheet_to_json(operadoresSheet) : [];
+            operadoresJson.forEach(r => {
+              const perm = mapa.get(norm(r['RFC Permisionario'] || r['RFC']));
+              if (!perm) return;
+              perm.operadores.push({
+                nombre: r['Nombre'] || '',
+                numero: r['Número de Licencia'] || '',
+                licencia: r['Licencia'] || '',
+                vtoLic: r['Vto de Licencia'] || '',
+                apto: r['Apto Médico'] || '',
+                vtoApto: r['Vto de Apto'] || '',
+                rfc: r['RFC Operador'] || ''
+              });
+            });
+
+            // --- Integrar con almacenamiento existente ---
+            const existing = getPerms();
+            let nextId = existing.reduce((max, p) => {
+              const m = (p.id || '').match(/LTR-PR-(\d+)/);
+              return Math.max(max, m ? parseInt(m[1], 10) : 0);
+            }, 0) + 1;
+
+            importPerms.forEach(p => {
+              const idx = existing.findIndex(e => e.rfc === p.rfc);
+              if (idx >= 0) {
+                const curr = existing[idx];
+                existing[idx] = {
+                  ...curr,
+                  nombre: curr.nombre || p.nombre,
+                  rfc: curr.rfc || p.rfc,
+                  estatus: curr.estatus || p.estatus,
+                  contacto: curr.contacto || p.contacto,
+                  documentos: curr.documentos && curr.documentos.length ? curr.documentos : p.documentos,
+                  contactos: { ...(curr.contactos || {}), ...(p.contactos || {}) },
+                  unidades: p.unidades.length ? p.unidades : (curr.unidades || []),
+                  operadores: p.operadores.length ? p.operadores : (curr.operadores || [])
+                };
+              } else {
+                p.id = `LTR-PR-${String(nextId).padStart(2,'0')}`;
+                existing.push(p);
+                nextId++;
+              }
+            });
+
+            setPerms(existing);
+            renderTablaPerms();
+            alert('Permisionarios importados correctamente.');
+            event.target.value = '';
+          };
+          reader.readAsArrayBuffer(file);
         });
         // === Subtabs permisionarios (Datos / Documentos / Unidades / Comentarios)
         document.querySelectorAll('#permsMenu .subtab').forEach(tab => {
@@ -2807,6 +2960,23 @@ btn.primary { background:#efe9ff; border-color:#033552; }
           const rfc      = document.getElementById('permRFC').value.trim();
           const estatus  = document.getElementById('permEstatus').value;
           const contacto = document.getElementById('permContacto').value.trim();
+          const contactos = {
+            operaciones: {
+              nombre: document.getElementById('permOpNombre').value.trim(),
+              email:  document.getElementById('permOpEmail').value.trim(),
+              tel:    document.getElementById('permOpTel').value.trim()
+            },
+            administracion: {
+              nombre: document.getElementById('permAdNombre').value.trim(),
+              email:  document.getElementById('permAdEmail').value.trim(),
+              tel:    document.getElementById('permAdTel').value.trim()
+            },
+            comercial: {
+              nombre: document.getElementById('permCoNombre').value.trim(),
+              email:  document.getElementById('permCoEmail').value.trim(),
+              tel:    document.getElementById('permCoTel').value.trim()
+            }
+          };
           const docNames = [
             "Acta Constitutiva", "Poder Rep. Legal", "Comprobante de Domicilio",
             "Constancia de Situación Fiscal", "INE Rep. Legal", "Contrato"
@@ -2849,10 +3019,10 @@ btn.primary { background:#efe9ff; border-color:#033552; }
           let id = editingPermId;
           if(editingPermId){
             const idx = arr.findIndex(p => p.id === editingPermId);
-            if(idx >= 0) arr[idx] = { id: editingPermId, nombre, rfc, estatus, contacto, documentos, unidades, operadores };
+            if(idx >= 0) arr[idx] = { id: editingPermId, nombre, rfc, estatus, contacto, contactos, documentos, unidades, operadores };
           } else {
             id = generarSiguienteIdPerm(arr);
-            arr.push({ id, nombre, rfc, estatus, contacto, documentos, unidades, operadores });
+            arr.push({ id, nombre, rfc, estatus, contacto, contactos, documentos, unidades, operadores });
           }
           setPerms(arr);
           permsMenu.classList.add('hidden');
